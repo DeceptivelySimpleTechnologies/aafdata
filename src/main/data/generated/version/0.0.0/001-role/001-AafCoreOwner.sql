@@ -1,5 +1,6 @@
--- Role: "AafDatabaseOwner"
--- DROP ROLE "AafDatabaseOwner";
+-- Role: "AafCoreOwner"
+
+-- DROP ROLE "AafCoreOwner";
 
 CREATE ROLE "AafCoreOwner" WITH
     LOGIN

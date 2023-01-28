@@ -1,5 +1,7 @@
+-- Table: EntityType.EntityType
+
 INSERT INTO "EntityType"."EntityType"
-    ("Id", "Uuid", "EntitySubtypeId", "TextKey", "LocalizedName", "LocalizedDescription", "LocalizedAbbreviation", "Resource", "Ordinal", "IsActive", "CorrelationUuid", "Digest", "CreatedAtDateTimeUtc", "CreatedByInformationSystemUserId", "UpdatedAtDateTimeUtc", "UpdatedByInformationSystemUserId", "DeletedAtDateTimeUtc", "DeletedByInformationSystemUserId")
+    ("Id", "Uuid", "EntitySubtypeId", "TextKey", "LocalizedName", "LocalizedDescription", "LocalizedAbbreviation", "ResourceName", "Ordinal", "IsActive", "CorrelationUuid", "Digest", "CreatedAtDateTimeUtc", "CreatedByInformationSystemUserId", "UpdatedAtDateTimeUtc", "UpdatedByInformationSystemUserId", "DeletedAtDateTimeUtc", "DeletedByInformationSystemUserId")
 VALUES
     (1, uuid_generate_v4(), 1, 'entitytype-entity-entitytypedefinition', 'EntityTypeDefinition', 'Defines one of the unique business entity types managed by the system', 'Et Etd', '', -1, true, '00000000-0000-0000-0000-000000000000', '129c107b555d23215130c7d10c3e200cea2775d9', '2022-06-01T00:00:00.000Z', 0, '2022-06-01T00:00:00.000Z', 0, '9999-12-31T23:59.999Z', 0),
     (2, uuid_generate_v4(), 1, 'entitytype-entity-entitytypeattribute', 'EntityTypeAttribute', 'Defines one of the attributes that make up each of the unique business entity types managed by the system', 'Et Eta', '', -1, true, '00000000-0000-0000-0000-000000000000', '5b7e1981b9b9044919cba486e9abfe9bab041eaa', '2022-06-01T00:00:00.000Z', 0, '2022-06-01T00:00:00.000Z', 0, '9999-12-31T23:59.999Z', 0),

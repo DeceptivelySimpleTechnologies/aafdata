@@ -1,5 +1,7 @@
+-- Table: EntitySubtype.EntitySubtype
+
 INSERT INTO "EntitySubtype"."EntitySubtype"
-    ("Id", "Uuid", "EntitySubtypeId", "TextKey", "EntityTypeId", "GroupKey", "LocalizedName", "LocalizedDescription", "LocalizedAbbreviation", "Resource", "Ordinal", "IsActive", "CorrelationUuid", "Digest", "CreatedAtDateTimeUtc", "CreatedByInformationSystemUserId", "UpdatedAtDateTimeUtc", "UpdatedByInformationSystemUserId", "DeletedAtDateTimeUtc", "DeletedByInformationSystemUserId")
+    ("Id", "Uuid", "EntitySubtypeId", "TextKey", "EntityTypeId", "GroupKey", "LocalizedName", "LocalizedDescription", "LocalizedAbbreviation", "ResourceName", "Ordinal", "IsActive", "CorrelationUuid", "Digest", "CreatedAtDateTimeUtc", "CreatedByInformationSystemUserId", "UpdatedAtDateTimeUtc", "UpdatedByInformationSystemUserId", "DeletedAtDateTimeUtc", "DeletedByInformationSystemUserId")
 VALUES
     (-1, 'ba46e2c8-776e-43d7-b769-b6170313ab21', 0, 'entitysubtype-unknown', 0, '', 'Unknown', 'Represents an as yet undetermined subtype value, often used as an initial default value or as a temporary placeholder that will be updated in the future', 'Est Ukwn', '', -1, true, '00000000-0000-0000-0000-000000000000', '7c1af0776b3eabf7d17c8d7f7e670b674d88ccc3', '2022-06-01T00:00:00.000Z', 0, '2022-06-01T00:00:00.000Z', 0, '9999-12-31T23:59.999Z', 0),
     (0, '223ec092-3610-4aa1-9bfc-add2cf14866f', 0, 'entitysubtype-none', 0, '', 'None', 'Represents a value indicating that subtype does not apply in this case, is intentionally omitted or undefined, or is not relevant', 'Est None', '', -1, true, '00000000-0000-0000-0000-000000000000', '5a8d7385c94015d3153f6287fe80b9ed8512f466', '2022-06-01T00:00:00.000Z', 0, '2022-06-01T00:00:00.000Z', 0, '9999-12-31T23:59.999Z', 0),
