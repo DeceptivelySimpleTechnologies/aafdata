@@ -1,0 +1,11 @@
+-- Role: "AafCoreClient"
+
+-- DROP ROLE "AafCoreClient";
+
+CREATE ROLE "AafCoreClient" WITH
+    LOGIN
+    NOSUPERUSER
+    NOINHERIT
+    NOCREATEDB
+    NOCREATEROLE
+    NOREPLICATION;

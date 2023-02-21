@@ -1,16 +1,21 @@
--- Table: EntityTypeDefinitionEntityTypeAttributeAssociation.EntityTypeDefinitionEntityTypeAttributeAssociation
+-- Table: EntitySubtype.EntitySubtype
 
--- DROP TABLE "EntityTypeDefinitionEntityTypeAttributeAssociation"."EntityTypeDefinitionEntityTypeAttributeAssociation";
+-- DROP TABLE "EntitySubtype"."EntitySubtype";
 
-CREATE TABLE "EntityTypeDefinitionEntityTypeAttributeAssociation"."EntityTypeDefinitionEntityTypeAttributeAssociation"
+CREATE TABLE "EntitySubtype"."EntitySubtype"
 (
     "Id" bigint NOT NULL,
     "Uuid" uuid NOT NULL,
     "EntitySubtypeId" bigint NOT NULL,
     "TextKey" character varying(100) COLLATE pg_catalog."default" NOT NULL,
-    "EntityTypeDefinitionId" bigint NOT NULL,
-    "EntityTypeAttributeId" bigint NOT NULL,
-    "Resource" character varying(100) COLLATE pg_catalog."default" NOT NULL,
+
+    "EntityTypeId" bigint NOT NULL,
+    "GroupKey" character varying(100) COLLATE pg_catalog."default" NOT NULL,
+    "LocalizedName" character varying(100) COLLATE pg_catalog."default" NOT NULL,
+    "LocalizedDescription" character varying(2000) COLLATE pg_catalog."default" NOT NULL,
+    "LocalizedAbbreviation" character varying(15) COLLATE pg_catalog."default" NOT NULL,
+
+    "ResourceName" character varying(100) COLLATE pg_catalog."default" NOT NULL,
     "Ordinal" bigint NOT NULL,
     "IsActive" boolean NOT NULL,
     "CorrelationUuid" uuid NOT NULL,
@@ -21,10 +26,11 @@ CREATE TABLE "EntityTypeDefinitionEntityTypeAttributeAssociation"."EntityTypeDef
     "UpdatedByInformationSystemUserId" bigint NOT NULL,
     "DeletedAtDateTimeUtc" timestamp without time zone NOT NULL,
     "DeletedByInformationSystemUserId" bigint NOT NULL,
-    CONSTRAINT "EntityTypeDefinitionEntityTypeAttributeAssociation_PK" PRIMARY KEY ("Id")
+
+    CONSTRAINT "EntitySubtype_PK" PRIMARY KEY ("Id")
 )
 
     TABLESPACE pg_default;
 
-ALTER TABLE "EntityTypeDefinitionEntityTypeAttributeAssociation"."EntityTypeDefinitionEntityTypeAttributeAssociation"
+ALTER TABLE "EntitySubtype"."EntitySubtype"
     OWNER to "AafCoreOwner";

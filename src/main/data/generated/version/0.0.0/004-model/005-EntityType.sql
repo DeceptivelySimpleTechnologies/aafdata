@@ -1,19 +1,19 @@
--- Table: EntityTypeDefinition.EntityTypeDefinition
+-- Table: EntityType.EntityType
 
--- DROP TABLE "EntityTypeDefinition"."EntityTypeDefinition";
+-- DROP TABLE "EntityType"."EntityType";
 
-CREATE TABLE "EntityTypeDefinition"."EntityTypeDefinition"
+CREATE TABLE "EntityType"."EntityType"
 (
     "Id" bigint NOT NULL,
     "Uuid" uuid NOT NULL,
     "EntitySubtypeId" bigint NOT NULL,
     "TextKey" character varying(100) COLLATE pg_catalog."default" NOT NULL,
+
     "LocalizedName" character varying(100) COLLATE pg_catalog."default" NOT NULL,
     "LocalizedDescription" character varying(2000) COLLATE pg_catalog."default" NOT NULL,
     "LocalizedAbbreviation" character varying(15) COLLATE pg_catalog."default" NOT NULL,
-    "DataLocationEntitySubtypeId" bigint NOT NULL,
-    "DataStructureEntitySubtypeId" bigint NOT NULL,
-    "Resource" character varying(100) COLLATE pg_catalog."default" NOT NULL,
+
+    "ResourceName" character varying(100) COLLATE pg_catalog."default" NOT NULL,
     "Ordinal" bigint NOT NULL,
     "IsActive" boolean NOT NULL,
     "CorrelationUuid" uuid NOT NULL,
@@ -24,10 +24,11 @@ CREATE TABLE "EntityTypeDefinition"."EntityTypeDefinition"
     "UpdatedByInformationSystemUserId" bigint NOT NULL,
     "DeletedAtDateTimeUtc" timestamp without time zone NOT NULL,
     "DeletedByInformationSystemUserId" bigint NOT NULL,
-    CONSTRAINT "EntityTypeDefinition_PK" PRIMARY KEY ("Id")
+
+    CONSTRAINT "EntityType_PK" PRIMARY KEY ("Id")
 )
 
     TABLESPACE pg_default;
 
-ALTER TABLE "EntityTypeDefinition"."EntityTypeDefinition"
+ALTER TABLE "EntityType"."EntityType"
     OWNER to "AafCoreOwner";

@@ -8,6 +8,7 @@ CREATE TABLE "EntityTypeAttribute"."EntityTypeAttribute"
     "Uuid" uuid NOT NULL,
     "EntitySubtypeId" bigint NOT NULL,
     "TextKey" character varying(100) COLLATE pg_catalog."default" NOT NULL,
+
     "LocalizedName" character varying(100) COLLATE pg_catalog."default" NOT NULL,
     "LocalizedDescription" character varying(2000) COLLATE pg_catalog."default" NOT NULL,
     "LocalizedAbbreviation" character varying(15) COLLATE pg_catalog."default" NOT NULL,
@@ -23,7 +24,7 @@ CREATE TABLE "EntityTypeAttribute"."EntityTypeAttribute"
     "RelatedEntityTypeAttributeId" bigint NOT NULL,
     "RelatedEntityTypeCardinalityEntitySubtypeId" bigint NOT NULL,
     "EntitySubtypeGroupKey" character varying(100) COLLATE pg_catalog."default" NOT NULL,
-    "ValueEntitySubtypeId" bigint NOT NULL,
+    "EntityTypeAttributeValueEntitySubtypeId" bigint NOT NULL,
     "DefaultValue" character varying(100) COLLATE pg_catalog."default" NOT NULL,
     "MinimumValue" character varying(100) COLLATE pg_catalog."default" NOT NULL,
     "MaximumValue" character varying(100) COLLATE pg_catalog."default" NOT NULL,
@@ -33,7 +34,8 @@ CREATE TABLE "EntityTypeAttribute"."EntityTypeAttribute"
     "IndexEntitySubtypeId" bigint NOT NULL,
     "UniquenessEntitySubtypeId" bigint NOT NULL,
     "SensitivityEntitySubtypeId" bigint NOT NULL,
-    "Resource" character varying(100) COLLATE pg_catalog."default" NOT NULL,
+
+    "ResourceName" character varying(100) COLLATE pg_catalog."default" NOT NULL,
     "Ordinal" bigint NOT NULL,
     "IsActive" boolean NOT NULL,
     "CorrelationUuid" uuid NOT NULL,
@@ -44,6 +46,7 @@ CREATE TABLE "EntityTypeAttribute"."EntityTypeAttribute"
     "UpdatedByInformationSystemUserId" bigint NOT NULL,
     "DeletedAtDateTimeUtc" timestamp without time zone NOT NULL,
     "DeletedByInformationSystemUserId" bigint NOT NULL,
+
     CONSTRAINT "EntityTypeAttribute_PK" PRIMARY KEY ("Id")
 )
 
