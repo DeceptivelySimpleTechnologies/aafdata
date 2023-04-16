@@ -31,3 +31,6 @@ CREATE TABLE "EntityTypeDefinitionEntityTypeAttributeAssociation"."EntityTypeDef
 
 ALTER TABLE "EntityTypeDefinitionEntityTypeAttributeAssociation"."EntityTypeDefinitionEntityTypeAttributeAssociation"
     OWNER to "AafCoreOwner";
+
+GRANT USAGE ON SCHEMA "EntityTypeDefinitionEntityTypeAttributeAssociation" TO "AafCoreClient";
+GRANT SELECT ON ALL TABLES IN SCHEMA "EntityTypeDefinitionEntityTypeAttributeAssociation" TO "AafCoreClient";

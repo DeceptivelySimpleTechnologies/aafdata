@@ -1,6 +1,6 @@
 -- FUNCTION: EntityDataRead
 
--- DROP FUNCTION EntityDataRead ;
+-- DROP FUNCTION "EntityDataRead";
 
 CREATE FUNCTION "EntityDataRead"
 (
@@ -12,14 +12,10 @@ CREATE FUNCTION "EntityDataRead"
 AS
 $$
 DECLARE
+    sqlQuery varchar := 'SELECT json_agg("' || entityName || '") FROM "' || entityName || '"."' || entityName || '"';
 
 BEGIN
-    SELECT
-        json_agg("EntityType")
-    FROM
-        "EntityType"."EntityType"
-    INTO
-        entityData;
+    EXECUTE sqlQuery INTO entityData;
 
 END;
 $$

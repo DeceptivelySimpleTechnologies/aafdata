@@ -34,3 +34,6 @@ CREATE TABLE "EntitySubtype"."EntitySubtype"
 
 ALTER TABLE "EntitySubtype"."EntitySubtype"
     OWNER to "AafCoreOwner";
+
+GRANT USAGE ON SCHEMA "EntitySubtype" TO "AafCoreClient";
+GRANT SELECT ON ALL TABLES IN SCHEMA "EntitySubtype" TO "AafCoreClient";

@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -40,39 +42,30 @@ public class BusinessEntityController {
     public void CreateBusinessEntity() {
     }
 
-    @GetMapping
-    public void GetBusinessEntities() throws SQLException {
+    @GetMapping("/{entityTypeName}")
+    @ResponseBody
+    public String GetBusinessEntities(@PathVariable String entityTypeName) throws SQLException {
 
         Connection connection = null;
         CallableStatement statement = null;
+        String result = "";
 
         try {
-//            String sql = "SELECT * FROM 'EntityType'.'EntityType'";
             connection = DatabaseConnection.getConnection();
-//            statement = connection.prepareCall("{call insertEmployee(?,?,?,?,?,?)}");
-            statement = connection.prepareCall("{call EntityDataRead(?,?)}");
-//            statement.setInt(1, id);
-            statement.setString(1, "EntityType");
-//            statement.setString(2, name);
-//            statement.setString(3, role);
-//            statement.setString(4, city);
-//            statement.setString(5, country);
+            statement = connection.prepareCall("{call \"EntityDataRead\"(?,?)}");
+            statement.setString(1, entityTypeName);
 
-            //register the OUT parameter before calling the stored procedure
+            //NOTE: Register the OUT parameter before calling the stored procedure
             statement.registerOutParameter(2, Types.LONGVARCHAR);
-//            statement.registerOutParameter(1, Types.TIMESTAMP);
-
             statement.executeUpdate();
 
-            //read the OUT parameter now
-            String result = statement.getString(2);
-//            String result = statement.getString(1);
-
-            System.out.println("Entity Data:: " + result);   //TODO: Log this
+            //NOTE: Read the OUT parameter now
+            result = statement.getString(2);
         }
         catch(Exception e)
         {
             e.printStackTrace();    //TODO: Log this
+            return "";
         }
         finally
         {
@@ -85,6 +78,8 @@ public class BusinessEntityController {
             {
                 e.printStackTrace();    //TODO: Log this
             }
+
+            return "\"EntityData\":" + result;
         }
     }
 }

@@ -54,3 +54,6 @@ CREATE TABLE "EntityTypeAttribute"."EntityTypeAttribute"
 
 ALTER TABLE "EntityTypeAttribute"."EntityTypeAttribute"
     OWNER to "AafCoreOwner";
+
+GRANT USAGE ON SCHEMA "EntityTypeAttribute" TO "AafCoreClient";
+GRANT SELECT ON ALL TABLES IN SCHEMA "EntityTypeAttribute" TO "AafCoreClient";
