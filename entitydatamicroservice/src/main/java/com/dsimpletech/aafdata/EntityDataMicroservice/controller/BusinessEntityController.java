@@ -50,6 +50,10 @@ public class BusinessEntityController {
         CallableStatement statement = null;
         String result = "";
 
+        //TODO: Add basic query filters
+        //TODO: Add pagination
+        //TODO: Add "as of" date (placeholder for later temporal operations)
+
         try {
             connection = DatabaseConnection.getConnection();
             statement = connection.prepareCall("{call \"EntityDataRead\"(?,?)}");
