@@ -1,8 +1,8 @@
 -- FUNCTION: GetMaximumDateTimeUtc
 
--- DROP FUNCTION GetMaximumDateTimeUtc ;
+-- DROP FUNCTION "GetMaximumDateTimeUtc";
 
-CREATE FUNCTION GetMaximumDateTimeUtc()
+CREATE FUNCTION "GetMaximumDateTimeUtc"()
     RETURNS timestamp without time zone
     LANGUAGE plpgsql
 AS

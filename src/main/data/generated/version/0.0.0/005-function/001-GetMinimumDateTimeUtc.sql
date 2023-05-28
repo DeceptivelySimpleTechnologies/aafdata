@@ -1,8 +1,8 @@
 -- FUNCTION: GetMinimumDateTimeUtc
 
--- DROP FUNCTION GetMinimumDateTimeUtc ;
+-- DROP FUNCTION "GetMinimumDateTimeUtc";
 
-CREATE FUNCTION GetMinimumDateTimeUtc()
+CREATE FUNCTION "GetMinimumDateTimeUtc"()
         RETURNS timestamp without time zone
         LANGUAGE plpgsql
     AS

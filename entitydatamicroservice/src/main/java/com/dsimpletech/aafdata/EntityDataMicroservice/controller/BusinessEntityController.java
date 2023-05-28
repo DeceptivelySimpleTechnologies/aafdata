@@ -1,6 +1,8 @@
 package com.dsimpletech.aafdata.EntityDataMicroservice.controller;
 
-//import org.springframework.data.r2dbc.repository.Query;
+import org.springframework.http.server.reactive.ServerHttpRequest;
+
+import org.springframework.util.MultiValueMap;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import org.springframework.web.server.ServerWebExchange;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -44,20 +48,32 @@ public class BusinessEntityController {
 
     @GetMapping("/{entityTypeName}")
     @ResponseBody
-    public String GetBusinessEntities(@PathVariable String entityTypeName) throws SQLException {
+    public String GetBusinessEntities(@PathVariable String entityTypeName, ServerWebExchange exchange) throws SQLException {
 
         Connection connection = null;
         CallableStatement statement = null;
+        ServerHttpRequest request = null;
+        MultiValueMap<String,String> queryParams = null;
         String result = "";
 
-        //TODO: Add basic query filters
-        //TODO: Add pagination
-        //TODO: Add "as of" date (placeholder for later temporal operations)
+        //TODO: Validate EntityType name and attributes here rather than in function
+
+        //TODO: Add basic query filters, e.g. =, IN, LIKE, etc
+        //TODO: Add sort order, e.g. ASC, DESC
+        //TODO: Add pagination, e.g. Offset, PageSize, with defaults and max
+        //TODO: Add "as of" datetime (placeholder for later temporal operations)
+
+        //TODO: Return total matching records
+
+        //TODO: Return Json rather than String???
 
         try {
             connection = DatabaseConnection.getConnection();
             statement = connection.prepareCall("{call \"EntityDataRead\"(?,?)}");
             statement.setString(1, entityTypeName);
+
+            request = exchange.getRequest();
+            queryParams = request.getQueryParams();
 
             //NOTE: Register the OUT parameter before calling the stored procedure
             statement.registerOutParameter(2, Types.LONGVARCHAR);
@@ -82,8 +98,8 @@ public class BusinessEntityController {
             {
                 e.printStackTrace();    //TODO: Log this
             }
-
-            return "\"EntityData\":" + result;
         }
+
+        return "\"EntityData\":" + result;
     }
 }

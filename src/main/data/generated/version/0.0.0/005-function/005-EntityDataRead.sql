@@ -15,14 +15,8 @@ DECLARE
     sqlQuery varchar := 'SELECT json_agg("' || entityName || '") FROM "' || entityName || '"."' || entityName || '"';
 
 BEGIN
-    IF
-        "ValidateEntityName"(entityName)
-    THEN
-        EXECUTE sqlQuery INTO entityData;
-    ELSE
-        entityData := '[]';
-    END IF;
 
+    EXECUTE sqlQuery INTO entityData;
     RETURN entityData;
 
 END;
