@@ -13,6 +13,9 @@ import org.springframework.core.env.Environment;
 
 //import org.springframework.util.MultiValueMap;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -65,7 +68,7 @@ public class BusinessEntityController
 
     @GetMapping("/{entityTypeName}")
     @ResponseBody
-    public String GetBusinessEntities(@PathVariable String entityTypeName, ServerWebExchange exchange)
+    public ResponseEntity<String> GetBusinessEntities(@PathVariable String entityTypeName, ServerWebExchange exchange)
     {
 
         Connection connection = null;
@@ -107,11 +110,11 @@ public class BusinessEntityController
             //TODO: Use GetBusinessEntities() to cache EntityTypeDefinition, EntityTypeAttribute, and EntityTypeDefinitionEntityTypeAttributeAssociation for input validation at service startup
             //TODO: Validate EntityType name and attributes here rather than in function
 
-            filterIssueValues = new String[]{environment.getProperty("sqlToErrorAndReport").toLowerCase()};
-            errorValues = GuardAgainstSqlIssues("Delete".toLowerCase(), filterIssueValues);
+            filterIssueValues = environment.getProperty("sqlToErrorAndReport").toLowerCase().split(",");
+            errorValues = GuardAgainstSqlIssues("Id=1".toLowerCase(), filterIssueValues);
 
-            filterIssueValues = new String[]{environment.getProperty("sqlToWarnAndReport").toLowerCase() + "," + environment.getProperty("sqlToWarnAndReportAggregate").toLowerCase() + "," + environment.getProperty("sqlToWarnAndReportString").toLowerCase()};
-            warnValues = GuardAgainstSqlIssues("JOIN,max".toLowerCase(), filterIssueValues);
+            filterIssueValues = (environment.getProperty("sqlToWarnAndReport").toLowerCase() + "," + environment.getProperty("sqlToWarnAndReportAggregate").toLowerCase() + "," + environment.getProperty("sqlToWarnAndReportString").toLowerCase()).split(",");
+            warnValues = GuardAgainstSqlIssues("EntityType ASC".toLowerCase(), filterIssueValues);
 
             if (errorValues.length() == 0) {
                 connection = DatabaseConnection.getConnection();
@@ -131,7 +134,8 @@ public class BusinessEntityController
         catch (Exception e)
         {
             logger.error("GetBusinessEntities failed due to: " + e);
-            return "{}";
+            //return "{}";
+            return new ResponseEntity<String>(entityData, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         finally
         {
@@ -153,7 +157,8 @@ public class BusinessEntityController
 
         logger.info("GetBusinessEntities succeeded for " + entityTypeName);
         //result = new JSONObject("{\"EntityData\":" + entityData + "}");
-        return "{\"EntityData\":" + entityData + "}";
+        //return "{\"EntityData\":" + entityData + "}";
+        return new ResponseEntity<String>(entityData, HttpStatus.OK);
     }
 
     public String GuardAgainstSqlIssues(String sql, String[] filterIssueValues)
@@ -166,11 +171,11 @@ public class BusinessEntityController
             //NOTE: Based on Spring Tips: Configuration (https://spring.io/blog/2020/04/23/spring-tips-configuration)
             //filterIssueValues = new String[]{environment.getProperty("sqlToErrorAndReport").toLowerCase()};
 
-            for (String issueValue : filterIssueValues)
+            for (int i = 0; i < filterIssueValues.length; i++)
             {
-                if (sql.contains(issueValue))
+                if (sql.contains(filterIssueValues[i]))
                 {
-                    issueValues += issueValue + ",";
+                    issueValues = issueValues + filterIssueValues[i] + ",";
                 }
             }
         }
@@ -180,7 +185,7 @@ public class BusinessEntityController
             return issueValues;
         }
 
-        logger.info("GuardAgainstSqlIssues succeeded when " + sql + "contained" + issueValues + " listed in " + filterIssueValues.toString());
+        logger.info("GuardAgainstSqlIssues succeeded when " + sql + " contained " + issueValues);
         return issueValues;
     }
 }
