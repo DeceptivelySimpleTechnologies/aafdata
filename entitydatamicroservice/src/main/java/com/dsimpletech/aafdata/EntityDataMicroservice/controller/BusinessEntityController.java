@@ -106,6 +106,12 @@ public class BusinessEntityController
 
             //TODO: Add version to base URL? Versioning: simple, explicit (v1.2.3) or internal, based on/derived from AsOfUtcDateTime?
 
+            //TODO: Add Organization/OrganizationalUnit filtering to authorization/permissioning (what about non-Employees??? only *my* stuff???)
+
+            //TODO: Pipeline/plugin architecture to replace system behavior like JWT communication, etc
+
+            logger.info("Attempting to GetBusinessEntities for " + entityTypeName);
+
             request = exchange.getRequest();
             queryParams = request.getQueryParams();
 
@@ -118,6 +124,10 @@ public class BusinessEntityController
 
             //TODO: Use GetBusinessEntities() to cache EntityTypeDefinition, EntityTypeAttribute, and EntityTypeDefinitionEntityTypeAttributeAssociation for input validation at service startup
             //TODO: Validate EntityType name and attributes here rather than in function
+
+            //TODO: Add automation batch script at infrastructure root
+            //TODO: Add uniqueness contraints to table/model scripts
+            //TODO: Add indexes to table/model scripts
 
             connection = DatabaseConnection.getConnection();
 
@@ -161,8 +171,8 @@ public class BusinessEntityController
                 statement = connection.prepareCall("{call \"EntityDataRead\"(?,?)}");
                 statement.setString(1, entityTypeName);
 
-                //NOTE: Register the OUT parameter before calling the stored procedure
-                statement.registerOutParameter(2, Types.LONGVARCHAR);   //TODO: Return total number of entities from function
+                //NOTE: Register the data OUT parameter before calling the stored procedure
+                statement.registerOutParameter(2, Types.LONGVARCHAR);
                 statement.executeUpdate();
 
                 //TODO: Filter or mask unauthorized or sensitive attributes
