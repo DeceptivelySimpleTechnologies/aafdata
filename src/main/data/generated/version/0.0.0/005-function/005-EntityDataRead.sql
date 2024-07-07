@@ -5,13 +5,14 @@
 -- selectClause character varying
 -- whereClause character varying
 -- sortClause character varying
--- version
+-- asOfDateTimeUtc
+-- graphDepthLimit
 -- pageNumber
 -- pageSize
--- graphDepthLimit
 
 CREATE OR REPLACE FUNCTION public."EntityDataRead"(
-	entitytypename character varying)
+	entitytypename character varying,
+	selectClause character varying)
 	RETURNS character varying
 	LANGUAGE 'plpgsql'
 
@@ -24,8 +25,9 @@ DECLARE
 	entityData varchar;
 
 	countQuery varchar := 'SELECT COUNT("Id") FROM "EntityType"."EntityType" WHERE "Id">0;';
---    dataQuery varchar := 'SELECT json_agg("' || entitytypename || '" ORDER BY "Id" DESC) FROM "' || entitytypename || '"."' || entitytypename || '" WHERE "Id">0';
-	dataQuery varchar := 'WITH JsonData AS (SELECT * FROM "EntityType"."EntityType" WHERE "Id">0 ORDER BY "Id" DESC LIMIT 3 OFFSET 0) SELECT JSON_AGG(JsonData.*) FROM JsonData;';
+--  dataQuery varchar := 'SELECT json_agg("' || entitytypename || '" ORDER BY "Id" DESC) FROM "' || entitytypename || '"."' || entitytypename || '" WHERE "Id">0';
+--	dataQuery varchar := 'WITH JsonData AS (SELECT * FROM "EntityType"."EntityType" WHERE "Id">0 ORDER BY "Id" DESC LIMIT 3 OFFSET 0) SELECT JSON_AGG(JsonData.*) FROM JsonData;';
+	dataQuery varchar := 'WITH JsonData AS (SELECT '|| selectClause ||' FROM "EntityType"."EntityType" WHERE "Id">0 ORDER BY "Id" DESC LIMIT 3 OFFSET 0) SELECT JSON_AGG(JsonData.*) FROM JsonData;';
 
   BEGIN
 
@@ -37,7 +39,7 @@ DECLARE
   END;
 $BODY$;
 
-ALTER FUNCTION public."EntityDataRead"(character varying)
-	OWNER TO postgres;
+-- ALTER FUNCTION public."EntityDataRead"(character varying)
+--	OWNER TO postgres;
 
 -- GRANT to ReadWrite, etc rather than to OWNER TO postgres
