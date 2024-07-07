@@ -21,16 +21,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import org.springframework.web.server.ServerWebExchange;
 
 import java.lang.Exception;
 
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Types;
+import java.net.URLDecoder;
+import java.sql.*;
 import java.time.LocalDateTime;
 
 import com.dsimpletech.aafdata.EntityDataMicroservice.database.DatabaseConnection;
@@ -73,7 +72,7 @@ public class BusinessEntityController
 
     @GetMapping("/{entityTypeName}")
     @ResponseBody
-    public ResponseEntity<String> GetBusinessEntities(@PathVariable String entityTypeName, ServerWebExchange exchange) throws Exception
+    public ResponseEntity<String> GetBusinessEntities(@PathVariable String entityTypeName, @RequestParam String whereClause, @RequestParam String sortClause, @RequestParam LocalDateTime asOfDateTimeUtc, @RequestParam long graphDepthLimit, @RequestParam long pageNumber, @RequestParam long pageSize, ServerWebExchange exchange) throws Exception
     {
         ServerHttpRequest request = null;
         MultiValueMap<String,String> queryParams = null;
@@ -85,12 +84,6 @@ public class BusinessEntityController
         CallableStatement statement = null;
 
         String selectClause = "";
-        String whereClause = "";
-        String sortClause = "";
-        LocalDateTime asOfDateTimeUtc = null;
-        long graphDepthLimit = -1;
-        long pageNumber = -1;
-        long pageSize = -1;
 
         String entityData = "";
 
@@ -141,11 +134,11 @@ public class BusinessEntityController
 //            statement.setString(1, entityTypeName);
 
             //NOTE: Register the OUT parameter before calling the stored procedure
-//            statement.registerOutParameter(3, Types.LONGVARCHAR);
+//            statement.registerOutParameter(9, Types.LONGVARCHAR);
 //            statement.executeUpdate();
 
             //NOTE: Read the OUT parameter now
-//            entityData = statement.getString(3);
+//            entityData = statement.getString(9);
 //
 //            if (entityData.indexOf(entityTypeName) < 0)
 //            {
@@ -154,34 +147,40 @@ public class BusinessEntityController
 
             selectClause = "\"Id\",\"Uuid\"";
 
-            //whereClause = "";
-            //sortByClause = "";
+            //TODO: Deal with empty whereClause, sortClause, asOfDateTimeUtc, graphDepthLimit, pageNumber, and pageSize
+            //TODO: Where do asOfDateTimeUtc and graphDepthLimit go, and how do they work?
 
             //TODO: If no asOfDateTimeUtc, grab ISO string value of Now() in database server's time zone
             //asOfDateTimeUtc = LocalDateTime.parse(String.valueOf(queryParams.get("asOfDateTimeUtc").get(0)));
 
             //TODO: If no graphDepthLimit, use default
-            graphDepthLimit = parseLong(String.valueOf(queryParams.get("graphDepthLimit").get(0)), 10);
+            //graphDepthLimit = parseLong(String.valueOf(queryParams.get("graphDepthLimit").get(0)), 10);
 
             //TODO: If no pageNumber, use default
-            pageNumber = parseLong(String.valueOf(queryParams.get("pageNumber").get(0)), 10);
+            //pageNumber = parseLong(String.valueOf(queryParams.get("pageNumber").get(0)), 10);
 
             //TODO: If no pageSize, use default
-            pageSize = parseLong(String.valueOf(queryParams.get("pageSize").get(0)), 10);
+            //pageSize = parseLong(String.valueOf(queryParams.get("pageSize").get(0)), 10);
 
             if (errorValues.length() == 0)
             {
-                statement = connection.prepareCall("{call \"EntityDataRead\"(?,?,?)}");
+                statement = connection.prepareCall("{call \"EntityDataRead\"(?,?,?,?,?,?,?,?,?)}");
                 statement.setString(1, entityTypeName);
                 statement.setString(2, selectClause);
+                statement.setString(3, URLDecoder.decode(whereClause));
+                statement.setString(4, URLDecoder.decode(sortClause));
+                statement.setTimestamp(5, Timestamp.valueOf(asOfDateTimeUtc));
+                statement.setLong(6, graphDepthLimit);
+                statement.setLong(7, pageNumber);
+                statement.setLong(8, pageSize);
 
                 //NOTE: Register the data OUT parameter before calling the stored procedure
-                statement.registerOutParameter(3, Types.LONGVARCHAR);
+                statement.registerOutParameter(9, Types.LONGVARCHAR);
                 statement.executeUpdate();
 
                 //NOTE: Read the OUT parameter now
                 //TODO: Check for null entityData
-                entityData = statement.getString(3);
+                entityData = statement.getString(9);
 
                 //TODO: Filter or mask unauthorized or sensitive attributes for this InformationSystemUserRole
             }
