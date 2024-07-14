@@ -16,13 +16,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import org.springframework.web.server.ServerWebExchange;
 
@@ -30,10 +24,15 @@ import java.lang.Exception;
 
 import java.net.URLDecoder;
 import java.sql.*;
+import java.time.Instant;
+//TODO: Remove if not used
 import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.OptionalLong;
 
 import com.dsimpletech.aafdata.EntityDataMicroservice.database.DatabaseConnection;
 
+//TODO: Remove if not used
 import static java.lang.Long.parseLong;
 
 
@@ -41,7 +40,6 @@ import static java.lang.Long.parseLong;
 @RequestMapping(value = "/")
 public class BusinessEntityController
 {
-
     @Autowired
     private Environment environment;
 
@@ -91,7 +89,7 @@ public class BusinessEntityController
         //TODO: Add ReadWrite and ReadOnly roles, and remove direct table access with SQL GRANTs; CRUD only enforced upstream through process service calls
 
         //TODO: Add automation batch script at infrastructure root
-        //TODO: Add uniqueness contraints to table/model scripts
+        //TODO: Add uniqueness constraints to table/model scripts
         //TODO: Add indexes to table/model scripts
 
         //TODO: Validate API key upstream in Client Communication Service (CCS)
@@ -100,6 +98,10 @@ public class BusinessEntityController
         //TODO: Validate entity data authorization, i.e. appropriate permissions for requested entity and operation? upstream in Client Communication Service (CCS)
         //TODO: Add Organization/OrganizationalUnit filtering to authorization/permissioning (what about non-Employees??? only *my* stuff???)
         //TODO: Implement a pipeline/plugin architecture to replace system behavior like JWT communication, etc
+
+        //TODO: Implement a global error handler for all exceptions with JSON return, per:
+        //  https://bootcamptoprod.com/spring-boot-no-explicit-mapping-error-handling/#:~:text=them%20in%20detail.-,Solution%2D1%3A%20Request%20Mapping%20and%20Controller,in%20one%20of%20your%20controllers.
+        //  https://skryvets.com/blog/2018/12/27/enhance-exception-handling-when-building-restful-api-with-spring-boot/
 
         //NOTE: Rather than validating the EntityType name, we're going to optimistically pass it through to the database if it returns attributes
         //NOTE: We don't request versions our business entity data structure explicitly in the base URL; instead our explicit (v1.2.3) versioning is maintained internally, based on/derived from the AsOfUtcDateTime query parameter
@@ -117,17 +119,21 @@ public class BusinessEntityController
 
             //TODO: Build query parameter array while validating explicit filter criteria and logging invalid attribute names, etc to be returned (see Create GET Method AAF-48)
             //TODO: Add pagination, e.g. pageNumber, pageSize, with master defaults and max
-            //TODO: Filter out all deleted in function
             //TODO: Filter out all IsActive = false by default in function
+            //TODO: Filter out all deleted in function
+            //TODO: Default sort order
+
             //TODO: Index Ordinal???
+            //TODO: Add Unknown and None to EntityType data?
 
             //TODO: Check for non-null query parameters before checking them
             sqlBlacklistValues = environment.getProperty("sqlNotToAllow").toLowerCase().split(",");
-            //TODO: Only check entityTypeName, where, and sortBy for SQL injection, not other query parameters
+            //TODO: Only check whereClause and sortClause for SQL injection, not other query parameters
             errorValues = GuardAgainstSqlIssues(queryParams.toString(), sqlBlacklistValues);
 
+            //NOTE: Build selectClause, based on entityTypeName
             //TODO: Use GetBusinessEntities() to get attributes for specified EntityType
-            //TODO: Remove attributes that should never be returned, e.g. Digest
+            //TODO: Remove attributes that should never be returned, e.g. Digest, from selectClause
             //TODO: Use GetBusinessEntities() to cache EntityTypeDefinition, EntityTypeAttribute, and EntityTypeDefinitionEntityTypeAttributeAssociation for input validation at service startup
             //NOTE: Validate EntityType name
 //            statement = connection.prepareCall("{call \"EntityDataRead\"(?,?)}");
@@ -147,20 +153,89 @@ public class BusinessEntityController
 
             selectClause = "\"Id\",\"Uuid\"";
 
-            //TODO: Deal with empty whereClause, sortClause, asOfDateTimeUtc, graphDepthLimit, pageNumber, and pageSize
+            //TODO: Deal with empty asOfDateTimeUtc, graphDepthLimit, pageNumber, and pageSize
             //TODO: Where do asOfDateTimeUtc and graphDepthLimit go, and how do they work?
+            //NOTE: Validate and sanitize whereClause
+            //TODO: Strip out client-provided 'WHERE'???
+            if (whereClause.length() > 0)
+            {
+                whereClause = "WHERE " + whereClause;
+            }
 
-            //TODO: If no asOfDateTimeUtc, grab ISO string value of Now() in database server's time zone
-            //asOfDateTimeUtc = LocalDateTime.parse(String.valueOf(queryParams.get("asOfDateTimeUtc").get(0)));
+            //NOTE: Validate and sanitize sortClause
+            //TODO: Strip out client-provided 'ORDER BY'???
+            if (sortClause.length() > 0)
+            {
+                sortClause = "ORDER BY " + sortClause;
+            }
 
-            //TODO: If no graphDepthLimit, use default
-            //graphDepthLimit = parseLong(String.valueOf(queryParams.get("graphDepthLimit").get(0)), 10);
+            //TODO: If no asOfDateTimeUtc value provided or asOfDateTimeUtc >= Java Date and Postgres timestamp max value ('9999-12-31T23:59:59.999Z'), utilize global error handler above
+            //NOTE: Validate and sanitize asOfDateTimeUtc
+            if (queryParams.containsKey("asOfDateTimeUtc") == false)
+            {
+                asOfDateTimeUtc = LocalDateTime.parse(String.valueOf(queryParams.get("asOfDateTimeUtc").get(0)));
+            }
 
-            //TODO: If no pageNumber, use default
-            //pageNumber = parseLong(String.valueOf(queryParams.get("pageNumber").get(0)), 10);
+//            if (asOfDateTimeUtc.before(Timestamp.valueOf("1900-01-01")))
+//            {
+//                throw new Exception("'asOfDateTimeUtc' query parameter must be greater than or equal to '1900-01-01'.");
+//            }
+//
+//            if (asOfDateTimeUtc.after(Timestamp.valueOf("9999-12-31")))
+//            {
+//                throw new Exception("'asOfDateTimeUtc' query parameter must be less than or equal to '9999-12-31'.");
+//            }
+//
+            //TODO: If no graphDepthLimit value provided or graphDepthLimit >= Java long and Postgres bigint max value (Long.MAX_VALUE), utilize global error handler above
+            //NOTE: Validate and sanitize graphDepthLimit
+            if (queryParams.containsKey("graphDepthLimit") == false)
+            {
+                graphDepthLimit = Long.parseLong(environment.getProperty("systemDefaultGraphDepthLimit"));
+            }
 
-            //TODO: If no pageSize, use default
-            //pageSize = parseLong(String.valueOf(queryParams.get("pageSize").get(0)), 10);
+            if (graphDepthLimit < 1)
+            {
+                throw new Exception("'graphDepthLimit' query parameter must be greater than or equal to 1.");
+            }
+
+            if (graphDepthLimit > Long.parseLong(environment.getProperty("systemDefaultGraphDepthLimitMaximum")))
+            {
+                throw new Exception("'graphDepthLimit' query parameter must be less than or equal to " + environment.getProperty("systemDefaultGraphDepthLimitMaximum") + ".");
+            }
+
+            //TODO: If no pageNumber value provided or pageNumber >= Java long and Postgres bigint max value (Long.MAX_VALUE), utilize global error handler above
+            //NOTE: Validate and sanitize pageNumber
+            if (queryParams.containsKey("pageNumber") == false)
+            {
+                pageNumber = Long.parseLong(environment.getProperty("systemDefaultPaginationPageNumber"));
+            }
+
+            if (pageNumber < 1)
+            {
+                throw new Exception("'pageNumber' query parameter must be greater than or equal to 1.");
+            }
+
+            if (pageNumber > Long.parseLong(environment.getProperty("systemDefaultPaginationPageNumberMaximum")))
+            {
+                throw new Exception("'pageNumber' query parameter must be less than or equal to " + environment.getProperty("systemDefaultPaginationPageNumberMaximum") + ".");
+            }
+
+            //TODO: If no pageSize value provided or pageSize >= Java long and Postgres bigint max value (Long.MAX_VALUE), utilize global error handler above
+            //NOTE: Validate and sanitize pageSize
+            if (queryParams.containsKey("pageSize") == false)
+            {
+                pageSize = Long.parseLong(environment.getProperty("systemDefaultPaginationPageSize"));
+            }
+
+            if (pageSize < 1)
+            {
+                throw new Exception("'pageSize' query parameter must be greater than or equal to 1.");
+            }
+
+            if (pageSize > Long.parseLong(environment.getProperty("systemDefaultPaginationPageSizeMaximum")))
+            {
+                throw new Exception("'pageSize' query parameter must be less than or equal to " + environment.getProperty("systemDefaultPaginationPageSizeMaximum") + ".");
+            }
 
             if (errorValues.length() == 0)
             {
@@ -182,14 +257,14 @@ public class BusinessEntityController
                 //TODO: Check for null entityData
                 entityData = statement.getString(9);
 
-                //TODO: Filter or mask unauthorized or sensitive attributes for this InformationSystemUserRole
+                //TODO: Filter or mask unauthorized or sensitive attributes for this InformationSystemUserRole (as JSON)???
             }
         }
         catch (Exception e)
         {
             logger.error("GetBusinessEntities() failed due to: " + e);
             //return "{}";
-            return new ResponseEntity<String>(entityData, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<String>("{[]}", HttpStatus.INTERNAL_SERVER_ERROR);
         }
         finally
         {
@@ -231,7 +306,9 @@ public class BusinessEntityController
             //NOTE: Based on Spring Tips: Configuration (https://spring.io/blog/2020/04/23/spring-tips-configuration)
             //filterIssueValues = new String[]{environment.getProperty("sqlToAllowInWhereClause").toLowerCase()};
 
-             for (String sqlBlacklistValue : sqlBlacklistValues) {
+            logger.info("Attempting to GuardAgainstSqlIssues() for " + sqlFragment);
+
+            for (String sqlBlacklistValue : sqlBlacklistValues) {
                 if (sqlFragment.contains(sqlBlacklistValue.toLowerCase())) {
                     issueValues = issueValues + sqlBlacklistValue + ",";
                 }
@@ -243,6 +320,7 @@ public class BusinessEntityController
             return issueValues;
         }
 
+        //TODO: Translate sqlBlacklistValues to human-readable values
         logger.info("GuardAgainstSqlIssues succeeded when " + sqlFragment + " did not contain " + sqlBlacklistValues.toString());
         return issueValues;
     }
