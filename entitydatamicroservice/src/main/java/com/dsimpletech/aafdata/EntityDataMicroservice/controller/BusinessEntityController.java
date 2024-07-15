@@ -23,17 +23,13 @@ import org.springframework.web.server.ServerWebExchange;
 import java.lang.Exception;
 
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
-import java.time.Instant;
-//TODO: Remove if not used
 import java.time.LocalDateTime;
-import java.util.Optional;
-import java.util.OptionalLong;
+import java.util.Arrays;
+import java.util.Objects;
 
 import com.dsimpletech.aafdata.EntityDataMicroservice.database.DatabaseConnection;
-
-//TODO: Remove if not used
-import static java.lang.Long.parseLong;
 
 
 @RestController
@@ -70,7 +66,7 @@ public class BusinessEntityController
 
     @GetMapping("/{entityTypeName}")
     @ResponseBody
-    public ResponseEntity<String> GetBusinessEntities(@PathVariable String entityTypeName, @RequestParam String whereClause, @RequestParam String sortClause, @RequestParam LocalDateTime asOfDateTimeUtc, @RequestParam long graphDepthLimit, @RequestParam long pageNumber, @RequestParam long pageSize, ServerWebExchange exchange) throws Exception
+    public ResponseEntity<String> GetBusinessEntities(@PathVariable String entityTypeName, @RequestParam(defaultValue = "") String whereClause, @RequestParam(defaultValue = "") String sortClause, @RequestParam(defaultValue = "#{T(java.time.LocalDateTime).now()}") LocalDateTime asOfDateTimeUtc, @RequestParam(defaultValue = "1") long graphDepthLimit, @RequestParam(defaultValue = "1") long pageNumber, @RequestParam(defaultValue = "20") long pageSize, ServerWebExchange exchange) throws Exception
     {
         ServerHttpRequest request = null;
         MultiValueMap<String,String> queryParams = null;
@@ -118,12 +114,6 @@ public class BusinessEntityController
             //NOTE: Example request http://localhost:8080/EntityType?whereClause=%22Id%22%3D1&sortClause=%22Ordinal%22%252C%22Id%22&asOfDateTimeUtc=2023-01-01T00:00:00.000&graphDepthLimit=1&pageNumber=1&pageSize=20
 
             //TODO: Build query parameter array while validating explicit filter criteria and logging invalid attribute names, etc to be returned (see Create GET Method AAF-48)
-            //TODO: Add pagination, e.g. pageNumber, pageSize, with master defaults and max
-            //TODO: Filter out all IsActive = false by default in function
-            //TODO: Filter out all deleted in function
-            //TODO: Default sort order
-
-            //TODO: Index Ordinal???
             //TODO: Add Unknown and None to EntityType data?
 
             //TODO: Check for non-null query parameters before checking them
@@ -153,86 +143,80 @@ public class BusinessEntityController
 
             selectClause = "\"Id\",\"Uuid\"";
 
-            //TODO: Deal with empty asOfDateTimeUtc, graphDepthLimit, pageNumber, and pageSize
-            //TODO: Where do asOfDateTimeUtc and graphDepthLimit go, and how do they work?
             //NOTE: Validate and sanitize whereClause
-            //TODO: Strip out client-provided 'WHERE'???
+            if (whereClause.contains("WHERE"))
+            {
+                throw new Exception("'whereClause' query parameter must not include 'WHERE'.");
+            }
+
             if (whereClause.length() > 0)
             {
                 whereClause = "WHERE " + whereClause;
             }
 
+            if (!whereClause.contains("IsActive"))
+            {
+                whereClause = whereClause + " AND \"IsActive\" = true";
+            }
+
+            whereClause = whereClause + " AND \"DeletedAtDateTimeUtc\" = '9999-12-31T23:59:59.999'";
+
             //NOTE: Validate and sanitize sortClause
-            //TODO: Strip out client-provided 'ORDER BY'???
+            if (sortClause.contains("ORDER BY"))
+            {
+                throw new Exception("'sortClause' query parameter must not include 'ORDER BY'.");
+            }
+
             if (sortClause.length() > 0)
             {
                 sortClause = "ORDER BY " + sortClause;
             }
 
-            //TODO: If no asOfDateTimeUtc value provided or asOfDateTimeUtc >= Java Date and Postgres timestamp max value ('9999-12-31T23:59:59.999Z'), utilize global error handler above
+            if (!sortClause.contains("Ordinal"))
+            {
+                sortClause = sortClause + ", \"Ordinal ASC\" = true";
+            }
+
             //NOTE: Validate and sanitize asOfDateTimeUtc
-            if (queryParams.containsKey("asOfDateTimeUtc") == false)
+            if (asOfDateTimeUtc.isBefore(LocalDateTime.parse("1900-01-01T00:00:00.000")))
             {
-                asOfDateTimeUtc = LocalDateTime.parse(String.valueOf(queryParams.get("asOfDateTimeUtc").get(0)));
+                throw new Exception("'asOfDateTimeUtc' query parameter must be greater than or equal to '1900-01-01'.");
             }
 
-//            if (asOfDateTimeUtc.before(Timestamp.valueOf("1900-01-01")))
-//            {
-//                throw new Exception("'asOfDateTimeUtc' query parameter must be greater than or equal to '1900-01-01'.");
-//            }
-//
-//            if (asOfDateTimeUtc.after(Timestamp.valueOf("9999-12-31")))
-//            {
-//                throw new Exception("'asOfDateTimeUtc' query parameter must be less than or equal to '9999-12-31'.");
-//            }
-//
-            //TODO: If no graphDepthLimit value provided or graphDepthLimit >= Java long and Postgres bigint max value (Long.MAX_VALUE), utilize global error handler above
+            if (asOfDateTimeUtc.isAfter(LocalDateTime.parse("9999-12-31T23:59:59.999")))
+            {
+                throw new Exception("'asOfDateTimeUtc' query parameter must be less than or equal to '9999-12-31'.");
+            }
+
             //NOTE: Validate and sanitize graphDepthLimit
-            if (queryParams.containsKey("graphDepthLimit") == false)
-            {
-                graphDepthLimit = Long.parseLong(environment.getProperty("systemDefaultGraphDepthLimit"));
-            }
-
             if (graphDepthLimit < 1)
             {
                 throw new Exception("'graphDepthLimit' query parameter must be greater than or equal to 1.");
             }
 
-            if (graphDepthLimit > Long.parseLong(environment.getProperty("systemDefaultGraphDepthLimitMaximum")))
+            if (graphDepthLimit > Long.parseLong(Objects.requireNonNull(environment.getProperty("systemDefaultGraphDepthLimitMaximum"))))
             {
                 throw new Exception("'graphDepthLimit' query parameter must be less than or equal to " + environment.getProperty("systemDefaultGraphDepthLimitMaximum") + ".");
             }
 
-            //TODO: If no pageNumber value provided or pageNumber >= Java long and Postgres bigint max value (Long.MAX_VALUE), utilize global error handler above
             //NOTE: Validate and sanitize pageNumber
-            if (queryParams.containsKey("pageNumber") == false)
-            {
-                pageNumber = Long.parseLong(environment.getProperty("systemDefaultPaginationPageNumber"));
-            }
-
             if (pageNumber < 1)
             {
                 throw new Exception("'pageNumber' query parameter must be greater than or equal to 1.");
             }
 
-            if (pageNumber > Long.parseLong(environment.getProperty("systemDefaultPaginationPageNumberMaximum")))
+            if (pageNumber > Long.parseLong(Objects.requireNonNull(environment.getProperty("systemDefaultPaginationPageNumberMaximum"))))
             {
                 throw new Exception("'pageNumber' query parameter must be less than or equal to " + environment.getProperty("systemDefaultPaginationPageNumberMaximum") + ".");
             }
 
-            //TODO: If no pageSize value provided or pageSize >= Java long and Postgres bigint max value (Long.MAX_VALUE), utilize global error handler above
             //NOTE: Validate and sanitize pageSize
-            if (queryParams.containsKey("pageSize") == false)
-            {
-                pageSize = Long.parseLong(environment.getProperty("systemDefaultPaginationPageSize"));
-            }
-
             if (pageSize < 1)
             {
                 throw new Exception("'pageSize' query parameter must be greater than or equal to 1.");
             }
 
-            if (pageSize > Long.parseLong(environment.getProperty("systemDefaultPaginationPageSizeMaximum")))
+            if (pageSize > Long.parseLong(Objects.requireNonNull(environment.getProperty("systemDefaultPaginationPageSizeMaximum"))))
             {
                 throw new Exception("'pageSize' query parameter must be less than or equal to " + environment.getProperty("systemDefaultPaginationPageSizeMaximum") + ".");
             }
@@ -242,8 +226,8 @@ public class BusinessEntityController
                 statement = connection.prepareCall("{call \"EntityDataRead\"(?,?,?,?,?,?,?,?,?)}");
                 statement.setString(1, entityTypeName);
                 statement.setString(2, selectClause);
-                statement.setString(3, URLDecoder.decode(whereClause));
-                statement.setString(4, URLDecoder.decode(sortClause));
+                statement.setString(3, URLDecoder.decode(whereClause, StandardCharsets.UTF_8));
+                statement.setString(4, URLDecoder.decode(sortClause, StandardCharsets.UTF_8));
                 statement.setTimestamp(5, Timestamp.valueOf(asOfDateTimeUtc));
                 statement.setLong(6, graphDepthLimit);
                 statement.setLong(7, pageNumber);
@@ -294,6 +278,7 @@ public class BusinessEntityController
         logger.info("GetBusinessEntities() succeeded for " + entityTypeName);
         //result = new JSONObject("{\"EntityData\":" + entityData + "}");
         //return "{\"EntityData\":" + entityData + "}";
+        //TODO: Echo input parameters in Postgres function return JSON
         return new ResponseEntity<String>(entityData, HttpStatus.OK);
     }
 
@@ -321,7 +306,7 @@ public class BusinessEntityController
         }
 
         //TODO: Translate sqlBlacklistValues to human-readable values
-        logger.info("GuardAgainstSqlIssues succeeded when " + sqlFragment + " did not contain " + sqlBlacklistValues.toString());
+        logger.info("GuardAgainstSqlIssues succeeded when " + sqlFragment + " did not contain " + Arrays.toString(sqlBlacklistValues));
         return issueValues;
     }
 }
