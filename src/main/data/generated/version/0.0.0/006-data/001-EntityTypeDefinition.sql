@@ -1,3 +1,5 @@
+-- NOTE: Run this script as the custom AafCorePublisher database role/account, which should be created by the AafCoreOwner role.
+
 -- Table: EntityTypeDefinition.EntityTypeDefinition
 
 INSERT INTO "EntityTypeDefinition"."EntityTypeDefinition"

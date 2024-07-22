@@ -1,3 +1,4 @@
+-- NOTE: Run this script as the custom AafCorePublisher database role/account, which should be created by the AafCoreOwner role.
 -- FUNCTION: public.EntityDataRead(character varying)
 
 -- DROP FUNCTION public."EntityDataRead"(character varying);
@@ -38,7 +39,7 @@ DECLARE
   END;
 $BODY$;
 
--- ALTER FUNCTION public."EntityDataRead"(character varying)
---	OWNER TO postgres;
+--ALTER FUNCTION public."EntityDataRead"(character varying)
+--	OWNER TO AafCoreOwner;
 
 -- GRANT to ReadWrite, etc rather than to OWNER TO postgres

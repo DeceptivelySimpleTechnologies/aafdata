@@ -70,10 +70,15 @@ public class BusinessEntityController
     {
         ServerHttpRequest request = null;
         MultiValueMap<String,String> queryParams = null;
+        Statement simpleStatement = null;
+        ResultSet resultSet = null;
         Connection connection = null;
 
         String[] sqlBlacklistValues = null;
         String errorValues = "";
+
+        String entityTypeDefinitionId = "";
+        String entityTypeAttributeIds = "";
 
         CallableStatement statement = null;
 
@@ -109,11 +114,10 @@ public class BusinessEntityController
             request = exchange.getRequest();
             queryParams = request.getQueryParams();
 
-            connection = DatabaseConnection.getConnection();
+            connection = DatabaseConnection.GetDatabaseConnection();
 
             //NOTE: Example request http://localhost:8080/EntityType?whereClause=%22Id%22%3D1&sortClause=%22Ordinal%22%252C%22Id%22&asOfDateTimeUtc=2023-01-01T00:00:00.000&graphDepthLimit=1&pageNumber=1&pageSize=20
 
-            //TODO: Build query parameter array while validating explicit filter criteria and logging invalid attribute names, etc to be returned (see Create GET Method AAF-48)
             //TODO: Add Unknown and None to EntityType data?
 
             //TODO: Check for non-null query parameters before checking them
@@ -121,27 +125,33 @@ public class BusinessEntityController
             //TODO: Only check whereClause and sortClause for SQL injection, not other query parameters
             errorValues = GuardAgainstSqlIssues(queryParams.toString(), sqlBlacklistValues);
 
-            //NOTE: Build selectClause, based on entityTypeName
+            //NOTE: Build selectClause, based on EntityTypeDefinition.LocalizedName > EntityTypeAttribute.LocalizedName
+            //TODO: Build query parameter array while validating explicit filter criteria and logging invalid attribute names, etc to be returned (see Create GET Method AAF-48)
             //TODO: Use GetBusinessEntities() to get attributes for specified EntityType
             //TODO: Remove attributes that should never be returned, e.g. Digest, from selectClause
             //TODO: Use GetBusinessEntities() to cache EntityTypeDefinition, EntityTypeAttribute, and EntityTypeDefinitionEntityTypeAttributeAssociation for input validation at service startup
-            //NOTE: Validate EntityType name
-//            statement = connection.prepareCall("{call \"EntityDataRead\"(?,?)}");
-//            statement.setString(1, entityTypeName);
+            simpleStatement = connection.createStatement();
+            resultSet = simpleStatement.executeQuery("SELECT \"Id\" FROM \"EntityTypeDefinition\".\"EntityTypeDefinition\" WHERE \"LocalizedName\" = '" + entityTypeName + "'");
+            entityTypeDefinitionId = resultSet.getString("Id");
+//            selectClause = "\"Id\",\"LocalizedName\",\"LocalizedDescription\"";
+//            entityData = GetBusinessEntities("EntityTypeDefinition", "\"LocalizedName\" = \"EntityTypeDefinition\"", "", LocalDateTime.now(), 1, 1, 1, exchange).getBody();
+//            entityTypeDefinitionId = entityData.substring(entityData.indexOf("\"LocalizedName\":") + 14, entityData.indexOf(",\"LocalizedDescription\":"));
 
-            //NOTE: Register the OUT parameter before calling the stored procedure
-//            statement.registerOutParameter(9, Types.LONGVARCHAR);
-//            statement.executeUpdate();
+            simpleStatement = connection.createStatement();
+            resultSet = simpleStatement.executeQuery("SELECT \"EntityTypeAttributeId\" FROM \"EntityTypeDefinitionEntityTypeAttributeAssociation\".\"EntityTypeDefinitionEntityTypeAttributeAssociation\" WHERE \"EntityTypeDefinitionId\" = " + entityTypeDefinitionId);
+            entityTypeAttributeIds = resultSet.getString("EntityTypeAttributeId");
+//            selectClause = "\"EntityTypeDefinitionId\",\"EntityTypeAttributeId\",\"ResourceName\"";
+//            entityData = GetBusinessEntities("EntityTypeDefinitionEntityTypeAttributeAssociation", "\"EntityTypeDefinitionId\" = " + entityTypeDefinitionId, "", LocalDateTime.now(), 1, 1, 1, exchange).getBody();
+//            entityTypeAttributeIds = entityData.substring(entityData.indexOf("\"EntityTypeAttributeId\":") + 22, entityData.indexOf(",\"ResourceName\":"));
 
-            //NOTE: Read the OUT parameter now
-//            entityData = statement.getString(9);
-//
-//            if (entityData.indexOf(entityTypeName) < 0)
-//            {
-//                throw new Exception("EntityType '" + entityTypeName + "' not found in EntityTypeDefinition table, i.e. not a valid EntityType.");
-//            }
+            simpleStatement = connection.createStatement();
+            resultSet = simpleStatement.executeQuery("SELECT \"LocalizedName\" FROM \"EntityTypeAttribute\".\"EntityTypeAttribute\" WHERE \"Id\" IN (" + entityTypeAttributeIds + ")");
+            selectClause = resultSet.getString("LocalizedName");
+//            selectClause = "\"Id\",\"LocalizedName\",\"LocalizedDescription\"";
+//            entityData = GetBusinessEntities("EntityTypeAttribute", "\"Id\" IN (" + entityTypeAttributeIds + ")", "", LocalDateTime.now(), 1, 1, 1, exchange).getBody();
+//            selectClause = entityData.substring(entityData.indexOf("\"LocalizedName\":") + 14, entityData.indexOf(",\"LocalizedDescription\":"));
 
-            selectClause = "\"Id\",\"Uuid\"";
+            //selectClause = "\"Id\",\"LocalizedName\"";
 
             //NOTE: Validate and sanitize whereClause
             if (whereClause.contains("WHERE"))
@@ -221,6 +231,7 @@ public class BusinessEntityController
                 throw new Exception("'pageSize' query parameter must be less than or equal to " + environment.getProperty("systemDefaultPaginationPageSizeMaximum") + ".");
             }
 
+            //TODO: Since EntityDataRead() is in public, ensure that is locked down to correct role(s) only
             if (errorValues.length() == 0)
             {
                 statement = connection.prepareCall("{call \"EntityDataRead\"(?,?,?,?,?,?,?,?,?)}");
@@ -254,6 +265,14 @@ public class BusinessEntityController
         {
             try
             {
+                if (resultSet != null) {
+                    resultSet.close();
+                }
+
+                if (simpleStatement != null) {
+                    simpleStatement.close();
+                }
+
                 if (statement != null) {
                     statement.close();
                 }

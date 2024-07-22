@@ -1,3 +1,4 @@
+-- NOTE: Run this script as the custom AafCorePublisher database role/account, which should be created by the AafCoreOwner role.
 -- Table: EntityType.EntityType
 
 -- DROP TABLE "EntityType"."EntityType";
@@ -31,7 +32,7 @@ CREATE TABLE "EntityType"."EntityType"
     TABLESPACE pg_default;
 
 ALTER TABLE "EntityType"."EntityType"
-    OWNER to "AafCoreOwner";
+    OWNER to "AafCorePublisher";
 
-GRANT USAGE ON SCHEMA "EntityType" TO "AafCoreClient";
-GRANT SELECT ON ALL TABLES IN SCHEMA "EntityType" TO "AafCoreClient";
+--GRANT USAGE ON SCHEMA "EntityType" TO "AafCoreClient";
+--GRANT SELECT ON ALL TABLES IN SCHEMA "EntityType" TO "AafCoreClient";
