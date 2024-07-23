@@ -14,10 +14,11 @@ postgresUser=$5
 postgresDatabase=$6
 postgresPassword=$7
 
-echo "Creating custom $customRoleNameOwner role in $postgresServerGroupName $postgresVersion as $postgresUser role"
-
 export PGPASSWORD=$postgresPassword
+
+echo "Creating custom $customRoleNameOwner role in $postgresServerGroupName $postgresVersion as $postgresUser role"
 psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/001-role/001-AafCoreOwner.sql
+
 unset PGPASSWORD
 
 # Log in using new postgres role password

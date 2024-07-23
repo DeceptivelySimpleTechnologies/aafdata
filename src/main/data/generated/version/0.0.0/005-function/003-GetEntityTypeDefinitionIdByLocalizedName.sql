@@ -3,29 +3,26 @@
 
 -- DROP FUNCTION public."GetEntityTypeDefinitionIdByLocalizedName"(character varying);
 
-CREATE OR REPLACE FUNCTION public."GetEntityTypeDefinitionIdByLocalizedName"(
-	entitytypename character varying,
+CREATE FUNCTION "GetEntityTypeDefinitionIdByLocalizedName"(
+	entitytypename character varying)
 	RETURNS bigint
 	LANGUAGE 'plpgsql'
-
-	COST 100
-	VOLATILE
     
 AS $BODY$
 DECLARE
 	entityData bigint;
 
-	dataQuery varchar := 'SELECT Id FROM "EntityTypeDefinition"."EntityTypeDefinition" WHERE "LocalizedName" = ' || entitytypename || ';'
-
+	dataQuery varchar := 'SELECT "Id" FROM "EntityTypeDefinition"."EntityTypeDefinition" WHERE "LocalizedName" = ' || entitytypename || ';';
+  
   BEGIN
 
 	EXECUTE dataQuery INTO entityData;
-	RETURN '{"EntityType":"' || entitytypename || '","TotalRows":' || entityCount || ',"EntityData":' || entityData || '}';
+	RETURN entityData;
 
   END;
 $BODY$;
 
 --ALTER FUNCTION public."GetEntityTypeDefinitionIdByLocalizedName"(bigint)
---	OWNER TO AafCoreOwner;
+--	OWNER TO AafCorePublisher;
 
 -- GRANT to ReadWrite, etc rather than to OWNER TO postgres

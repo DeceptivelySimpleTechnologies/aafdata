@@ -8,6 +8,7 @@
 
 CREATE ROLE "AafCoreModeler" WITH
     LOGIN
+    PASSWORD 'M0d3l3rCl13nt!'
     NOSUPERUSER
     NOINHERIT
     NOCREATEDB

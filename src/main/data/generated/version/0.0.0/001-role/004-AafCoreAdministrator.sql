@@ -8,6 +8,7 @@
 
 CREATE ROLE "AafCoreAdministrator" WITH
     LOGIN
+    PASSWORD 'Adm1n15tat0rCl13nt!'
     NOSUPERUSER
     NOINHERIT
     NOCREATEDB

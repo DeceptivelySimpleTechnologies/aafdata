@@ -9,8 +9,8 @@ CREATE DATABASE "AafCore"
     ENCODING = 'UTF8'
     LC_COLLATE = 'C'
     LC_CTYPE = 'C'
-    TABLESPACE = pg_default
+--    TABLESPACE = pg_default
     CONNECTION LIMIT = -1;
 
-ALTER DATABASE AafCore
+ALTER DATABASE "AafCore"
     SET "TIMEZONE" TO UTC;

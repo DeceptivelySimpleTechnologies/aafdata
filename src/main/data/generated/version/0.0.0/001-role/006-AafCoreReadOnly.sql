@@ -8,6 +8,7 @@
 
 CREATE ROLE "AafCoreReadOnly" WITH
     LOGIN
+    PASSWORD 'R3ad0nlyCl13nt!'
     NOSUPERUSER
     NOINHERIT
     NOCREATEDB
