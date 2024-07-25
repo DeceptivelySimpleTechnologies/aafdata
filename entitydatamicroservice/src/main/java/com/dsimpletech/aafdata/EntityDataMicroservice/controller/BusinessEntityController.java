@@ -1,6 +1,11 @@
 package com.dsimpletech.aafdata.EntityDataMicroservice.controller;
 
 
+//import io.r2dbc.postgresql.api.PostgresqlConnection;
+//import io.r2dbc.postgresql.api.PostgresqlStatement;
+//import io.r2dbc.spi.Connection;
+//import io.r2dbc.spi.Statement;
+
 //import org.json.*;
 
 import org.slf4j.LoggerFactory;
@@ -30,6 +35,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 import com.dsimpletech.aafdata.EntityDataMicroservice.database.DatabaseConnection;
+import reactor.core.publisher.Mono;
 
 
 @RestController
@@ -70,9 +76,19 @@ public class BusinessEntityController
     {
         ServerHttpRequest request = null;
         MultiValueMap<String,String> queryParams = null;
-        Statement simpleStatement = null;
+
+//        Statement simpleStatement = null;
         ResultSet resultSet = null;
+
+        DatabaseConnection databaseConnection = null;
+
+        String DB_DRIVER_CLASS = "";
+        String DB_URL = "";
+        String DB_USERNAME = "";
+        String DB_PASSWORD = "";
+
         Connection connection = null;
+//        Mono<PostgresqlConnection> connection = null;
 
         String[] sqlBlacklistValues = null;
         String errorValues = "";
@@ -81,6 +97,7 @@ public class BusinessEntityController
         String entityTypeAttributeIds = "";
 
         CallableStatement statement = null;
+//        PostgresqlStatement statement = null;
 
         String selectClause = "";
 
@@ -114,7 +131,23 @@ public class BusinessEntityController
             request = exchange.getRequest();
             queryParams = request.getQueryParams();
 
-            connection = DatabaseConnection.GetDatabaseConnection();
+//            DB_DRIVER_CLASS = "org.postgresql.Driver";
+            DB_DRIVER_CLASS = "postgresql";
+            DB_URL = environment.getProperty("spring.jdbc.url");
+            DB_USERNAME = environment.getProperty("spring.jdbc.username");
+            DB_PASSWORD = environment.getProperty("spring.jdbc.password");
+//            DB_URL = environment.getProperty("spring.r2dbc.url");
+//            DB_USERNAME = environment.getProperty("spring.r2dbc.username");
+//            DB_PASSWORD = environment.getProperty("spring.r2dbc.password");
+
+            databaseConnection = new DatabaseConnection();
+            connection = databaseConnection.GetDatabaseConnection(DB_DRIVER_CLASS, DB_URL, DB_USERNAME, DB_PASSWORD);
+//            connection = (Mono<PostgresqlConnection>) databaseConnection.GetDatabaseConnection(DB_DRIVER_CLASS, DB_URL, DB_USERNAME, DB_PASSWORD);
+
+            if (connection == null)
+            {
+                throw new Exception("Unable to get database connection");
+            }
 
             //NOTE: Example request http://localhost:8080/EntityType?whereClause=%22Id%22%3D1&sortClause=%22Ordinal%22%252C%22Id%22&asOfDateTimeUtc=2023-01-01T00:00:00.000&graphDepthLimit=1&pageNumber=1&pageSize=20
 
@@ -130,23 +163,23 @@ public class BusinessEntityController
             //TODO: Use GetBusinessEntities() to get attributes for specified EntityType
             //TODO: Remove attributes that should never be returned, e.g. Digest, from selectClause
             //TODO: Use GetBusinessEntities() to cache EntityTypeDefinition, EntityTypeAttribute, and EntityTypeDefinitionEntityTypeAttributeAssociation for input validation at service startup
-            simpleStatement = connection.createStatement();
-            resultSet = simpleStatement.executeQuery("SELECT \"Id\" FROM \"EntityTypeDefinition\".\"EntityTypeDefinition\" WHERE \"LocalizedName\" = '" + entityTypeName + "'");
-            entityTypeDefinitionId = resultSet.getString("Id");
+//            simpleStatement = connection.createStatement();
+//            resultSet = simpleStatement.executeQuery("SELECT \"Id\" FROM \"EntityTypeDefinition\".\"EntityTypeDefinition\" WHERE \"LocalizedName\" = '" + entityTypeName + "'");
+//            entityTypeDefinitionId = resultSet.getString("Id");
 //            selectClause = "\"Id\",\"LocalizedName\",\"LocalizedDescription\"";
 //            entityData = GetBusinessEntities("EntityTypeDefinition", "\"LocalizedName\" = \"EntityTypeDefinition\"", "", LocalDateTime.now(), 1, 1, 1, exchange).getBody();
 //            entityTypeDefinitionId = entityData.substring(entityData.indexOf("\"LocalizedName\":") + 14, entityData.indexOf(",\"LocalizedDescription\":"));
 
-            simpleStatement = connection.createStatement();
-            resultSet = simpleStatement.executeQuery("SELECT \"EntityTypeAttributeId\" FROM \"EntityTypeDefinitionEntityTypeAttributeAssociation\".\"EntityTypeDefinitionEntityTypeAttributeAssociation\" WHERE \"EntityTypeDefinitionId\" = " + entityTypeDefinitionId);
-            entityTypeAttributeIds = resultSet.getString("EntityTypeAttributeId");
+//            simpleStatement = connection.createStatement();
+//            resultSet = simpleStatement.executeQuery("SELECT \"EntityTypeAttributeId\" FROM \"EntityTypeDefinitionEntityTypeAttributeAssociation\".\"EntityTypeDefinitionEntityTypeAttributeAssociation\" WHERE \"EntityTypeDefinitionId\" = " + entityTypeDefinitionId);
+//            entityTypeAttributeIds = resultSet.getString("EntityTypeAttributeId");
 //            selectClause = "\"EntityTypeDefinitionId\",\"EntityTypeAttributeId\",\"ResourceName\"";
 //            entityData = GetBusinessEntities("EntityTypeDefinitionEntityTypeAttributeAssociation", "\"EntityTypeDefinitionId\" = " + entityTypeDefinitionId, "", LocalDateTime.now(), 1, 1, 1, exchange).getBody();
 //            entityTypeAttributeIds = entityData.substring(entityData.indexOf("\"EntityTypeAttributeId\":") + 22, entityData.indexOf(",\"ResourceName\":"));
 
-            simpleStatement = connection.createStatement();
-            resultSet = simpleStatement.executeQuery("SELECT \"LocalizedName\" FROM \"EntityTypeAttribute\".\"EntityTypeAttribute\" WHERE \"Id\" IN (" + entityTypeAttributeIds + ")");
-            selectClause = resultSet.getString("LocalizedName");
+//            simpleStatement = connection.createStatement();
+//            resultSet = simpleStatement.executeQuery("SELECT \"LocalizedName\" FROM \"EntityTypeAttribute\".\"EntityTypeAttribute\" WHERE \"Id\" IN (" + entityTypeAttributeIds + ")");
+//            selectClause = resultSet.getString("LocalizedName");
 //            selectClause = "\"Id\",\"LocalizedName\",\"LocalizedDescription\"";
 //            entityData = GetBusinessEntities("EntityTypeAttribute", "\"Id\" IN (" + entityTypeAttributeIds + ")", "", LocalDateTime.now(), 1, 1, 1, exchange).getBody();
 //            selectClause = entityData.substring(entityData.indexOf("\"LocalizedName\":") + 14, entityData.indexOf(",\"LocalizedDescription\":"));
@@ -252,6 +285,8 @@ public class BusinessEntityController
                 //TODO: Check for null entityData
                 entityData = statement.getString(9);
 
+//                statement = connection.   block().createStatement("SELECT * FROM \"EntityDataRead\"($1,$2,$3,$4,$5,$6,$7,$8)");
+
                 //TODO: Filter or mask unauthorized or sensitive attributes for this InformationSystemUserRole (as JSON)???
             }
         }
@@ -269,24 +304,25 @@ public class BusinessEntityController
                     resultSet.close();
                 }
 
-                if (simpleStatement != null) {
-                    simpleStatement.close();
-                }
-
+//                if (simpleStatement != null) {
+//                    simpleStatement.close();
+//                }
+//
                 if (statement != null) {
                     statement.close();
                 }
 
                 if (connection != null) {
                     connection.close();
-//
+                }
+
 //                if (request != null) {
 //                    request.close();
 //                }
 //
 //                if (queryParams != null) {
 //                    queryParams.close();
-                }
+//                }
             }
             catch (SQLException e)
             {
