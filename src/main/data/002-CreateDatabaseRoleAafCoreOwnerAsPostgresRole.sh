@@ -22,4 +22,4 @@ psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresData
 unset PGPASSWORD
 
 # Log in using new postgres role password
-# Create custom AafCoreOwner role and password, and return password (use AWS SecretManager in the future)
+# TODO: Create custom AafCoreOwner role and password, and return password (use AWS SecretManager in the future)

@@ -43,4 +43,4 @@ createdb -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -E UTF8 "Aaf
 unset PGPASSWORD
 
 # Log in using custom AafCoreOwner role
-# Create custom AafCoreModeler, AafCorePublisher, AafCoreAdministrator, AafCoreReadWrite, AafCoreReadOnly roles and passwords (use AWS SecretManager in the future) and AafCore database
+# TODO: Create custom AafCoreModeler, AafCorePublisher, AafCoreAdministrator, AafCoreReadWrite, AafCoreReadOnly roles and passwords (use AWS SecretManager in the future) and AafCore database

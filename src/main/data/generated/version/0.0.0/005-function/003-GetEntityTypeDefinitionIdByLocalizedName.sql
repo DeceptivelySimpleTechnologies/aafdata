@@ -3,11 +3,17 @@
 
 -- DROP FUNCTION public."GetEntityTypeDefinitionIdByLocalizedName"(character varying);
 
-CREATE FUNCTION "GetEntityTypeDefinitionIdByLocalizedName"(
+CREATE FUNCTION public."GetEntityTypeDefinitionIdByLocalizedName"(
 	entitytypename character varying)
 	RETURNS bigint
 	LANGUAGE 'plpgsql'
-    
+
+	SECURITY DEFINER
+	SET search_path = pg_catalog,pg_temp
+
+	COST 100
+	VOLATILE
+
 AS $BODY$
 DECLARE
 	entityData bigint;
@@ -22,7 +28,12 @@ DECLARE
   END;
 $BODY$;
 
---ALTER FUNCTION public."GetEntityTypeDefinitionIdByLocalizedName"(bigint)
+--ALTER FUNCTION "GetEntityTypeDefinitionIdByLocalizedName"(character varying)
 --	OWNER TO AafCorePublisher;
 
--- GRANT to ReadWrite, etc rather than to OWNER TO postgres
+REVOKE EXECUTE ON FUNCTION public."GetEntityTypeDefinitionIdByLocalizedName" FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION public."GetEntityTypeDefinitionIdByLocalizedName" TO "AafCoreModeler";
+GRANT EXECUTE ON FUNCTION public."GetEntityTypeDefinitionIdByLocalizedName" TO "AafCoreReadWrite";
+GRANT EXECUTE ON FUNCTION public."GetEntityTypeDefinitionIdByLocalizedName" TO "AafCoreReadOnly";
+

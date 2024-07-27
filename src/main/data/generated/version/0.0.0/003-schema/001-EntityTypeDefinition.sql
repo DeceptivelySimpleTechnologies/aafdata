@@ -5,3 +5,7 @@
 
 CREATE SCHEMA "EntityTypeDefinition"
     AUTHORIZATION "AafCorePublisher";
+
+GRANT USAGE ON SCHEMA "EntityTypeDefinition" TO "AafCoreModeler";
+GRANT USAGE ON SCHEMA "EntityTypeDefinition" TO "AafCoreReadWrite";
+GRANT USAGE ON SCHEMA "EntityTypeDefinition" TO "AafCoreReadOnly";

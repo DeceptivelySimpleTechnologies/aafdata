@@ -1,11 +1,6 @@
 package com.dsimpletech.aafdata.EntityDataMicroservice.controller;
 
 
-//import io.r2dbc.postgresql.api.PostgresqlConnection;
-//import io.r2dbc.postgresql.api.PostgresqlStatement;
-//import io.r2dbc.spi.Connection;
-//import io.r2dbc.spi.Statement;
-
 //import org.json.*;
 
 import org.slf4j.LoggerFactory;
@@ -30,12 +25,14 @@ import java.lang.Exception;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
-import java.time.LocalDateTime;
+//import java.time.LocalDateTime;
+import java.time.Instant;
+//import java.time.ZoneId;
 import java.util.Arrays;
+//import java.util.Date;
 import java.util.Objects;
 
 import com.dsimpletech.aafdata.EntityDataMicroservice.database.DatabaseConnection;
-import reactor.core.publisher.Mono;
 
 
 @RestController
@@ -72,12 +69,12 @@ public class BusinessEntityController
 
     @GetMapping("/{entityTypeName}")
     @ResponseBody
-    public ResponseEntity<String> GetBusinessEntities(@PathVariable String entityTypeName, @RequestParam(defaultValue = "") String whereClause, @RequestParam(defaultValue = "") String sortClause, @RequestParam(defaultValue = "#{T(java.time.LocalDateTime).now()}") LocalDateTime asOfDateTimeUtc, @RequestParam(defaultValue = "1") long graphDepthLimit, @RequestParam(defaultValue = "1") long pageNumber, @RequestParam(defaultValue = "20") long pageSize, ServerWebExchange exchange) throws Exception
+//    public ResponseEntity<String> GetBusinessEntities(@PathVariable String entityTypeName, @RequestParam(defaultValue = "") String whereClause, @RequestParam(defaultValue = "") String sortClause, @RequestParam(defaultValue = "#{T(java.time.LocalDateTime).now()}") LocalDateTime asOfDateTimeUtc, @RequestParam(defaultValue = "1") long graphDepthLimit, @RequestParam(defaultValue = "1") long pageNumber, @RequestParam(defaultValue = "20") long pageSize, ServerWebExchange exchange) throws Exception
+    public ResponseEntity<String> GetBusinessEntities(@PathVariable String entityTypeName, @RequestParam(defaultValue = "") String whereClause, @RequestParam(defaultValue = "") String sortClause, @RequestParam(defaultValue = "#{T(java.time.Instant).now()}") Instant asOfDateTimeUtc, @RequestParam(defaultValue = "1") long graphDepthLimit, @RequestParam(defaultValue = "1") long pageNumber, @RequestParam(defaultValue = "20") long pageSize, ServerWebExchange exchange) throws Exception
     {
         ServerHttpRequest request = null;
         MultiValueMap<String,String> queryParams = null;
 
-//        Statement simpleStatement = null;
         ResultSet resultSet = null;
 
         DatabaseConnection databaseConnection = null;
@@ -88,7 +85,6 @@ public class BusinessEntityController
         String DB_PASSWORD = "";
 
         Connection connection = null;
-//        Mono<PostgresqlConnection> connection = null;
 
         String[] sqlBlacklistValues = null;
         String errorValues = "";
@@ -97,7 +93,6 @@ public class BusinessEntityController
         String entityTypeAttributeIds = "";
 
         CallableStatement statement = null;
-//        PostgresqlStatement statement = null;
 
         String selectClause = "";
 
@@ -131,18 +126,13 @@ public class BusinessEntityController
             request = exchange.getRequest();
             queryParams = request.getQueryParams();
 
-//            DB_DRIVER_CLASS = "org.postgresql.Driver";
             DB_DRIVER_CLASS = "postgresql";
             DB_URL = environment.getProperty("spring.jdbc.url");
             DB_USERNAME = environment.getProperty("spring.jdbc.username");
             DB_PASSWORD = environment.getProperty("spring.jdbc.password");
-//            DB_URL = environment.getProperty("spring.r2dbc.url");
-//            DB_USERNAME = environment.getProperty("spring.r2dbc.username");
-//            DB_PASSWORD = environment.getProperty("spring.r2dbc.password");
 
             databaseConnection = new DatabaseConnection();
             connection = databaseConnection.GetDatabaseConnection(DB_DRIVER_CLASS, DB_URL, DB_USERNAME, DB_PASSWORD);
-//            connection = (Mono<PostgresqlConnection>) databaseConnection.GetDatabaseConnection(DB_DRIVER_CLASS, DB_URL, DB_USERNAME, DB_PASSWORD);
 
             if (connection == null)
             {
@@ -184,7 +174,7 @@ public class BusinessEntityController
 //            entityData = GetBusinessEntities("EntityTypeAttribute", "\"Id\" IN (" + entityTypeAttributeIds + ")", "", LocalDateTime.now(), 1, 1, 1, exchange).getBody();
 //            selectClause = entityData.substring(entityData.indexOf("\"LocalizedName\":") + 14, entityData.indexOf(",\"LocalizedDescription\":"));
 
-            //selectClause = "\"Id\",\"LocalizedName\"";
+            selectClause = "\"Id\",\"LocalizedName\"";
 
             //NOTE: Validate and sanitize whereClause
             if (whereClause.contains("WHERE"))
@@ -221,12 +211,14 @@ public class BusinessEntityController
             }
 
             //NOTE: Validate and sanitize asOfDateTimeUtc
-            if (asOfDateTimeUtc.isBefore(LocalDateTime.parse("1900-01-01T00:00:00.000")))
+//            if (asOfDateTimeUtc.isBefore(LocalDateTime.parse("1900-01-01T00:00:00.000")))
+            if (asOfDateTimeUtc.isBefore(Instant.parse("1900-01-01T00:00:00.000Z")))
             {
                 throw new Exception("'asOfDateTimeUtc' query parameter must be greater than or equal to '1900-01-01'.");
             }
 
-            if (asOfDateTimeUtc.isAfter(LocalDateTime.parse("9999-12-31T23:59:59.999")))
+            //if (asOfDateTimeUtc.isAfter(LocalDateTime.parse("9999-12-31T23:59:59.999")))
+            if (asOfDateTimeUtc.isAfter(Instant.parse("9999-12-31T23:59:59.999Z")))
             {
                 throw new Exception("'asOfDateTimeUtc' query parameter must be less than or equal to '9999-12-31'.");
             }
@@ -272,7 +264,7 @@ public class BusinessEntityController
                 statement.setString(2, selectClause);
                 statement.setString(3, URLDecoder.decode(whereClause, StandardCharsets.UTF_8));
                 statement.setString(4, URLDecoder.decode(sortClause, StandardCharsets.UTF_8));
-                statement.setTimestamp(5, Timestamp.valueOf(asOfDateTimeUtc));
+                statement.setTimestamp(5, Timestamp.from(asOfDateTimeUtc));
                 statement.setLong(6, graphDepthLimit);
                 statement.setLong(7, pageNumber);
                 statement.setLong(8, pageSize);
@@ -282,10 +274,13 @@ public class BusinessEntityController
                 statement.executeUpdate();
 
                 //NOTE: Read the OUT parameter now
-                //TODO: Check for null entityData
                 entityData = statement.getString(9);
 
-//                statement = connection.   block().createStatement("SELECT * FROM \"EntityDataRead\"($1,$2,$3,$4,$5,$6,$7,$8)");
+                if (entityData == null)
+                {
+//                    throw new Exception("EntityDataRead() failed to return data for " + entityTypeName);
+                    entityData = "{[]}";
+                }
 
                 //TODO: Filter or mask unauthorized or sensitive attributes for this InformationSystemUserRole (as JSON)???
             }
@@ -302,27 +297,18 @@ public class BusinessEntityController
             {
                 if (resultSet != null) {
                     resultSet.close();
+                    resultSet = null;
                 }
 
-//                if (simpleStatement != null) {
-//                    simpleStatement.close();
-//                }
-//
                 if (statement != null) {
                     statement.close();
+                    statement = null;
                 }
 
                 if (connection != null) {
                     connection.close();
+                    connection = null;
                 }
-
-//                if (request != null) {
-//                    request.close();
-//                }
-//
-//                if (queryParams != null) {
-//                    queryParams.close();
-//                }
             }
             catch (SQLException e)
             {

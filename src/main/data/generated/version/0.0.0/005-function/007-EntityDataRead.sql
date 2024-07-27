@@ -15,6 +15,9 @@ CREATE OR REPLACE FUNCTION public."EntityDataRead"(
 	RETURNS character varying
 	LANGUAGE 'plpgsql'
 
+	SECURITY DEFINER
+	SET search_path = pg_catalog,pg_temp
+
 	COST 100
 	VOLATILE
     
@@ -27,7 +30,7 @@ DECLARE
 --  dataQuery varchar := 'SELECT json_agg("' || entitytypename || '" ORDER BY "Id" DESC) FROM "' || entitytypename || '"."' || entitytypename || '" WHERE "Id">0';
 --	dataQuery varchar := 'WITH JsonData AS (SELECT * FROM "EntityType"."EntityType" WHERE "Id">0 ORDER BY "Id" DESC LIMIT 3 OFFSET 0) SELECT JSON_AGG(JsonData.*) FROM JsonData;';
 --	dataQuery varchar := 'WITH JsonData AS (SELECT '|| selectClause ||' FROM "EntityType"."EntityType" WHERE "Id">0 ORDER BY "Id" DESC LIMIT 3 OFFSET 0) SELECT JSON_AGG(JsonData.*) FROM JsonData;';
-	dataQuery varchar := 'WITH JsonData AS (SELECT '|| selectClause ||' FROM "' || entitytypename || '"."' || entitytypename || '" '|| whereClause ||' '|| sortClause ||' LIMIT '|| pageSize ||' OFFSET '|| pageNumber ||') SELECT JSON_AGG(JsonData.*) FROM JsonData;';
+	dataQuery varchar := 'WITH JsonData AS (SELECT '|| selectClause ||' FROM "'|| entitytypename ||'"."'|| entitytypename ||'" '|| whereClause ||' '|| sortClause ||' LIMIT '|| pageSize ||' OFFSET '|| pageNumber ||') SELECT JSON_AGG(JsonData.*) FROM JsonData;';
 
   BEGIN
 
@@ -39,7 +42,11 @@ DECLARE
   END;
 $BODY$;
 
---ALTER FUNCTION public."EntityDataRead"(character varying)
---	OWNER TO AafCoreOwner;
+--ALTER FUNCTION "EntityDataRead"(character varying)
+--	OWNER TO AafCorePublisher;
 
--- GRANT to ReadWrite, etc rather than to OWNER TO postgres
+REVOKE EXECUTE ON FUNCTION public."EntityDataRead" FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION public."EntityDataRead" TO "AafCoreModeler";
+GRANT EXECUTE ON FUNCTION public."EntityDataRead" TO "AafCoreReadWrite";
+GRANT EXECUTE ON FUNCTION public."EntityDataRead" TO "AafCoreReadOnly";

@@ -5,3 +5,7 @@
 
 CREATE SCHEMA "EntityTypeDefinitionEntityTypeAttributeAssociation"
     AUTHORIZATION "AafCorePublisher";
+
+GRANT USAGE ON SCHEMA "EntityTypeDefinitionEntityTypeAttributeAssociation" TO "AafCoreModeler";
+GRANT USAGE ON SCHEMA "EntityTypeDefinitionEntityTypeAttributeAssociation" TO "AafCoreReadWrite";
+GRANT USAGE ON SCHEMA "EntityTypeDefinitionEntityTypeAttributeAssociation" TO "AafCoreReadOnly";

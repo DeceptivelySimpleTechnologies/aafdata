@@ -2,7 +2,7 @@
 
 # NOTE: This script creates the Postgres database server to be used by Deceptively Simple Technologies Inc's Adaptív Application Foundation (AAF) Data Layer (AAF Data)
 # NOTE: Make this script executable with chmod +x 001-CreateDatabaseServer.sh
-# Usage: ./001-CreateDatabaseServer.sh PostgreSQL 14
+# Usage: ./001-CreateDatabaseServer.sh PostgreSQL 14 localhost 5432 postgres postgres postgres
 
 postgresServerGroupName=$1
 postgresVersion=$2
@@ -19,4 +19,4 @@ psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresData
 unset PGPASSWORD
 
 # Log in using default postgres role password
-# Change default postgres role password and return new password (use AWS SecretManager in the future)
+# TODO: Change default postgres role password and return new password (use AWS SecretManager in the future)
