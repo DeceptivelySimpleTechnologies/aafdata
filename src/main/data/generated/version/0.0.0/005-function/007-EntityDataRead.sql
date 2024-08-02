@@ -42,9 +42,6 @@ DECLARE
   END;
 $BODY$;
 
---ALTER FUNCTION "EntityDataRead"(character varying)
---	OWNER TO AafCorePublisher;
-
 REVOKE EXECUTE ON FUNCTION public."EntityDataRead" FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION public."EntityDataRead" TO "AafCoreModeler";

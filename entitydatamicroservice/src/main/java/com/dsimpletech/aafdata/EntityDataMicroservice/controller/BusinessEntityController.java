@@ -11,6 +11,7 @@ import org.springframework.core.env.Environment;
 
 import org.springframework.http.server.reactive.ServerHttpRequest;
 
+import org.springframework.stereotype.Controller;
 import org.springframework.util.MultiValueMap;
 
 import org.springframework.http.HttpStatus;
@@ -67,10 +68,19 @@ public class BusinessEntityController
     {
     }
 
+    //NOTE: Suppress browser-based favicon.ico requests
+//    @Controller
+//    static class FaviconController {
+//
+//        @GetMapping("favicon.ico")
+//        @ResponseBody
+//        void returnNoFavicon() {
+//        }
+//    }
+//
     @GetMapping("/{entityTypeName}")
     @ResponseBody
-//    public ResponseEntity<String> GetBusinessEntities(@PathVariable String entityTypeName, @RequestParam(defaultValue = "") String whereClause, @RequestParam(defaultValue = "") String sortClause, @RequestParam(defaultValue = "#{T(java.time.LocalDateTime).now()}") LocalDateTime asOfDateTimeUtc, @RequestParam(defaultValue = "1") long graphDepthLimit, @RequestParam(defaultValue = "1") long pageNumber, @RequestParam(defaultValue = "20") long pageSize, ServerWebExchange exchange) throws Exception
-    public ResponseEntity<String> GetBusinessEntities(@PathVariable String entityTypeName, @RequestParam(defaultValue = "") String whereClause, @RequestParam(defaultValue = "") String sortClause, @RequestParam(defaultValue = "#{T(java.time.Instant).now()}") Instant asOfDateTimeUtc, @RequestParam(defaultValue = "1") long graphDepthLimit, @RequestParam(defaultValue = "1") long pageNumber, @RequestParam(defaultValue = "20") long pageSize, ServerWebExchange exchange) throws Exception
+    public ResponseEntity<String> GetBusinessEntities(@PathVariable("entityTypeName") String entityTypeName, @RequestParam(defaultValue = "") String whereClause, @RequestParam(defaultValue = "") String sortClause, @RequestParam(defaultValue = "#{T(java.time.Instant).now()}") Instant asOfDateTimeUtc, @RequestParam(defaultValue = "1") long graphDepthLimit, @RequestParam(defaultValue = "1") long pageNumber, @RequestParam(defaultValue = "20") long pageSize, ServerWebExchange exchange) throws Exception
     {
         ServerHttpRequest request = null;
         MultiValueMap<String,String> queryParams = null;
@@ -139,7 +149,7 @@ public class BusinessEntityController
                 throw new Exception("Unable to get database connection");
             }
 
-            //NOTE: Example request http://localhost:8080/EntityType?whereClause=%22Id%22%3D1&sortClause=%22Ordinal%22%252C%22Id%22&asOfDateTimeUtc=2023-01-01T00:00:00.000&graphDepthLimit=1&pageNumber=1&pageSize=20
+            //NOTE: Example request http://localhost:8080/EntityType?whereClause=%22Id%22%20%3E%200&sortClause=%22Ordinal%22%252C%22Id%22&asOfDateTimeUtc=2023-01-01T00:00:00.000Z&graphDepthLimit=1&pageNumber=1&pageSize=20
 
             //TODO: Add Unknown and None to EntityType data?
 
@@ -278,7 +288,6 @@ public class BusinessEntityController
 
                 if (entityData == null)
                 {
-//                    throw new Exception("EntityDataRead() failed to return data for " + entityTypeName);
                     entityData = "{[]}";
                 }
 
@@ -288,7 +297,6 @@ public class BusinessEntityController
         catch (Exception e)
         {
             logger.error("GetBusinessEntities() failed due to: " + e);
-            //return "{}";
             return new ResponseEntity<String>("{[]}", HttpStatus.INTERNAL_SERVER_ERROR);
         }
         finally
