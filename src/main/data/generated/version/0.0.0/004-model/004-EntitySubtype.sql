@@ -29,12 +29,14 @@ CREATE TABLE "EntitySubtype"."EntitySubtype"
     "DeletedByInformationSystemUserId" bigint NOT NULL,
 
     CONSTRAINT "EntitySubtype_PK" PRIMARY KEY ("Id")
+
+    CONSTRAINT "EntitySubtype_UQ1_TextKey_DeletedAtDateTimeUtc" UNIQUE ("TextKey", "DeletedAtDateTimeUtc")
+    CONSTRAINT "EntitySubtype_UQ1_LocalizedName_DeletedAtDateTimeUtc" UNIQUE ("LocalizedName", "DeletedAtDateTimeUtc")
+
+    CONSTRAINT "EntitySubtype_FK_EntityTypeId" FOREIGN KEY ("Id") REFERENCES "EntityType"("Id")
 )
 
     TABLESPACE pg_default;
 
 ALTER TABLE "EntitySubtype"."EntitySubtype"
     OWNER to "AafCorePublisher";
-
---GRANT USAGE ON SCHEMA "EntitySubtype" TO "AafCoreClient";
---GRANT SELECT ON ALL TABLES IN SCHEMA "EntitySubtype" TO "AafCoreClient";

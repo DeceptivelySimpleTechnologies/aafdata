@@ -1,18 +1,17 @@
 -- NOTE: Run this script as the custom AafCorePublisher database role/account, which should be created by the AafCoreOwner role.
--- Table: EntityType.EntityType
+-- Table: Employee.Employee
 
--- DROP TABLE "EntityType"."EntityType";
+-- DROP TABLE "Employee"."Employee";
 
-CREATE TABLE "EntityType"."EntityType"
+CREATE TABLE "Employee"."Employee"
 (
     "Id" bigint NOT NULL,
     "Uuid" uuid NOT NULL,
     "EntitySubtypeId" bigint NOT NULL,
     "TextKey" character varying(100) COLLATE pg_catalog."default" NOT NULL,
 
-    "LocalizedName" character varying(100) COLLATE pg_catalog."default" NOT NULL,
-    "LocalizedDescription" character varying(2000) COLLATE pg_catalog."default" NOT NULL,
-    "LocalizedAbbreviation" character varying(15) COLLATE pg_catalog."default" NOT NULL,
+    "OrganizationId" bigint NOT NULL,
+    "PersonId" bigint NOT NULL,
 
     "ResourceName" character varying(100) COLLATE pg_catalog."default" NOT NULL,
     "Ordinal" bigint NOT NULL,
@@ -26,13 +25,19 @@ CREATE TABLE "EntityType"."EntityType"
     "DeletedAtDateTimeUtc" timestamp without time zone NOT NULL,
     "DeletedByInformationSystemUserId" bigint NOT NULL,
 
-    CONSTRAINT "EntityType_PK" PRIMARY KEY ("Id")
+    CONSTRAINT "Employee_PK" PRIMARY KEY ("Id")
 
-    CONSTRAINT "EntitySubtype_UQ1_TextKey_DeletedAtDateTimeUtc" UNIQUE ("TextKey", "DeletedAtDateTimeUtc")
-    CONSTRAINT "EntitySubtype_UQ1_LocalizedName_DeletedAtDateTimeUtc" UNIQUE ("LocalizedName", "DeletedAtDateTimeUtc")
+    CONSTRAINT "Employee_CHK_TextKey" CHECK ("TextKey" ~* "^[a-z0-9-]+$")
+
+    CONSTRAINT "Employee_UQ1_TextKey_DeletedAtDateTimeUtc" UNIQUE ("TextKey", "DeletedAtDateTimeUtc")
+    CONSTRAINT "Employee_UQ1_EntitySubtypeId_OrganizationId_PersonId_DeletedAtDateTimeUtc" UNIQUE ("EntitySubtypeId", "OrganizationId", "PersonId", "DeletedAtDateTimeUtc")
+
+    CONSTRAINT "Employee_FK_EntitySubtypeId" FOREIGN KEY ("Id") REFERENCES "EntitySubtype"("Id")
+    CONSTRAINT "Employee_FK_OrganizationId" FOREIGN KEY ("Id") REFERENCES "Organization"("Id")
+    CONSTRAINT "Employee_FK_PersonId" FOREIGN KEY ("Id") REFERENCES "Person"("Id")
 )
 
     TABLESPACE pg_default;
 
-ALTER TABLE "EntityType"."EntityType"
+ALTER TABLE "Employee"."Employee"
     OWNER to "AafCorePublisher";

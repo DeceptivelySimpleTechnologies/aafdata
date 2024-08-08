@@ -1,9 +1,9 @@
 -- NOTE: Run this script as the custom AafCorePublisher database role/account, which should be created by the AafCoreOwner role.
--- Table: EntityType.EntityType
+-- Table: Language.Language
 
--- DROP TABLE "EntityType"."EntityType";
+-- DROP TABLE "Language"."Language";
 
-CREATE TABLE "EntityType"."EntityType"
+CREATE TABLE "Language"."Language"
 (
     "Id" bigint NOT NULL,
     "Uuid" uuid NOT NULL,
@@ -26,13 +26,18 @@ CREATE TABLE "EntityType"."EntityType"
     "DeletedAtDateTimeUtc" timestamp without time zone NOT NULL,
     "DeletedByInformationSystemUserId" bigint NOT NULL,
 
-    CONSTRAINT "EntityType_PK" PRIMARY KEY ("Id")
+    CONSTRAINT "Language_PK" PRIMARY KEY ("Id")
 
-    CONSTRAINT "EntitySubtype_UQ1_TextKey_DeletedAtDateTimeUtc" UNIQUE ("TextKey", "DeletedAtDateTimeUtc")
-    CONSTRAINT "EntitySubtype_UQ1_LocalizedName_DeletedAtDateTimeUtc" UNIQUE ("LocalizedName", "DeletedAtDateTimeUtc")
+    CONSTRAINT "Language_CHK_TextKey" CHECK ("TextKey" ~* "^[a-z0-9-]+$")
+    CONSTRAINT "Language_CHK_LocalizedName" CHECK ("LocalizedName" ~* "^[A-Za-z]+$")
+
+    CONSTRAINT "Language_UQ1_TextKey_DeletedAtDateTimeUtc" UNIQUE ("TextKey", "DeletedAtDateTimeUtc")
+    CONSTRAINT "Language_UQ1_LocalizedName_DeletedAtDateTimeUtc" UNIQUE ("LocalizedName", "DeletedAtDateTimeUtc")
+
+    CONSTRAINT "Language_FK_EntitySubtypeId" FOREIGN KEY ("Id") REFERENCES "EntitySubtype"("Id")
 )
 
     TABLESPACE pg_default;
 
-ALTER TABLE "EntityType"."EntityType"
+ALTER TABLE "Language"."Language"
     OWNER to "AafCorePublisher";

@@ -1,9 +1,9 @@
 -- NOTE: Run this script as the custom AafCorePublisher database role/account, which should be created by the AafCoreOwner role.
--- Table: EntityType.EntityType
+-- Table: GeographicUnit.GeographicUnit
 
--- DROP TABLE "EntityType"."EntityType";
+-- DROP TABLE "GeographicUnit"."GeographicUnit";
 
-CREATE TABLE "EntityType"."EntityType"
+CREATE TABLE "GeographicUnit"."GeographicUnit"
 (
     "Id" bigint NOT NULL,
     "Uuid" uuid NOT NULL,
@@ -26,13 +26,14 @@ CREATE TABLE "EntityType"."EntityType"
     "DeletedAtDateTimeUtc" timestamp without time zone NOT NULL,
     "DeletedByInformationSystemUserId" bigint NOT NULL,
 
-    CONSTRAINT "EntityType_PK" PRIMARY KEY ("Id")
+    CONSTRAINT "GeographicUnit_PK" PRIMARY KEY ("Id")
 
-    CONSTRAINT "EntitySubtype_UQ1_TextKey_DeletedAtDateTimeUtc" UNIQUE ("TextKey", "DeletedAtDateTimeUtc")
-    CONSTRAINT "EntitySubtype_UQ1_LocalizedName_DeletedAtDateTimeUtc" UNIQUE ("LocalizedName", "DeletedAtDateTimeUtc")
-)
+    CONSTRAINT "GeographicUnit_UQ1_TextKey_DeletedAtDateTimeUtc" UNIQUE ("TextKey", "DeletedAtDateTimeUtc")
+    CONSTRAINT "GeographicUnit_UQ1_LocalizedName_DeletedAtDateTimeUtc" UNIQUE ("LocalizedName", "DeletedAtDateTimeUtc")
+
+    CONSTRAINT "GeographicUnit_FK_EntitySubtypeId" FOREIGN KEY ("Id") REFERENCES "EntitySubtype"("Id"))
 
     TABLESPACE pg_default;
 
-ALTER TABLE "EntityType"."EntityType"
+ALTER TABLE "GeographicUnit"."GeographicUnit"
     OWNER to "AafCorePublisher";
