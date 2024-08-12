@@ -4,13 +4,4 @@
 
 -- Role: "AafCorePublisher"
 
--- DROP ROLE "AafCorePublisher";
-
-CREATE ROLE "AafCorePublisher" WITH
-    LOGIN
-    PASSWORD 'Publ15h3rCl13nt!'
-    NOSUPERUSER
-    NOINHERIT
-    CREATEDB
-    NOCREATEROLE
-    NOREPLICATION;
+GRANT CREATE ON DATABASE "AafCore" TO "AafCorePublisher";

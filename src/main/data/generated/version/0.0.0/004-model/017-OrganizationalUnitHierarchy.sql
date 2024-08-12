@@ -8,7 +8,7 @@ CREATE TABLE "OrganizationalUnitHierarchy"."OrganizationalUnitHierarchy"
     "Id" bigint NOT NULL,
     "Uuid" uuid NOT NULL,
     "EntitySubtypeId" bigint NOT NULL,
-    "TextKey" character varying(100) COLLATE pg_catalog."default" NOT NULL,
+    "TextKey" character varying(200) COLLATE pg_catalog."default" NOT NULL,
 
     "ParentOrganizationalUnitId" bigint NOT NULL,
     "ChildOrganizationalUnitId" bigint NOT NULL,
@@ -25,19 +25,19 @@ CREATE TABLE "OrganizationalUnitHierarchy"."OrganizationalUnitHierarchy"
     "DeletedAtDateTimeUtc" timestamp without time zone NOT NULL,
     "DeletedByInformationSystemUserId" bigint NOT NULL,
 
-    CONSTRAINT "OrganizationalUnitHierarchy_PK" PRIMARY KEY ("Id")
+    CONSTRAINT "OrganizationalUnitHierarchy_PK" PRIMARY KEY ("Id"),
 
-    CONSTRAINT "OrganizationalUnitHierarchy_CHK_TextKey" CHECK ("TextKey" ~* "^[a-z0-9-]+$")
+    CONSTRAINT "OrganizationalUnitHierarchy_CHK_TextKey" CHECK ("TextKey" ~* '^[a-z0-9-]+$'),
 
-    CONSTRAINT "OrganizationalUnitHierarchy_UQ1_TextKey_DeletedAtDateTimeUtc" UNIQUE ("TextKey", "DeletedAtDateTimeUtc")
-    CONSTRAINT "OrganizationalUnitHierarchy_UQ1_ParentOrganizationalUnitId_ChildOrganizationalUnitId_DeletedAtDateTimeUtc" UNIQUE ("ParentOrganizationalUnitId", "ChildOrganizationalUnitId", "DeletedAtDateTimeUtc")
+    CONSTRAINT "OrganizationalUnitHierarchy_UQ1_TextKey_DeletedAtDateTimeUtc" UNIQUE ("TextKey", "DeletedAtDateTimeUtc"),
+    CONSTRAINT "OrganizationalUnitHierarchy_UQ1_ParentOrganizationalUnitId_ChildOrganizationalUnitId_DeletedAtDateTimeUtc" UNIQUE ("ParentOrganizationalUnitId", "ChildOrganizationalUnitId", "DeletedAtDateTimeUtc"),
 
-    CONSTRAINT "OrganizationalUnitHierarchy_FK_EntitySubtypeId" FOREIGN KEY ("Id") REFERENCES "EntitySubtype"("Id")
-    CONSTRAINT "OrganizationalUnitHierarchy_FK_ParentOrganizationalUnitId" FOREIGN KEY ("Id") REFERENCES "OrganizationalUnit"("Id")
-    CONSTRAINT "OrganizationalUnitHierarchy_FK_ChildOrganizationalUnitId" FOREIGN KEY ("Id") REFERENCES "OrganizationalUnit"("Id")
+    CONSTRAINT "OrganizationalUnitHierarchy_FK_EntitySubtypeId" FOREIGN KEY ("EntitySubtypeId") REFERENCES "EntitySubtype"."EntitySubtype"("Id"),
+    CONSTRAINT "OrganizationalUnitHierarchy_FK_ParentOrganizationalUnitId" FOREIGN KEY ("ParentOrganizationalUnitId") REFERENCES "OrganizationalUnit"."OrganizationalUnit"("Id"),
+    CONSTRAINT "OrganizationalUnitHierarchy_FK_ChildOrganizationalUnitId" FOREIGN KEY ("ChildOrganizationalUnitId") REFERENCES "OrganizationalUnit"."OrganizationalUnit"("Id")
 )
 
     TABLESPACE pg_default;
 
-ALTER TABLE "OrganizationalUnitHierarchy"."OrganizationalUnitHierarchy"
-    OWNER to "AafCorePublisher";
+--ALTER TABLE "OrganizationalUnitHierarchy"."OrganizationalUnitHierarchy"
+--    OWNER to "AafCorePublisher";

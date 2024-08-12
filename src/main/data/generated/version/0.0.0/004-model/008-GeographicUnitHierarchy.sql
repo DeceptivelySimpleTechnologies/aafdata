@@ -8,7 +8,7 @@ CREATE TABLE "GeographicUnitHierarchy"."GeographicUnitHierarchy"
     "Id" bigint NOT NULL,
     "Uuid" uuid NOT NULL,
     "EntitySubtypeId" bigint NOT NULL,
-    "TextKey" character varying(100) COLLATE pg_catalog."default" NOT NULL,
+    "TextKey" character varying(200) COLLATE pg_catalog."default" NOT NULL,
 
     "ParentGeographicUnitId" bigint NOT NULL,
     "ChildGeographicUnitId" bigint NOT NULL,
@@ -25,18 +25,18 @@ CREATE TABLE "GeographicUnitHierarchy"."GeographicUnitHierarchy"
     "DeletedAtDateTimeUtc" timestamp without time zone NOT NULL,
     "DeletedByInformationSystemUserId" bigint NOT NULL,
 
-    CONSTRAINT "GeographicUnitHierarchy_PK" PRIMARY KEY ("Id")
+    CONSTRAINT "GeographicUnitHierarchy_PK" PRIMARY KEY ("Id"),
 
-    CONSTRAINT "GeographicUnit_CHK_TextKey" CHECK ("TextKey" ~* "^[a-z0-9-]+$")
+    CONSTRAINT "GeographicUnitHierarchy_CHK_TextKey" CHECK ("TextKey" ~* '^[a-z0-9-]+$'),
 
-    CONSTRAINT "GeographicUnit_UQ1_TextKey_DeletedAtDateTimeUtc" UNIQUE ("TextKey", "DeletedAtDateTimeUtc")
+    CONSTRAINT "GeographicUnitHierarchy_UQ1_TextKey_DeletedAtDateTimeUtc" UNIQUE ("TextKey", "DeletedAtDateTimeUtc"),
 
-    CONSTRAINT "GeographicUnitHieracrhy_FK_EntitySubtypeId" FOREIGN KEY ("Id") REFERENCES "EntitySubtype"("Id")
-    CONSTRAINT "GeographicUnitHierarchy_FK_ParentGeographicUnitId" FOREIGN KEY ("Id") REFERENCES "GeographicUnit"("Id")
-    CONSTRAINT "GeographicUnitHierarchy_FK_ChildGeographicUnitId" FOREIGN KEY ("Id") REFERENCES "GeographicUnit"("Id")
+    CONSTRAINT "GeographicUnitHieracrhy_FK_EntitySubtypeId" FOREIGN KEY ("EntitySubtypeId") REFERENCES "EntitySubtype"."EntitySubtype"("Id"),
+    CONSTRAINT "GeographicUnitHierarchy_FK_ParentGeographicUnitId" FOREIGN KEY ("ParentGeographicUnitId") REFERENCES "GeographicUnit"."GeographicUnit"("Id"),
+    CONSTRAINT "GeographicUnitHierarchy_FK_ChildGeographicUnitId" FOREIGN KEY ("ChildGeographicUnitId") REFERENCES "GeographicUnit"."GeographicUnit"("Id")
 )
 
     TABLESPACE pg_default;
 
-ALTER TABLE "GeographicUnitHierarchy"."GeographicUnitHierarchy"
-    OWNER to "AafCorePublisher";
+--ALTER TABLE "GeographicUnitHierarchy"."GeographicUnitHierarchy"
+--    OWNER to "AafCorePublisher";

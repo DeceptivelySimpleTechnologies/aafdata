@@ -40,6 +40,9 @@ psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresData
 echo "Creating AafCore database in $postgresServerGroupName $postgresVersion as $customRoleNameOwner role"
 createdb -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -E UTF8 "AafCore"
 
+echo "Granting CREATE permission on custom $customRoleNamePublisher role in $postgresServerGroupName $postgresVersion as $customRoleNameOwner role"
+psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/001-role/007-GrantCreateOnAafCorePublisher.sql
+
 unset PGPASSWORD
 
 # Log in using custom AafCoreOwner role

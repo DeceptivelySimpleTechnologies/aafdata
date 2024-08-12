@@ -23,11 +23,11 @@ psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresData
 echo "Adding EntityTypeDefinitionEntityTypeAttributeAssociation table to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
 psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/004-model/003-EntityTypeDefinitionEntityTypeAttributeAssociation.sql
 
-echo "Adding EntitySubtype table to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
-psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/004-model/004-EntitySubtype.sql
-
 echo "Adding EntityType table to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
 psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/004-model/005-EntityType.sql
+
+echo "Adding EntitySubtype table to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
+psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/004-model/004-EntitySubtype.sql
 
 echo "Adding GeographicUnit table to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
 psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/004-model/007-GeographicUnit.sql
@@ -39,7 +39,7 @@ echo "Adding Language table to $postgresDatabase database in $postgresServerGrou
 psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/004-model/009-Language.sql
 
 echo "Adding Locale table to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
-psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/004-model/010-EntityType.sql
+psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/004-model/010-Locale.sql
 
 echo "Adding Person table to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
 psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/004-model/014-Person.sql

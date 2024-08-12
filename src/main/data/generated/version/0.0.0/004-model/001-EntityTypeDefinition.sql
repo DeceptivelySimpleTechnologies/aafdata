@@ -8,7 +8,7 @@ CREATE TABLE "EntityTypeDefinition"."EntityTypeDefinition"
     "Id" bigint NOT NULL,
     "Uuid" uuid NOT NULL,
     "EntitySubtypeId" bigint NOT NULL,
-    "TextKey" character varying(100) COLLATE pg_catalog."default" NOT NULL,
+    "TextKey" character varying(200) COLLATE pg_catalog."default" NOT NULL,
 
     "LocalizedName" character varying(100) COLLATE pg_catalog."default" NOT NULL,
     "LocalizedDescription" character varying(2000) COLLATE pg_catalog."default" NOT NULL,
@@ -29,13 +29,14 @@ CREATE TABLE "EntityTypeDefinition"."EntityTypeDefinition"
     "DeletedAtDateTimeUtc" timestamp without time zone NOT NULL,
     "DeletedByInformationSystemUserId" bigint NOT NULL,
 
-    CONSTRAINT "EntityTypeDefinition_PK" PRIMARY KEY ("Id")
+    CONSTRAINT "EntityTypeDefinition_PK" PRIMARY KEY ("Id"),
+
+    CONSTRAINT "EntityTypeDefinition_CHK_TextKey" CHECK ("TextKey" ~* '^[a-z0-9-]+$'),
+    CONSTRAINT "EntityTypeDefinition_CHK_LocalizedName" CHECK ("LocalizedName" ~* '^[A-Za-z]+$')
 )
 
     TABLESPACE pg_default;
 
-ALTER TABLE "EntityTypeDefinition"."EntityTypeDefinition"
-    OWNER to "AafCorePublisher";
+--ALTER TABLE "EntityTypeDefinition"."EntityTypeDefinition"
+--    OWNER to "AafCorePublisher";
 
---GRANT USAGE ON SCHEMA "EntityTypeDefinition" TO "AafCoreClient";
---GRANT SELECT ON ALL TABLES IN SCHEMA "EntityTypeDefinition" TO "AafCoreClient";

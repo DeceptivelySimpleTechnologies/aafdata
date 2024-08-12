@@ -23,11 +23,11 @@ psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresData
 echo "Adding EntityTypeDefinitionEntityTypeAttributeAssociation data to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
 psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/006-data/003-EntityTypeDefinitionEntityTypeAttributeAssociation.sql
 
-echo "Adding EntitySubtype data to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
-psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/006-data/004-EntitySubtype.sql
-
 echo "Adding EntityType data to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
 psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/006-data/005-EntityType.sql
+
+echo "Adding EntitySubtype data to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
+psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/006-data/004-EntitySubtype.sql
 
 echo "Adding GeographicUnit data to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
 psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/006-data/007-GeographicUnit.sql

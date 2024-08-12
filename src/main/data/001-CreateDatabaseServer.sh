@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # NOTE: This script creates the Postgres database server to be used by Deceptively Simple Technologies Inc's Adaptív Application Foundation (AAF) Data Layer (AAF Data)
+# NOTE: NOT NECESSARY if a Postgres database server already exists
 # NOTE: Make this script executable with chmod +x 001-CreateDatabaseServer.sh
 # Usage: ./001-CreateDatabaseServer.sh PostgreSQL 14 localhost 5432 postgres postgres postgres
 

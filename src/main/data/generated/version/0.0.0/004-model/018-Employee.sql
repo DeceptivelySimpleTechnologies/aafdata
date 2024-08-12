@@ -8,7 +8,7 @@ CREATE TABLE "Employee"."Employee"
     "Id" bigint NOT NULL,
     "Uuid" uuid NOT NULL,
     "EntitySubtypeId" bigint NOT NULL,
-    "TextKey" character varying(100) COLLATE pg_catalog."default" NOT NULL,
+    "TextKey" character varying(200) COLLATE pg_catalog."default" NOT NULL,
 
     "OrganizationId" bigint NOT NULL,
     "PersonId" bigint NOT NULL,
@@ -25,19 +25,19 @@ CREATE TABLE "Employee"."Employee"
     "DeletedAtDateTimeUtc" timestamp without time zone NOT NULL,
     "DeletedByInformationSystemUserId" bigint NOT NULL,
 
-    CONSTRAINT "Employee_PK" PRIMARY KEY ("Id")
+    CONSTRAINT "Employee_PK" PRIMARY KEY ("Id"),
 
-    CONSTRAINT "Employee_CHK_TextKey" CHECK ("TextKey" ~* "^[a-z0-9-]+$")
+    CONSTRAINT "Employee_CHK_TextKey" CHECK ("TextKey" ~* '^[a-z0-9-]+$'),
 
-    CONSTRAINT "Employee_UQ1_TextKey_DeletedAtDateTimeUtc" UNIQUE ("TextKey", "DeletedAtDateTimeUtc")
-    CONSTRAINT "Employee_UQ1_EntitySubtypeId_OrganizationId_PersonId_DeletedAtDateTimeUtc" UNIQUE ("EntitySubtypeId", "OrganizationId", "PersonId", "DeletedAtDateTimeUtc")
+    CONSTRAINT "Employee_UQ1_TextKey_DeletedAtDateTimeUtc" UNIQUE ("TextKey", "DeletedAtDateTimeUtc"),
+    CONSTRAINT "Employee_UQ1_EntitySubtypeId_OrganizationId_PersonId_DeletedAtDateTimeUtc" UNIQUE ("EntitySubtypeId", "OrganizationId", "PersonId", "DeletedAtDateTimeUtc"),
 
-    CONSTRAINT "Employee_FK_EntitySubtypeId" FOREIGN KEY ("Id") REFERENCES "EntitySubtype"("Id")
-    CONSTRAINT "Employee_FK_OrganizationId" FOREIGN KEY ("Id") REFERENCES "Organization"("Id")
-    CONSTRAINT "Employee_FK_PersonId" FOREIGN KEY ("Id") REFERENCES "Person"("Id")
+    CONSTRAINT "Employee_FK_EntitySubtypeId" FOREIGN KEY ("EntitySubtypeId") REFERENCES "EntitySubtype"."EntitySubtype"("Id"),
+    CONSTRAINT "Employee_FK_OrganizationId" FOREIGN KEY ("OrganizationId") REFERENCES "Organization"."Organization"("Id"),
+    CONSTRAINT "Employee_FK_PersonId" FOREIGN KEY ("PersonId") REFERENCES "Person"."Person"("Id")
 )
 
     TABLESPACE pg_default;
 
-ALTER TABLE "Employee"."Employee"
-    OWNER to "AafCorePublisher";
+--ALTER TABLE "Employee"."Employee"
+--    OWNER to "AafCorePublisher";

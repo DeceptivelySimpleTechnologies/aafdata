@@ -8,7 +8,7 @@ CREATE TABLE "Person"."Person"
     "Id" bigint NOT NULL,
     "Uuid" uuid NOT NULL,
     "EntitySubtypeId" bigint NOT NULL,
-    "TextKey" character varying(100) COLLATE pg_catalog."default" NOT NULL,
+    "TextKey" character varying(200) COLLATE pg_catalog."default" NOT NULL,
 
     "LegalGivenName" character varying(100) COLLATE pg_catalog."default" NOT NULL,
     "LegalSurname" character varying(100) COLLATE pg_catalog."default" NOT NULL,
@@ -28,19 +28,19 @@ CREATE TABLE "Person"."Person"
     "DeletedAtDateTimeUtc" timestamp without time zone NOT NULL,
     "DeletedByInformationSystemUserId" bigint NOT NULL,
 
-    CONSTRAINT "Person_PK" PRIMARY KEY ("Id")
+    CONSTRAINT "Person_PK" PRIMARY KEY ("Id"),
 
-    CONSTRAINT "Person_CHK_TextKey" CHECK ("TextKey" ~* "^[a-z0-9-]+$")
+    CONSTRAINT "Person_CHK_TextKey" CHECK ("TextKey" ~* '^[a-z0-9-]+$'),
 
-    CONSTRAINT "Person_UQ1_TextKey_DeletedAtDateTimeUtc" UNIQUE ("TextKey", "DeletedAtDateTimeUtc")
-    CONSTRAINT "Person_UQ1_EntitySubtypeId_LegalGivenName_LegalSurname_BornAtDateTimeUtc_LegalCitizenOfCountryGeographicUnitId_DeletedAtDateTimeUtc" UNIQUE ("EntitySubtypeId", "LegalGivenName", "LegalSurname", "BornAtDateTimeUtc", "LegalCitizenOfCountryGeographicUnitId", "DeletedAtDateTimeUtc")
+    CONSTRAINT "Person_UQ1_TextKey_DeletedAtDateTimeUtc" UNIQUE ("TextKey", "DeletedAtDateTimeUtc"),
+    CONSTRAINT "Person_UQ1_EntitySubtypeId_LegalGivenName_LegalSurname_BornAtDateTimeUtc_LegalCitizenOfCountryGeographicUnitId_DeletedAtDateTimeUtc" UNIQUE ("EntitySubtypeId", "LegalGivenName", "LegalSurname", "BornAtDateTimeUtc", "LegalCitizenOfCountryGeographicUnitId", "DeletedAtDateTimeUtc"),
 
-    CONSTRAINT "Person_FK_EntitySubtypeId" FOREIGN KEY ("Id") REFERENCES "EntitySubtype"("Id")
---    CONSTRAINT "Person_FK_LegalCitizenOfCountryGeographicUnitId" FOREIGN KEY ("Id") REFERENCES "GeographicUnit"("Id")
-    CONSTRAINT "Person_FK_LocaleId" FOREIGN KEY ("Id") REFERENCES "Locale"("Id")
+    CONSTRAINT "Person_FK_EntitySubtypeId" FOREIGN KEY ("EntitySubtypeId") REFERENCES "EntitySubtype"."EntitySubtype"("Id"),
+    CONSTRAINT "Person_FK_LegalCitizenOfCountryGeographicUnitId" FOREIGN KEY ("LegalCitizenOfCountryGeographicUnitId") REFERENCES "GeographicUnit"."GeographicUnit"("Id"),
+    CONSTRAINT "Person_FK_LocaleId" FOREIGN KEY ("LocaleId") REFERENCES "Locale"."Locale"("Id")
 )
 
     TABLESPACE pg_default;
 
-ALTER TABLE "Person"."Person"
-    OWNER to "AafCorePublisher";
+--ALTER TABLE "Person"."Person"
+--    OWNER to "AafCorePublisher";

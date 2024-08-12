@@ -8,7 +8,7 @@ CREATE TABLE "OrganizationalUnit"."OrganizationalUnit"
     "Id" bigint NOT NULL,
     "Uuid" uuid NOT NULL,
     "EntitySubtypeId" bigint NOT NULL,
-    "TextKey" character varying(100) COLLATE pg_catalog."default" NOT NULL,
+    "TextKey" character varying(200) COLLATE pg_catalog."default" NOT NULL,
 
     "OrganizationId" bigint NOT NULL,
     "LegalName" character varying(100) COLLATE pg_catalog."default" NOT NULL,
@@ -29,19 +29,19 @@ CREATE TABLE "OrganizationalUnit"."OrganizationalUnit"
     "DeletedAtDateTimeUtc" timestamp without time zone NOT NULL,
     "DeletedByInformationSystemUserId" bigint NOT NULL,
 
-    CONSTRAINT "OrganizationalUnit_PK" PRIMARY KEY ("Id")
+    CONSTRAINT "OrganizationalUnit_PK" PRIMARY KEY ("Id"),
 
-    CONSTRAINT "OrganizationalUnit_CHK_TextKey" CHECK ("TextKey" ~* "^[a-z0-9-]+$")
-    CONSTRAINT "OrganizationalUnit_CHK_LegalName" CHECK ("LegalName" ~* "^[A-Za-z]+$")
+    CONSTRAINT "OrganizationalUnit_CHK_TextKey" CHECK ("TextKey" ~* '^[a-z0-9-]+$'),
+    CONSTRAINT "OrganizationalUnit_CHK_LegalName" CHECK ("LegalName" ~* '^[A-Za-z,\.,!?\/ ]+$'),
 
-    CONSTRAINT "OrganizationalUnit_UQ1_TextKey_DeletedAtDateTimeUtc" UNIQUE ("TextKey", "DeletedAtDateTimeUtc")
-    CONSTRAINT "OrganizationalUnit_UQ1_LegalName_DeletedAtDateTimeUtc" UNIQUE ("LegalName", "DeletedAtDateTimeUtc")
+    CONSTRAINT "OrganizationalUnit_UQ1_TextKey_DeletedAtDateTimeUtc" UNIQUE ("TextKey", "DeletedAtDateTimeUtc"),
+    CONSTRAINT "OrganizationalUnit_UQ1_LegalName_DeletedAtDateTimeUtc" UNIQUE ("LegalName", "DeletedAtDateTimeUtc"),
 
-    CONSTRAINT "OrganizationalUnit_FK_EntitySubtypeId" FOREIGN KEY ("Id") REFERENCES "EntitySubtype"("Id")
-    CONSTRAINT "OrganizationalUnit_FK_OrganizationId" FOREIGN KEY ("Id") REFERENCES "Organization"("Id")
+    CONSTRAINT "OrganizationalUnit_FK_EntitySubtypeId" FOREIGN KEY ("EntitySubtypeId") REFERENCES "EntitySubtype"."EntitySubtype"("Id"),
+    CONSTRAINT "OrganizationalUnit_FK_OrganizationId" FOREIGN KEY ("OrganizationId") REFERENCES "Organization"."Organization"("Id")
 )
 
     TABLESPACE pg_default;
 
-ALTER TABLE "OrganizationalUnit"."OrganizationalUnit"
-    OWNER to "AafCorePublisher";
+--ALTER TABLE "OrganizationalUnit"."OrganizationalUnit"
+--    OWNER to "AafCorePublisher";

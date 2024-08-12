@@ -8,7 +8,7 @@ CREATE TABLE "Organization"."Organization"
     "Id" bigint NOT NULL,
     "Uuid" uuid NOT NULL,
     "EntitySubtypeId" bigint NOT NULL,
-    "TextKey" character varying(100) COLLATE pg_catalog."default" NOT NULL,
+    "TextKey" character varying(200) COLLATE pg_catalog."default" NOT NULL,
 
     "LegalName" character varying(100) COLLATE pg_catalog."default" NOT NULL,
     "LocalizedDescription" character varying(2000) COLLATE pg_catalog."default" NOT NULL,
@@ -28,18 +28,18 @@ CREATE TABLE "Organization"."Organization"
     "DeletedAtDateTimeUtc" timestamp without time zone NOT NULL,
     "DeletedByInformationSystemUserId" bigint NOT NULL,
 
-    CONSTRAINT "Organization_PK" PRIMARY KEY ("Id")
+    CONSTRAINT "Organization_PK" PRIMARY KEY ("Id"),
 
-    CONSTRAINT "Organization_CHK_TextKey" CHECK ("TextKey" ~* "^[a-z0-9-]+$")
-    CONSTRAINT "Organization_CHK_LegalName" CHECK ("LegalName" ~* "^[A-Za-z]+$")
+    CONSTRAINT "Organization_CHK_TextKey" CHECK ("TextKey" ~* '^[a-z0-9-]+$'),
+    CONSTRAINT "Organization_CHK_LegalName" CHECK ("LegalName" ~* '^[A-Za-z,\.,!?\/ ]+$'),
 
-    CONSTRAINT "Organization_UQ1_TextKey_DeletedAtDateTimeUtc" UNIQUE ("TextKey", "DeletedAtDateTimeUtc")
-    CONSTRAINT "Organization_UQ1_LegalName_DeletedAtDateTimeUtc" UNIQUE ("LegalName", "DeletedAtDateTimeUtc")
+    CONSTRAINT "Organization_UQ1_TextKey_DeletedAtDateTimeUtc" UNIQUE ("TextKey", "DeletedAtDateTimeUtc"),
+    CONSTRAINT "Organization_UQ1_LegalName_DeletedAtDateTimeUtc" UNIQUE ("LegalName", "DeletedAtDateTimeUtc"),
 
-    CONSTRAINT "Organization_FK_EntitySubtypeId" FOREIGN KEY ("Id") REFERENCES "EntitySubtype"("Id")
+    CONSTRAINT "Organization_FK_EntitySubtypeId" FOREIGN KEY ("EntitySubtypeId") REFERENCES "EntitySubtype"."EntitySubtype"("Id")
 )
 
     TABLESPACE pg_default;
 
-ALTER TABLE "Organization"."Organization"
-    OWNER to "AafCorePublisher";
+--ALTER TABLE "Organization"."Organization"
+--    OWNER to "AafCorePublisher";

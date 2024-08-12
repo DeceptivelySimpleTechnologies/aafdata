@@ -8,7 +8,7 @@ CREATE TABLE "EntitySubtype"."EntitySubtype"
     "Id" bigint NOT NULL,
     "Uuid" uuid NOT NULL,
     "EntitySubtypeId" bigint NOT NULL,
-    "TextKey" character varying(100) COLLATE pg_catalog."default" NOT NULL,
+    "TextKey" character varying(200) COLLATE pg_catalog."default" NOT NULL,
 
     "EntityTypeId" bigint NOT NULL,
     "GroupKey" character varying(100) COLLATE pg_catalog."default" NOT NULL,
@@ -28,15 +28,17 @@ CREATE TABLE "EntitySubtype"."EntitySubtype"
     "DeletedAtDateTimeUtc" timestamp without time zone NOT NULL,
     "DeletedByInformationSystemUserId" bigint NOT NULL,
 
-    CONSTRAINT "EntitySubtype_PK" PRIMARY KEY ("Id")
+    CONSTRAINT "EntitySubtype_PK" PRIMARY KEY ("Id"),
 
-    CONSTRAINT "EntitySubtype_UQ1_TextKey_DeletedAtDateTimeUtc" UNIQUE ("TextKey", "DeletedAtDateTimeUtc")
-    CONSTRAINT "EntitySubtype_UQ1_LocalizedName_DeletedAtDateTimeUtc" UNIQUE ("LocalizedName", "DeletedAtDateTimeUtc")
+    CONSTRAINT "EntitySubtype_CHK_TextKey" CHECK ("TextKey" ~* '^[a-z0-9-]+$'),
 
-    CONSTRAINT "EntitySubtype_FK_EntityTypeId" FOREIGN KEY ("Id") REFERENCES "EntityType"("Id")
+    CONSTRAINT "EntitySubtype_UQ1_TextKey_DeletedAtDateTimeUtc" UNIQUE ("TextKey", "DeletedAtDateTimeUtc"),
+    CONSTRAINT "EntitySubtype_UQ1_LocalizedName_DeletedAtDateTimeUtc" UNIQUE ("LocalizedName", "DeletedAtDateTimeUtc"),
+
+    CONSTRAINT "EntitySubtype_FK_EntityTypeId" FOREIGN KEY ("EntityTypeId") REFERENCES "EntityType"."EntityType"("Id")
 )
 
     TABLESPACE pg_default;
 
-ALTER TABLE "EntitySubtype"."EntitySubtype"
-    OWNER to "AafCorePublisher";
+--ALTER TABLE "EntitySubtype"."EntitySubtype"
+--    OWNER to "AafCorePublisher";

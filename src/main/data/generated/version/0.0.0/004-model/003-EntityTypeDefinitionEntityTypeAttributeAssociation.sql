@@ -8,7 +8,7 @@ CREATE TABLE "EntityTypeDefinitionEntityTypeAttributeAssociation"."EntityTypeDef
     "Id" bigint NOT NULL,
     "Uuid" uuid NOT NULL,
     "EntitySubtypeId" bigint NOT NULL,
-    "TextKey" character varying(100) COLLATE pg_catalog."default" NOT NULL,
+    "TextKey" character varying(200) COLLATE pg_catalog."default" NOT NULL,
 
     "EntityTypeDefinitionId" bigint NOT NULL,
     "EntityTypeAttributeId" bigint NOT NULL,
@@ -30,8 +30,6 @@ CREATE TABLE "EntityTypeDefinitionEntityTypeAttributeAssociation"."EntityTypeDef
 
     TABLESPACE pg_default;
 
-ALTER TABLE "EntityTypeDefinitionEntityTypeAttributeAssociation"."EntityTypeDefinitionEntityTypeAttributeAssociation"
-    OWNER to "AafCorePublisher";
+--ALTER TABLE "EntityTypeDefinitionEntityTypeAttributeAssociation"."EntityTypeDefinitionEntityTypeAttributeAssociation"
+--    OWNER to "AafCorePublisher";
 
---GRANT USAGE ON SCHEMA "EntityTypeDefinitionEntityTypeAttributeAssociation" TO "AafCoreClient";
---GRANT SELECT ON ALL TABLES IN SCHEMA "EntityTypeDefinitionEntityTypeAttributeAssociation" TO "AafCoreClient";
