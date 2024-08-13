@@ -86,6 +86,7 @@ public class BusinessEntityController
                 throw new Exception("Unable to get database connection");
             }
 
+            //NOTE: Get EntityTypeDefinitions
             statement = connection.prepareCall("{call \"GetEntityTypeDefinitions\"(?)}");
             //NOTE: Register the data OUT parameter before calling the stored procedure
             statement.registerOutParameter(1, Types.OTHER);
@@ -101,6 +102,40 @@ public class BusinessEntityController
             }
 
             logger.info(entityTypeDefinitions.size() + " EntityTypeDefinitions cached locally");
+
+            //NOTE: Get EntityTypeAttributes
+            statement = connection.prepareCall("{call \"GetEntityTypeAttributes\"(?)}");
+            //NOTE: Register the data OUT parameter before calling the stored procedure
+            statement.registerOutParameter(1, Types.OTHER);
+            statement.execute();
+
+            //NOTE: Read the OUT parameter now
+            resultSet = (ResultSet) statement.getObject(1);
+
+            entityTypeAttributes = new ArrayList<EntityTypeAttribute>();
+
+            while (resultSet.next()) {
+                entityTypeAttributes.add(new EntityTypeAttribute(resultSet.getInt("Id"), resultSet.getInt("EntitySubtypeId"), resultSet.getString("TextKey"), resultSet.getString("LocalizedName"), resultSet.getInt("GeneralizedDataTypeEntitySubtypeId"), resultSet.getInt("EntityTypeAttributeValueEntitySubtypeId"), resultSet.getString("DefaultValue"), resultSet.getInt("Ordinal"), resultSet.getBoolean("IsActive"), resultSet.getTimestamp("DeletedAtDateTimeUtc")));
+            }
+
+            logger.info(entityTypeAttributes.size() + " EntityTypeAttributes cached locally");
+
+            //NOTE: Get EntityTypeDefinitionEntityTypeAttributeAssociations
+            statement = connection.prepareCall("{call \"GetEntityTypeDefinitionEntityTypeAttributeAssociations\"(?)}");
+            //NOTE: Register the data OUT parameter before calling the stored procedure
+            statement.registerOutParameter(1, Types.OTHER);
+            statement.execute();
+
+            //NOTE: Read the OUT parameter now
+            resultSet = (ResultSet) statement.getObject(1);
+
+            entityTypeDefinitionEntityTypeAttributeAssociations = new ArrayList<EntityTypeDefinitionEntityTypeAttributeAssociation>();
+
+            while (resultSet.next()) {
+                entityTypeDefinitionEntityTypeAttributeAssociations.add(new EntityTypeDefinitionEntityTypeAttributeAssociation(resultSet.getInt("Id"), resultSet.getInt("EntitySubtypeId"), resultSet.getString("TextKey"), resultSet.getInt("EntityTypeDefinitionId"), resultSet.getInt("EntityTypeAttributeId"), resultSet.getInt("Ordinal"), resultSet.getBoolean("IsActive"), resultSet.getTimestamp("DeletedAtDateTimeUtc")));
+            }
+
+            logger.info(entityTypeDefinitionEntityTypeAttributeAssociations.size() + " EntityTypeDefinitionEntityTypeAttributeAssociations cached locally");
         }
         catch (Exception e) {
             logger.error("GetEntityData() failed due to: " + e);

@@ -1,7 +1,7 @@
 -- NOTE: Run this script as the custom AafCorePublisher database role/account, which should be created by the AafCoreOwner role.
 -- FUNCTION: public.GetEntityTypeDefinitions()
 
--- DROP FUNCTION public."GetEntityTypeDefinitions"(character varying);
+-- DROP FUNCTION public."GetEntityTypeDefinitions"();
 
 CREATE FUNCTION public."GetEntityTypeDefinitions"(
 	OUT ref refcursor)
