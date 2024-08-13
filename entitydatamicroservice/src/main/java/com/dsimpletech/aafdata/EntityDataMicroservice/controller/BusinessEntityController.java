@@ -32,6 +32,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.dsimpletech.aafdata.EntityDataMicroservice.database.EntityTypeDefinition;
 import com.dsimpletech.aafdata.EntityDataMicroservice.database.EntityTypeAttribute;
@@ -197,6 +198,9 @@ public class BusinessEntityController
         ServerHttpRequest request = null;
         MultiValueMap<String,String> queryParams = null;
 
+        int entityTypeId = -1;
+        ArrayList<Integer> entityTypeAssociations = null;
+
         String[] sqlBlacklistValues = null;
         String errorValues = "";
 
@@ -242,8 +246,7 @@ public class BusinessEntityController
 
             if (connection == null)
             {
-//                throw new Exception("Unable to get database connection");
-                throw new Exception("No database connection available");
+                throw new Exception("Unable to get database connection");
             }
 
             //NOTE: Example request http://localhost:8080/EntityType?whereClause=%22Id%22%20%3E%200&sortClause=%22Ordinal%22%252C%22Id%22&asOfDateTimeUtc=2023-01-01T00:00:00.000Z&graphDepthLimit=1&pageNumber=1&pageSize=20
@@ -261,7 +264,50 @@ public class BusinessEntityController
             //TODO: Remove attributes that should never be returned, e.g. Digest, from selectClause
             //TODO: Use GetBusinessEntities() to cache EntityTypeDefinition, EntityTypeAttribute, and EntityTypeDefinitionEntityTypeAttributeAssociation for input validation at service startup
 
-            selectClause = "\"Id\",\"LocalizedName\"";
+            //NOTE: Get the Id of the requested entityTypeName
+            for (int i = 0 ; i < entityTypeDefinitions.size() ; i++)
+            {
+                if (entityTypeDefinitions.get(i).getLocalizedName().equals(entityTypeName))
+                {
+                    entityTypeId = entityTypeDefinitions.get(i).getId();
+                    break;
+                }
+            }
+
+            if (entityTypeId == -1)
+            {
+                throw new Exception("Invalid 'entityTypeName' query parameter '" + entityTypeName + "'");
+            }
+
+            //NOTE: Get the Ids of any associated EntityTypeAttributes
+            entityTypeAssociations = new ArrayList<Integer>();
+
+            for (int i = 0 ; i < entityTypeDefinitionEntityTypeAttributeAssociations.size() ; i++)
+            {
+                if (entityTypeDefinitionEntityTypeAttributeAssociations.get(i).getEntityTypeDefinitionId() == entityTypeId)
+                {
+                    entityTypeAssociations.add(entityTypeDefinitionEntityTypeAttributeAssociations.get(i).getEntityTypeAttributeId());
+                }
+            }
+
+            if (entityTypeAssociations.size() == 0)
+            {
+                throw new Exception("No associated EntityTypeAttributes for 'entityTypeName' query parameter '" + entityTypeName + "'");
+            }
+
+            //NOTE: Build the selectClause using the associated EntityTypeAttributes LocalizedNames, while filtering out any entityTypeAttributesNeverToReturn
+//            selectClause = "\"Id\",\"LocalizedName\"";
+            for (int i = 0 ; i < entityTypeAttributes.size() ; i++)
+            {
+                if (entityTypeAssociations.contains(entityTypeAttributes.get(i).getId()))
+                {
+                    selectClause = selectClause + "\"" + entityTypeAttributes.get(i).getLocalizedName() + "\",";
+                }
+            }
+
+            if (selectClause.length() > 0){
+                selectClause = selectClause.substring(0, selectClause.length() - 1);
+            }
 
             //NOTE: Validate and sanitize whereClause
             if (whereClause.contains("WHERE"))

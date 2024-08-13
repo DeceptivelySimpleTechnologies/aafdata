@@ -1,28 +1,30 @@
 package com.dsimpletech.aafdata.EntityDataMicroservice.database;
 
+import lombok.Getter;
 
 import java.sql.Timestamp;
 
+
 public class EntityTypeDefinitionEntityTypeAttributeAssociation {
 
-    int Id;
+    @Getter private int Id;
 //    UUID Uuid;
-    int EntitySubtypeId;
-    String TextKey;
+    @Getter private int EntitySubtypeId;
+    @Getter private String TextKey;
 
-    int EntityTypeDefinitionId;
-    int EntityTypeAttributeId;
+    @Getter private int EntityTypeDefinitionId;
+    @Getter private int EntityTypeAttributeId;
 
 //    String ResourceName;
-    int Ordinal;
-    boolean IsActive;
+    @Getter private int Ordinal;
+    @Getter private boolean IsActive;
 //    UUID CorrelationUuid;
 //    String Digest;
 //    Timestamp CreatedAtDateTimeUtc;
 //    int CreatedByInformationSystemUserId;
 //    Timestamp UpdatedAtDateTimeUtc;
 //    int UpdatedByInformationSystemUserId;
-    Timestamp DeletedAtDateTimeUtc;
+    @Getter private Timestamp DeletedAtDateTimeUtc;
 //    int DeletedByInformationSystemUserId;
 
     public EntityTypeDefinitionEntityTypeAttributeAssociation(int id, int entitySubtypeId, String textKey, int entityTypeDefinitionId, int entityTypeAttributeId, int ordinal, boolean isActive, Timestamp deletedAtDateTimeUtc) {

@@ -1,20 +1,22 @@
 package com.dsimpletech.aafdata.EntityDataMicroservice.database;
 
+import lombok.Getter;
+
 import java.sql.Timestamp;
 import java.util.UUID;
 
 
 public class EntityTypeAttribute {
 
-    int Id;
+    @Getter private int Id;
 //    UUID Uuid;
-    int EntitySubtypeId;
-    String TextKey;
+    @Getter private int EntitySubtypeId;
+    @Getter private String TextKey;
 
-    String LocalizedName;
+    @Getter private String LocalizedName;
 //    String LocalizedDescription;
 //    String LocalizedAbbreviation;
-    int GeneralizedDataTypeEntitySubtypeId;
+    @Getter private int GeneralizedDataTypeEntitySubtypeId;
 //    (10, 'f6818d77-64c2-487e-bcc9-989872509988', 0, 'entitysubtype-entitytypeattribute-generalizeddatatype-boolean', 2, 'GeneralizedDataType', 'Boolean', 'Indicates a boolean (0/1, true/false, etc) data type.  Note: This generalized data type, along with its size or maximum length, etc, will be translated into the corresponding implementation type in the data, service, and presentation layers, based on the implementation technologies utilized (e.g. PostgreSQL, Java, React, etc)', 'Eta Bool', '', -1, true, '00000000-0000-0000-0000-000000000000', '2f79fe7a822e7c6303edbeb4852d0cbd2bd8cd66f0737f9d70a7f9294256eaec', '2022-06-01 00:00:00.000', 0, '2022-06-01 00:00:00.000', 0, '9999-12-31 23:59:59.999', 0),
 //    (11, '1207c71d-6fbe-4baf-a5f3-d6db43576c49', 0, 'entitysubtype-entitytypeattribute-generalizeddatatype-integer', 2, 'GeneralizedDataType', 'Integer', 'Indicates an integer data type.  Note: This generalized data type, along with its size or maximum length, etc, will be translated into the corresponding implementation type in the data, service, and presentation layers, based on the implementation technologies utilized (e.g. PostgreSQL, Java, React, etc)', 'Eta Int', '', -1, true, '00000000-0000-0000-0000-000000000000', 'e137cf1aca6a7c5ec4abbca37a952e1456b4decf4b54f7055d1f696549feee1d', '2022-06-01 00:00:00.000', 0, '2022-06-01 00:00:00.000', 0, '9999-12-31 23:59:59.999', 0),
 //    (12, '91a000a4-a622-4786-9e35-efa4b3225109', 0, 'entitysubtype-entitytypeattribute-generalizeddatatype-unicodecharacter', 2, 'GeneralizedDataType', 'UnicodeCharacter', 'Indicates a single double-byte, Unicode character data type.  Note: This generalized data type, along with its size or maximum length, etc, will be translated into the corresponding implementation type in the data, service, and presentation layers, based on the implementation technologies utilized (e.g. PostgreSQL, Java, React, etc)', 'Eta Char', '', -1, true, '00000000-0000-0000-0000-000000000000', 'ecb7a624e6b273da2a9b687e6ce1a9e62a065be130740580ffaacd337218dbf5', '2022-06-01 00:00:00.000', 0, '2022-06-01 00:00:00.000', 0, '9999-12-31 23:59:59.999', 0),
@@ -22,7 +24,7 @@ public class EntityTypeAttribute {
 //    (14, '3b8d5ba4-d391-4eed-b0f0-f2f6824b43ce', 0, 'entitysubtype-entitytypeattribute-generalizeddatatype-datetime', 2, 'GeneralizedDataType', 'DateTime', 'Indicates a date-time data type.  Note: This generalized data type, along with its size or maximum length, etc, will be translated into the corresponding implementation type in the data, service, and presentation layers, based on the implementation technologies utilized (e.g. PostgreSQL, Java, React, etc)', 'Eta DatTm', '', -1, true, '00000000-0000-0000-0000-000000000000', '9d11a75a495b0391ef6ac5f1edf1554d13590bd852c5969b3744132be7b8449d', '2022-06-01 00:00:00.000', 0, '2022-06-01 00:00:00.000', 0, '9999-12-31 23:59:59.999', 0),
 //    (15, '898a46d8-f322-4ba9-b281-30474b425a38', 0, 'entitysubtype-entitytypeattribute-uniqueness-singlecolumn', 2, 'Uniqueness', 'SingleColumn', 'Indicates a single-column uniqueness constraint', 'Eta Sngl', '', -1, true, '00000000-0000-0000-0000-000000000000', '6885d02f27b562c0fa10de9dd2bb01e8e467be32c8b74048e65ef1f97febe12c', '2022-06-01 00:00:00.000', 0, '2022-06-01 00:00:00.000', 0, '9999-12-31 23:59:59.999', 0),
 //    (16, 'edd4fdc7-506b-427c-a518-ca00f2018872', 0, 'entitysubtype-entitytypeattribute-generalizeddatatype-decimal', 2, 'GeneralizedDataType', 'Decimal', 'Indicates a decimal data type.  Note: This generalized data type, along with its size or maximum length, etc, will be translated into the corresponding implementation type in the data, service, and presentation layers, based on the implementation technologies utilized (e.g. PostgreSQL, Java, React, etc)', 'Eta Dec', '', -1, true, '00000000-0000-0000-0000-000000000000', '906d8ff1bc8c51e7c26b95bc7493dc1a27f766f85829623f808a5ad0e7638d37', '2022-06-01 00:00:00.000', 0, '2022-06-01 00:00:00.000', 0, '9999-12-31 23:59:59.999', 0),
-    int EntityTypeAttributeValueEntitySubtypeId;
+    @Getter private int EntityTypeAttributeValueEntitySubtypeId;
 //    (23, '9ebd5421-8fef-4214-b430-8d81b82aeda2', 0, 'entitysubtype-entitytypeattribute-value-primarykey', 2, 'Value', 'PrimaryKey', 'A system-generated integer value that uniquely identifies every row in a relational database table', 'Eta Val Prim', '', -1, true, '00000000-0000-0000-0000-000000000000', '1cc815ba648c4559d2f0d5e7fb67fdb24ca063ffac8809b06b9a6880724af0c5', '2022-06-01 00:00:00.000', 0, '2022-06-01 00:00:00.000', 0, '9999-12-31 23:59:59.999', 0),
 //    (24, 'eebc4c70-0d56-430f-8142-80bba3edc962', 0, 'entitysubtype-entitytypeattribute-value-uuid', 2, 'Value', 'Uuid', 'A system-generated universally unique identifier (UUID) value that uniquely identifies every row in a relational database table', 'Eta Val Uuid', '', -1, true, '00000000-0000-0000-0000-000000000000', 'be16698b9a67d0a2cc6887421eeb96eb9f20e30fa9c5785e78bc979a729c912c', '2022-06-01 00:00:00.000', 0, '2022-06-01 00:00:00.000', 0, '9999-12-31 23:59:59.999', 0),
 //    (25, '7b741ada-d5d8-46b2-b287-b492f698b510', 0, 'entitysubtype-entitytypeattribute-value-defaulttextkey', 2, 'Value', 'DefaultTextKey', 'A system-generated, human-readable string value that uniquely identifies every row in a relational database table', 'Eta Val TxtKy', '', -1, true, '00000000-0000-0000-0000-000000000000', 'f095a08777b2502e5a82f30142714cd6ee4bc6e70c5b8444ce534215b4841db1', '2022-06-01 00:00:00.000', 0, '2022-06-01 00:00:00.000', 0, '9999-12-31 23:59:59.999', 0),
@@ -35,18 +37,18 @@ public class EntityTypeAttribute {
 //    (32, 'f73b71f7-cdfc-4aca-b9a8-f8908cb4f15e', 0, 'entitysubtype-entitytypeattribute-value-deletedbyuserid', 2, 'Value', 'DeletedByUserId', 'A system-supplied integer value that identifies the InformationSystemUser that marked this business entity instance for deletion', 'Eta Val DeltdBy', '', -1, true, '00000000-0000-0000-0000-000000000000', 'f592b9222fcb278ecab1c83b7f17d669dedd0f75d53e65854b8a10ce13743661', '2022-06-01 00:00:00.000', 0, '2022-06-01 00:00:00.000', 0, '9999-12-31 23:59:59.999', 0),
 //    (33, '6878a60c-2e8b-422a-bbde-8baf8f189f7d', 0, 'entitysubtype-entitytypeattribute-value-correlationuuid', 2, 'Value', 'CorrelationUuid', 'A system-supplied universally unique identifier (UUID) value that uniquely identifies every row changed as the result of a single request', 'Eta Val Corrltn', '', -1, true, '00000000-0000-0000-0000-000000000000', '8ab5f886c8400a823b436e4554437aec286b14b612b7b3029037fbb372d7a80b', '2022-06-01 00:00:00.000', 0, '2022-06-01 00:00:00.000', 0, '9999-12-31 23:59:59.999', 0),
 //    (34, 'e0a25e45-dd5b-4649-9fb7-f51f7c9a90c6', 0, 'entitysubtype-entitytypeattribute-value-digest', 2, 'Value', 'Digest', 'A system-generated cryptographic digest (or "hash") value that based on a business entity instance''s attribute values', 'Eta Val Dgst', '', -1, true, '00000000-0000-0000-0000-000000000000', 'c1f1609a20b5374521b05d1c866910f962442ba34430082098d3b2204965ffdf', '2022-06-01 00:00:00.000', 0, '2022-06-01 00:00:00.000', 0, '9999-12-31 23:59:59.999', 0),
-    String DefaultValue;
+    @Getter private String DefaultValue;
 
 //    String ResourceName;
-    int Ordinal;
-    boolean IsActive;
+    @Getter private int Ordinal;
+    @Getter private boolean IsActive;
 //    UUID CorrelationUuid;
 //    String Digest;
 //    Timestamp CreatedAtDateTimeUtc;
 //    int CreatedByInformationSystemUserId;
 //    Timestamp UpdatedAtDateTimeUtc;
 //    int UpdatedByInformationSystemUserId;
-    Timestamp DeletedAtDateTimeUtc;
+    @Getter private Timestamp DeletedAtDateTimeUtc;
 //    int DeletedByInformationSystemUserId;
 
     public EntityTypeAttribute(int id, int entitySubtypeId, String textKey, String localizedName, int generalizedDataTypeEntitySubtypeId, int entityTypeAttributeValueEntitySubtypeId, String defaultValue, int ordinal, boolean isActive, Timestamp deletedAtDateTimeUtc) {

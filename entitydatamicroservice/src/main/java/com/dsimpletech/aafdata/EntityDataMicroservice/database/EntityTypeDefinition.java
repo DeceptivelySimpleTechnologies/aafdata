@@ -1,29 +1,31 @@
 package com.dsimpletech.aafdata.EntityDataMicroservice.database;
 
+import lombok.Getter;
+
 import java.sql.Timestamp;
 
 
 public class EntityTypeDefinition {
 
-    int Id;
+    @Getter private int Id;
 //    UUID Uuid;
-    int EntitySubtypeId;
-    String TextKey;
+    @Getter private int EntitySubtypeId;
+    @Getter private String TextKey;
 
-    String LocalizedName;
+    @Getter private String LocalizedName;
 //    String LocalizedDescription;
 //    String LocalizedAbbreviation;
 
 //    String ResourceName;
-    int Ordinal;
-    boolean IsActive;
+    @Getter private int Ordinal;
+    @Getter private boolean IsActive;
 //    UUID CorrelationUuid;
 //    String Digest;
 //    Timestamp CreatedAtDateTimeUtc;
 //    int CreatedByInformationSystemUserId;
 //    Timestamp UpdatedAtDateTimeUtc;
 //    int UpdatedByInformationSystemUserId;
-    Timestamp DeletedAtDateTimeUtc;
+    @Getter private Timestamp DeletedAtDateTimeUtc;
 //    int DeletedByInformationSystemUserId;
 
     public EntityTypeDefinition(int id, int entitySubtypeId, String textKey, String localizedName, int ordinal, boolean isActive, Timestamp deletedAtDateTimeUtc) {
