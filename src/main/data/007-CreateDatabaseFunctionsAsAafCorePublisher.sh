@@ -20,8 +20,8 @@ psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresData
 echo "Adding GetMaximumDateTimeUtc function to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
 psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/005-function/002-GetMaximumDateTimeUtc.sql
 
-# echo "Adding GetEntityTypeDefinitionIdByLocalizedName function to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
-# psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/005-function/003-GetEntityTypeDefinitionIdByLocalizedName.sql
+echo "Adding GetEntityTypeDefinitions function to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
+psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/005-function/003-GetEntityTypeDefinitions.sql
 
 echo "Adding EntityDataRead function to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
 psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/005-function/007-EntityDataRead.sql

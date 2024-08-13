@@ -1,8 +1,5 @@
 package com.dsimpletech.aafdata.EntityDataMicroservice.database;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
-
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 
@@ -14,16 +11,6 @@ import java.sql.SQLException;
 public class DatabaseConnection {
     //NOTE: Spring Boot Logback default logging implemented per https://www.baeldung.com/spring-boot-logging
     Logger logger = LoggerFactory.getLogger(DatabaseConnection.class);
-
-    //NOTE: Implement this
-    @PostConstruct
-    private void GetEntityData() {
-    }
-
-    //NOTE: Implement this
-    @PreDestroy
-    private void DeleteEntityData() {
-    }
 
     public Connection GetDatabaseConnection(String dbDriverClass, String dbUrl, String dbUsername, String dbPassword) {
 

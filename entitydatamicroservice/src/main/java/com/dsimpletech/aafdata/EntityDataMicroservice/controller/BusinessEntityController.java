@@ -3,6 +3,9 @@ package com.dsimpletech.aafdata.EntityDataMicroservice.controller;
 
 //import org.json.*;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 
@@ -11,7 +14,6 @@ import org.springframework.core.env.Environment;
 
 import org.springframework.http.server.reactive.ServerHttpRequest;
 
-import org.springframework.stereotype.Controller;
 import org.springframework.util.MultiValueMap;
 
 import org.springframework.http.HttpStatus;
@@ -26,13 +28,14 @@ import java.lang.Exception;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
-//import java.time.LocalDateTime;
 import java.time.Instant;
-//import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Arrays;
-//import java.util.Date;
 import java.util.Objects;
 
+import com.dsimpletech.aafdata.EntityDataMicroservice.database.EntityTypeDefinition;
+import com.dsimpletech.aafdata.EntityDataMicroservice.database.EntityTypeAttribute;
+import com.dsimpletech.aafdata.EntityDataMicroservice.database.EntityTypeDefinitionEntityTypeAttributeAssociation;
 import com.dsimpletech.aafdata.EntityDataMicroservice.database.DatabaseConnection;
 
 
@@ -43,29 +46,98 @@ public class BusinessEntityController
     @Autowired
     private Environment environment;
 
+    private ResultSet resultSet = null;
+
+    private DatabaseConnection databaseConnection = null;
+
+    private String DB_DRIVER_CLASS = "";
+    private String DB_URL = "";
+    private String DB_USERNAME = "";
+    private String DB_PASSWORD = "";
+
+    private Connection connection = null;
+
+    private CallableStatement statement = null;
+
+    private ArrayList<EntityTypeDefinition> entityTypeDefinitions = null;
+    private ArrayList<EntityTypeAttribute> entityTypeAttributes = null;
+    private ArrayList<EntityTypeDefinitionEntityTypeAttributeAssociation> entityTypeDefinitionEntityTypeAttributeAssociations = null;
+
     //NOTE: Spring Boot Logback default logging implemented per https://www.baeldung.com/spring-boot-logging
     Logger logger = LoggerFactory.getLogger(BusinessEntityController.class);
 
-    @PostMapping
-//    @Query("DECLARE\n" +
-//            "    EntityId bigint;\n" +
-//            "    EntityDataOutput json[];\n" +
-//            "BEGIN\n" +
-//            "    INSERT INTO aaf.\"Entity\"\n" +
-//            "    (\"Id\", \"Name\", \"Updated\")\n" +
-//            "    VALUES (default, 'Test', (now() AT time zone 'utc'))\n" +
-//            "    RETURNING \"Id\" INTO EntityId;\n" +
-//            "\n" +
-//            "    SELECT json_agg(t)\n" +
-//            "    INTO EntityDataOutput\n" +
-//            "    FROM (\n" +
-//            "             SELECT *\n" +
-//            "             FROM aaf.\"Entity\"\n" +
-//            "             WHERE \"Id\" = EntityId\n" +
-//            "         ) t;\n" +
-//            "END")
-    public void CreateBusinessEntity()
-    {
+    //NOTE: Implement this
+    @PostConstruct
+    private void GetEntityData() {
+
+        try {
+            logger.info("Attempting to GetEntityData()");
+
+            DB_DRIVER_CLASS = "postgresql";
+            DB_URL = environment.getProperty("spring.jdbc.url");
+            DB_USERNAME = environment.getProperty("spring.jdbc.username");
+            DB_PASSWORD = environment.getProperty("spring.jdbc.password");
+
+            databaseConnection = new DatabaseConnection();
+            connection = databaseConnection.GetDatabaseConnection(DB_DRIVER_CLASS, DB_URL, DB_USERNAME, DB_PASSWORD);
+            connection.setAutoCommit(false);
+
+            if (connection == null) {
+                throw new Exception("Unable to get database connection");
+            }
+
+            statement = connection.prepareCall("{call \"GetEntityTypeDefinitions\"(?)}");
+            //NOTE: Register the data OUT parameter before calling the stored procedure
+            statement.registerOutParameter(1, Types.OTHER);
+            statement.execute();
+
+            //NOTE: Read the OUT parameter now
+            resultSet = (ResultSet) statement.getObject(1);
+
+            entityTypeDefinitions = new ArrayList<EntityTypeDefinition>();
+
+            while (resultSet.next()) {
+                entityTypeDefinitions.add(new EntityTypeDefinition(resultSet.getInt("Id"), resultSet.getInt("EntitySubtypeId"), resultSet.getString("TextKey"), resultSet.getString("LocalizedName"), resultSet.getInt("Ordinal"), resultSet.getBoolean("IsActive"), resultSet.getTimestamp("DeletedAtDateTimeUtc")));
+            }
+
+            logger.info(entityTypeDefinitions.size() + " EntityTypeDefinitions cached locally");
+        }
+        catch (Exception e) {
+            logger.error("GetEntityData() failed due to: " + e);
+        }
+        finally {
+            try
+            {
+                if (resultSet != null) {
+                    resultSet.close();
+                    resultSet = null;
+                }
+
+                if (statement != null) {
+                    statement.close();
+                    statement = null;
+                }
+
+                if (connection != null) {
+                    connection.close();
+                    connection = null;
+                }
+            }
+            catch (SQLException e)
+            {
+                logger.error("Failed to close resultset and/or statement resource in GetEntityData() due to: " + e);
+            }
+        }
+
+            logger.info("GetEntityData() succeeded");
+    }
+
+    //NOTE: Implement this
+    @PreDestroy
+    private void DeleteEntityData() {
+        entityTypeDefinitions = null;
+        entityTypeAttributes = null;
+        entityTypeDefinitionEntityTypeAttributeAssociations = null;
     }
 
     //NOTE: Suppress browser-based favicon.ico requests
@@ -78,6 +150,11 @@ public class BusinessEntityController
 //        }
 //    }
 //
+    @PostMapping
+    public void CreateBusinessEntity()
+    {
+    }
+
     @GetMapping("/{entityTypeName}")
     @ResponseBody
     public ResponseEntity<String> GetBusinessEntities(@PathVariable("entityTypeName") String entityTypeName, @RequestParam(defaultValue = "") String whereClause, @RequestParam(defaultValue = "") String sortClause, @RequestParam(defaultValue = "#{T(java.time.Instant).now()}") Instant asOfDateTimeUtc, @RequestParam(defaultValue = "1") long graphDepthLimit, @RequestParam(defaultValue = "1") long pageNumber, @RequestParam(defaultValue = "20") long pageSize, ServerWebExchange exchange) throws Exception
@@ -85,24 +162,8 @@ public class BusinessEntityController
         ServerHttpRequest request = null;
         MultiValueMap<String,String> queryParams = null;
 
-        ResultSet resultSet = null;
-
-        DatabaseConnection databaseConnection = null;
-
-        String DB_DRIVER_CLASS = "";
-        String DB_URL = "";
-        String DB_USERNAME = "";
-        String DB_PASSWORD = "";
-
-        Connection connection = null;
-
         String[] sqlBlacklistValues = null;
         String errorValues = "";
-
-        String entityTypeDefinitionId = "";
-        String entityTypeAttributeIds = "";
-
-        CallableStatement statement = null;
 
         String selectClause = "";
 
@@ -126,7 +187,7 @@ public class BusinessEntityController
         //  https://bootcamptoprod.com/spring-boot-no-explicit-mapping-error-handling/#:~:text=them%20in%20detail.-,Solution%2D1%3A%20Request%20Mapping%20and%20Controller,in%20one%20of%20your%20controllers.
         //  https://skryvets.com/blog/2018/12/27/enhance-exception-handling-when-building-restful-api-with-spring-boot/
 
-        //NOTE: Rather than validating the EntityType name, we're going to optimistically pass it through to the database if it returns attributes
+        //NOTE: Rather than validating the EntityTypeDefinition name, we're going to optimistically pass it through to the database if it returns attributes
         //NOTE: We don't request versions our business entity data structure explicitly in the base URL; instead our explicit (v1.2.3) versioning is maintained internally, based on/derived from the AsOfUtcDateTime query parameter
         //NOTE: Since we're not automatically parsing the resulting JSON into an object, we're returning a JSON String rather than a JSONObject
         try
@@ -146,12 +207,13 @@ public class BusinessEntityController
 
             if (connection == null)
             {
-                throw new Exception("Unable to get database connection");
+//                throw new Exception("Unable to get database connection");
+                throw new Exception("No database connection available");
             }
 
             //NOTE: Example request http://localhost:8080/EntityType?whereClause=%22Id%22%20%3E%200&sortClause=%22Ordinal%22%252C%22Id%22&asOfDateTimeUtc=2023-01-01T00:00:00.000Z&graphDepthLimit=1&pageNumber=1&pageSize=20
 
-            //TODO: Add Unknown and None to EntityType data?
+            //TODO: Add Unknown and None to EntityTypeDefinition data?
 
             //TODO: Check for non-null query parameters before checking them
             sqlBlacklistValues = environment.getProperty("sqlNotToAllow").toLowerCase().split(",");
@@ -160,29 +222,9 @@ public class BusinessEntityController
 
             //NOTE: Build selectClause, based on EntityTypeDefinition.LocalizedName > EntityTypeAttribute.LocalizedName
             //TODO: Build query parameter array while validating explicit filter criteria and logging invalid attribute names, etc to be returned (see Create GET Method AAF-48)
-            //TODO: Use GetBusinessEntities() to get attributes for specified EntityType
+            //TODO: Use GetBusinessEntities() to get attributes for specified EntityTypeDefinition
             //TODO: Remove attributes that should never be returned, e.g. Digest, from selectClause
             //TODO: Use GetBusinessEntities() to cache EntityTypeDefinition, EntityTypeAttribute, and EntityTypeDefinitionEntityTypeAttributeAssociation for input validation at service startup
-//            simpleStatement = connection.createStatement();
-//            resultSet = simpleStatement.executeQuery("SELECT \"Id\" FROM \"EntityTypeDefinition\".\"EntityTypeDefinition\" WHERE \"LocalizedName\" = '" + entityTypeName + "'");
-//            entityTypeDefinitionId = resultSet.getString("Id");
-//            selectClause = "\"Id\",\"LocalizedName\",\"LocalizedDescription\"";
-//            entityData = GetBusinessEntities("EntityTypeDefinition", "\"LocalizedName\" = \"EntityTypeDefinition\"", "", LocalDateTime.now(), 1, 1, 1, exchange).getBody();
-//            entityTypeDefinitionId = entityData.substring(entityData.indexOf("\"LocalizedName\":") + 14, entityData.indexOf(",\"LocalizedDescription\":"));
-
-//            simpleStatement = connection.createStatement();
-//            resultSet = simpleStatement.executeQuery("SELECT \"EntityTypeAttributeId\" FROM \"EntityTypeDefinitionEntityTypeAttributeAssociation\".\"EntityTypeDefinitionEntityTypeAttributeAssociation\" WHERE \"EntityTypeDefinitionId\" = " + entityTypeDefinitionId);
-//            entityTypeAttributeIds = resultSet.getString("EntityTypeAttributeId");
-//            selectClause = "\"EntityTypeDefinitionId\",\"EntityTypeAttributeId\",\"ResourceName\"";
-//            entityData = GetBusinessEntities("EntityTypeDefinitionEntityTypeAttributeAssociation", "\"EntityTypeDefinitionId\" = " + entityTypeDefinitionId, "", LocalDateTime.now(), 1, 1, 1, exchange).getBody();
-//            entityTypeAttributeIds = entityData.substring(entityData.indexOf("\"EntityTypeAttributeId\":") + 22, entityData.indexOf(",\"ResourceName\":"));
-
-//            simpleStatement = connection.createStatement();
-//            resultSet = simpleStatement.executeQuery("SELECT \"LocalizedName\" FROM \"EntityTypeAttribute\".\"EntityTypeAttribute\" WHERE \"Id\" IN (" + entityTypeAttributeIds + ")");
-//            selectClause = resultSet.getString("LocalizedName");
-//            selectClause = "\"Id\",\"LocalizedName\",\"LocalizedDescription\"";
-//            entityData = GetBusinessEntities("EntityTypeAttribute", "\"Id\" IN (" + entityTypeAttributeIds + ")", "", LocalDateTime.now(), 1, 1, 1, exchange).getBody();
-//            selectClause = entityData.substring(entityData.indexOf("\"LocalizedName\":") + 14, entityData.indexOf(",\"LocalizedDescription\":"));
 
             selectClause = "\"Id\",\"LocalizedName\"";
 
@@ -267,6 +309,7 @@ public class BusinessEntityController
             }
 
             //TODO: Since EntityDataRead() is in public, ensure that is locked down to correct role(s) only
+            //TODO: Refactor the statements below to be reusable for validation, local caching, etc
             if (errorValues.length() == 0)
             {
                 statement = connection.prepareCall("{call \"EntityDataRead\"(?,?,?,?,?,?,?,?,?)}");
@@ -329,6 +372,16 @@ public class BusinessEntityController
         //return "{\"EntityData\":" + entityData + "}";
         //TODO: Echo input parameters in Postgres function return JSON
         return new ResponseEntity<String>(entityData, HttpStatus.OK);
+    }
+
+    @PatchMapping
+    public void UpdateBusinessEntity()
+    {
+    }
+
+    @DeleteMapping
+    public void DeleteBusinessEntity()
+    {
     }
 
     public String GuardAgainstSqlIssues(String sqlFragment, String[] sqlBlacklistValues)
