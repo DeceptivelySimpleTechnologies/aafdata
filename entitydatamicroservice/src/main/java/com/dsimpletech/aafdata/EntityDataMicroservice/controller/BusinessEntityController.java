@@ -87,6 +87,7 @@ public class BusinessEntityController
                 throw new Exception("Unable to get database connection");
             }
 
+            //TODO: Force sort orders with Ordinal values (this may be an outter/inner loop problem)
             //NOTE: Get EntityTypeDefinitions
             statement = connection.prepareCall("{call \"GetEntityTypeDefinitions\"(?)}");
             //NOTE: Register the data OUT parameter before calling the stored procedure
@@ -204,16 +205,20 @@ public class BusinessEntityController
         String[] sqlBlacklistValues = null;
         String errorValues = "";
 
+        String[] entityTypeAttributesNeverToReturn = null;
+
         String selectClause = "";
 
         String entityData = "";
 
-        //TODO: In Postgres function, if possible change ALTER FUNCTION public."EntityDataRead"(character varying) OWNER TO postgres to GRANT
-        //TODO: Add ReadWrite and ReadOnly roles, and remove direct table access with SQL GRANTs; CRUD only enforced upstream through process service calls
+        //NOTE: In Postgres function, if possible change ALTER FUNCTION public."EntityDataRead"(character varying) OWNER TO postgres to GRANT
+        //NOTE: Add ReadWrite and ReadOnly roles, and remove direct table access with SQL GRANTs; CRUD only enforced upstream through process service calls
 
-        //TODO: Add automation batch script at infrastructure root
-        //TODO: Add uniqueness constraints to table/model scripts
+        //NOTE: Add automation batch script at infrastructure root
+        //NOTE: Add uniqueness constraints to table/model scripts
         //TODO: Add indexes to table/model scripts
+
+        //NOTE: Test pagination (currently only 1 at a time, not pageNumber x pageSize)
 
         //TODO: Validate API key upstream in Client Communication Service (CCS)
         //TODO: Validate JWT upstream in Client Communication Service (CCS)
@@ -249,20 +254,25 @@ public class BusinessEntityController
                 throw new Exception("Unable to get database connection");
             }
 
-            //NOTE: Example request http://localhost:8080/EntityType?whereClause=%22Id%22%20%3E%200&sortClause=%22Ordinal%22%252C%22Id%22&asOfDateTimeUtc=2023-01-01T00:00:00.000Z&graphDepthLimit=1&pageNumber=1&pageSize=20
+            //NOTE: Example request http://localhost:8080/EntityType?whereClause=%22Id%22%20%3E%20-2&sortClause=%22Ordinal%22%252C%22Id%22&asOfDateTimeUtc=2023-01-01T00:00:00.000Z&graphDepthLimit=1&pageNumber=1&pageSize=20
 
-            //TODO: Add Unknown and None to EntityTypeDefinition data?
+            //TODO: Add Unknown and None to EntityTypeDefinition data???
 
-            //TODO: Check for non-null query parameters before checking them
             sqlBlacklistValues = environment.getProperty("sqlNotToAllow").toLowerCase().split(",");
             //TODO: Only check whereClause and sortClause for SQL injection, not other query parameters
             errorValues = GuardAgainstSqlIssues(queryParams.toString(), sqlBlacklistValues);
 
             //NOTE: Build selectClause, based on EntityTypeDefinition.LocalizedName > EntityTypeAttribute.LocalizedName
             //TODO: Build query parameter array while validating explicit filter criteria and logging invalid attribute names, etc to be returned (see Create GET Method AAF-48)
-            //TODO: Use GetBusinessEntities() to get attributes for specified EntityTypeDefinition
-            //TODO: Remove attributes that should never be returned, e.g. Digest, from selectClause
-            //TODO: Use GetBusinessEntities() to cache EntityTypeDefinition, EntityTypeAttribute, and EntityTypeDefinitionEntityTypeAttributeAssociation for input validation at service startup
+            //NOTE: Use GetBusinessEntities() to get attributes for specified EntityTypeDefinition
+            //NOTE: Remove attributes that should never be returned, e.g. Digest, from selectClause
+            //TODO: Get SystemGenerated from attributes, not from settings
+            //NOTE: Use GetBusinessEntities() to cache EntityTypeDefinition, EntityTypeAttribute, and EntityTypeDefinitionEntityTypeAttributeAssociation for input validation at service startup
+
+            //NOTE: Nothing returned for GeographicUnitHierarchy, Language, Locale, Person, OrganizationalUnitHierarchy, Employee,
+            //NOTE: Error on OrganizationalUnit: "PersonId" does not exist (now "LocalizedName")
+            //NOTE: No associated EntityTypeAttributes for 'entityTypeName' query parameter 'LegalEntity'
+            //TODO: Error when whereClause removed from query string
 
             //NOTE: Get the Id of the requested entityTypeName
             for (int i = 0 ; i < entityTypeDefinitions.size() ; i++)
@@ -296,10 +306,12 @@ public class BusinessEntityController
             }
 
             //NOTE: Build the selectClause using the associated EntityTypeAttributes LocalizedNames, while filtering out any entityTypeAttributesNeverToReturn
-//            selectClause = "\"Id\",\"LocalizedName\"";
+            //NOTE: selectClause = "\"Id\",\"LocalizedName\"";
+            entityTypeAttributesNeverToReturn = environment.getProperty("entityTypeAttributesNeverToReturn").split(",");
+
             for (int i = 0 ; i < entityTypeAttributes.size() ; i++)
             {
-                if (entityTypeAssociations.contains(entityTypeAttributes.get(i).getId()))
+                if (entityTypeAssociations.contains(entityTypeAttributes.get(i).getId()) && !Arrays.asList(entityTypeAttributesNeverToReturn).contains(entityTypeAttributes.get(i).getLocalizedName()))
                 {
                     selectClause = selectClause + "\"" + entityTypeAttributes.get(i).getLocalizedName() + "\",";
                 }
@@ -412,15 +424,18 @@ public class BusinessEntityController
 
                 if (entityData == null)
                 {
+                    //TODO: Improve this error output???
                     entityData = "{[]}";
                 }
 
                 //TODO: Filter or mask unauthorized or sensitive attributes for this InformationSystemUserRole (as JSON)???
             }
         }
+        //TODO: Create and throw a custom exception for "No associated EntityTypeAttributes for ... " (or associate some attributes)???
         catch (Exception e)
         {
             logger.error("GetBusinessEntities() failed due to: " + e);
+            //TODO: Improve this error output???
             return new ResponseEntity<String>("{[]}", HttpStatus.INTERNAL_SERVER_ERROR);
         }
         finally
@@ -488,7 +503,6 @@ public class BusinessEntityController
             return issueValues;
         }
 
-        //TODO: Translate sqlBlacklistValues to human-readable values
         logger.info("GuardAgainstSqlIssues succeeded when " + sqlFragment + " did not contain " + Arrays.toString(sqlBlacklistValues));
         return issueValues;
     }
