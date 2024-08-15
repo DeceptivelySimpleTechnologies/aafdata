@@ -42,5 +42,4 @@ CREATE TABLE "Person"."Person"
 
     TABLESPACE pg_default;
 
---ALTER TABLE "Person"."Person"
---    OWNER to "AafCorePublisher";
+CREATE INDEX "Person_IDX_LegalSurname_LegalGivenName" ON "Person"."Person" ("LegalSurname", "LegalGivenName")

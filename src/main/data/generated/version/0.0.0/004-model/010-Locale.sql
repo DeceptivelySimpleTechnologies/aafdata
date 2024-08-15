@@ -43,5 +43,4 @@ CREATE TABLE "Locale"."Locale"
 
     TABLESPACE pg_default;
 
---ALTER TABLE "Locale"."Locale"
---    OWNER to "AafCorePublisher";
+CREATE INDEX "Locale_IDX_StandardizedName" ON "Locale"."Locale" ("StandardizedName")

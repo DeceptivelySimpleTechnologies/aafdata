@@ -40,5 +40,4 @@ CREATE TABLE "EntitySubtype"."EntitySubtype"
 
     TABLESPACE pg_default;
 
---ALTER TABLE "EntitySubtype"."EntitySubtype"
---    OWNER to "AafCorePublisher";
+CREATE INDEX "EntitySubtype_IDX_LocalizedName" ON "EntitySubtype"."EntitySubtype" ("LocalizedName")

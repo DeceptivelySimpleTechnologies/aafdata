@@ -56,6 +56,4 @@ CREATE TABLE "EntityTypeAttribute"."EntityTypeAttribute"
 
     TABLESPACE pg_default;
 
---ALTER TABLE "EntityTypeAttribute"."EntityTypeAttribute"
---    OWNER to "AafCorePublisher";
-
+CREATE INDEX "EntityTypeAttribute_IDX_LocalizedName" ON "EntityTypeAttribute"."EntityTypeAttribute" ("LocalizedName")

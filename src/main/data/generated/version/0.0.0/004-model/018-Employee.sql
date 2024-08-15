@@ -39,5 +39,5 @@ CREATE TABLE "Employee"."Employee"
 
     TABLESPACE pg_default;
 
---ALTER TABLE "Employee"."Employee"
---    OWNER to "AafCorePublisher";
+CREATE INDEX "Employee_IDX_OrganizationId" ON "Employee"."Employee" ("OrganizationId")
+CREATE INDEX "Employee_IDX_PersonId" ON "Employee"."Employee" ("PersonId")

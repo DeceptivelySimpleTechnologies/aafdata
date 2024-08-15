@@ -39,5 +39,4 @@ CREATE TABLE "Language"."Language"
 
     TABLESPACE pg_default;
 
---ALTER TABLE "Language"."Language"
---    OWNER to "AafCorePublisher";
+CREATE INDEX "Language_IDX_LocalizedName" ON "Language"."Language" ("LocalizedName")

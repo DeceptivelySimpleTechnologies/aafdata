@@ -38,5 +38,4 @@ CREATE TABLE "GeographicUnit"."GeographicUnit"
 
     TABLESPACE pg_default;
 
---ALTER TABLE "GeographicUnit"."GeographicUnit"
---    OWNER to "AafCorePublisher";
+CREATE INDEX "GeographicUnit_IDX_LocalizedName" ON "GeographicUnit"."GeographicUnit" ("LocalizedName")

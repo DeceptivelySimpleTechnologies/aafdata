@@ -44,5 +44,4 @@ CREATE TABLE "LegalEntity"."LegalEntity"
 
     TABLESPACE pg_default;
 
---ALTER TABLE "LegalEntity"."LegalEntity"
---    OWNER to "AafCorePublisher";
+CREATE INDEX "LegalEntity_IDX_LocalizedName" ON "LegalEntity"."LegalEntity" ("LocalizedName")

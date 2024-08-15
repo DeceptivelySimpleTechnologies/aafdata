@@ -87,7 +87,7 @@ public class BusinessEntityController
                 throw new Exception("Unable to get database connection");
             }
 
-            //TODO: Force sort orders with Ordinal values (this may be an outter/inner loop problem)
+            //TODO: *** Force sort orders with Ordinal values (this may be an outter/inner loop problem)
             //NOTE: Get EntityTypeDefinitions
             statement = connection.prepareCall("{call \"GetEntityTypeDefinitions\"(?)}");
             //NOTE: Register the data OUT parameter before calling the stored procedure
@@ -216,7 +216,22 @@ public class BusinessEntityController
 
         //NOTE: Add automation batch script at infrastructure root
         //NOTE: Add uniqueness constraints to table/model scripts
-        //TODO: Add indexes to table/model scripts
+        //NOTE: *** Add indexes to name, association id, and parent/child id columns in table/model scripts
+        //TODO: *** Implement Create
+        //TODO: *** Implement Update
+        //TODO: *** Implement Delete
+        //TODO: *** Finish Swagger/OpenAPI documentation
+        //TODO: *** Finish HealthCheck
+
+        //TODO: *** Finish README.md
+        //TODO: *** Unit testing
+        //TODO: *** Security testing (database table direct access, etc)
+        //TODO: *** Dockerfile with AWS CloudFront logging driver, etc
+        //TODO: *** Add EDM to DockerHub
+
+        //TODO: Set Up Terraform Remote Backend With AWS Using A Bash Script
+
+        //TODO: Test performance and possibly add indexes to Uuid, EntitySubtypeId, and TextKey columns in table/model scripts
 
         //NOTE: Test pagination (currently only 1 at a time, not pageNumber x pageSize)
 
@@ -259,20 +274,20 @@ public class BusinessEntityController
             //TODO: Add Unknown and None to EntityTypeDefinition data???
 
             sqlBlacklistValues = environment.getProperty("sqlNotToAllow").toLowerCase().split(",");
-            //TODO: Only check whereClause and sortClause for SQL injection, not other query parameters
+            //TODO: *** Only check whereClause and sortClause for SQL injection, not other query parameters
             errorValues = GuardAgainstSqlIssues(queryParams.toString(), sqlBlacklistValues);
 
             //NOTE: Build selectClause, based on EntityTypeDefinition.LocalizedName > EntityTypeAttribute.LocalizedName
-            //TODO: Build query parameter array while validating explicit filter criteria and logging invalid attribute names, etc to be returned (see Create GET Method AAF-48)
+            //NOTE: Build query parameter array while validating explicit filter criteria and logging invalid attribute names, etc to be returned (see Create GET Method AAF-48)
             //NOTE: Use GetBusinessEntities() to get attributes for specified EntityTypeDefinition
             //NOTE: Remove attributes that should never be returned, e.g. Digest, from selectClause
-            //TODO: Get SystemGenerated from attributes, not from settings
+            //TODO: *** For Create and Update, get SystemGenerated from attributes, not from settings
             //NOTE: Use GetBusinessEntities() to cache EntityTypeDefinition, EntityTypeAttribute, and EntityTypeDefinitionEntityTypeAttributeAssociation for input validation at service startup
 
             //NOTE: Nothing returned for GeographicUnitHierarchy, Language, Locale, Person, OrganizationalUnitHierarchy, Employee,
             //NOTE: Error on OrganizationalUnit: "PersonId" does not exist (now "LocalizedName")
             //NOTE: No associated EntityTypeAttributes for 'entityTypeName' query parameter 'LegalEntity'
-            //TODO: Error when whereClause removed from query string
+            //TODO: *** Error when whereClause removed from query string
 
             //NOTE: Get the Id of the requested entityTypeName
             for (int i = 0 ; i < entityTypeDefinitions.size() ; i++)

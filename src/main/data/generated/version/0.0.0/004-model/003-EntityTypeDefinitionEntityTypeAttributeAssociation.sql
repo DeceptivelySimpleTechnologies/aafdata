@@ -30,6 +30,5 @@ CREATE TABLE "EntityTypeDefinitionEntityTypeAttributeAssociation"."EntityTypeDef
 
     TABLESPACE pg_default;
 
---ALTER TABLE "EntityTypeDefinitionEntityTypeAttributeAssociation"."EntityTypeDefinitionEntityTypeAttributeAssociation"
---    OWNER to "AafCorePublisher";
-
+CREATE INDEX "EntityTypeDefinitionEntityTypeAttributeAssociation_IDX_EntityTypeDefinitionId" ON "EntityTypeDefinitionEntityTypeAttributeAssociation"."EntityTypeDefinitionEntityTypeAttributeAssociation" ("EntityTypeDefinitionId")
+CREATE INDEX "EntityTypeDefinitionEntityTypeAttributeAssociation_IDX_EntityTypeAttributeId" ON "EntityTypeDefinitionEntityTypeAttributeAssociation"."EntityTypeDefinitionEntityTypeAttributeAssociation" ("EntityTypeAttributeId")

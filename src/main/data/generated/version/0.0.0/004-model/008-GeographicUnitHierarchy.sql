@@ -38,5 +38,5 @@ CREATE TABLE "GeographicUnitHierarchy"."GeographicUnitHierarchy"
 
     TABLESPACE pg_default;
 
---ALTER TABLE "GeographicUnitHierarchy"."GeographicUnitHierarchy"
---    OWNER to "AafCorePublisher";
+CREATE INDEX "GeographicUnitHierarchy_IDX_ParentGeographicUnitId" ON "GeographicUnitHierarchy"."GeographicUnitHierarchy" ("ParentGeographicUnitId")
+CREATE INDEX "GeographicUnitHierarchy_IDX_ChildGeographicUnitId" ON "GeographicUnitHierarchy"."GeographicUnitHierarchy" ("ChildGeographicUnitId")

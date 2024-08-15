@@ -41,5 +41,4 @@ CREATE TABLE "Organization"."Organization"
 
     TABLESPACE pg_default;
 
---ALTER TABLE "Organization"."Organization"
---    OWNER to "AafCorePublisher";
+CREATE INDEX "Organization_IDX_LegalName" ON "Organization"."Organization" ("LegalName")

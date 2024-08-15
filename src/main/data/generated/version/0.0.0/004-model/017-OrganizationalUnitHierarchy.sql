@@ -39,5 +39,5 @@ CREATE TABLE "OrganizationalUnitHierarchy"."OrganizationalUnitHierarchy"
 
     TABLESPACE pg_default;
 
---ALTER TABLE "OrganizationalUnitHierarchy"."OrganizationalUnitHierarchy"
---    OWNER to "AafCorePublisher";
+CREATE INDEX "OrganizationalUnitHierarchy_IDX_ParentOrganizationalUnitId" ON "OrganizationalUnitHierarchy"."OrganizationalUnitHierarchy" ("ParentOrganizationalUnitId")
+CREATE INDEX "OrganizationalUnitHierarchy_IDX_ChildOrganizationalUnitId" ON "OrganizationalUnitHierarchy"."OrganizationalUnitHierarchy" ("ChildOrganizationalUnitId")
