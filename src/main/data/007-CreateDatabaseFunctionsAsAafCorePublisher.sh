@@ -29,8 +29,14 @@ psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresData
 echo "Adding GetEntityTypeDefinitionEntityTypeAttributeAssociations function to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
 psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/005-function/005-GetEntityTypeDefinitionEntityTypeAttributeAssociations.sql
 
+echo "Adding GetEntitySubtypes function to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
+psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/005-function/006-GetEntitySubtypes.sql
+
+echo "Adding EntityDataCreate function to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
+psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/005-function/007-EntityDataCreate.sql
+
 echo "Adding EntityDataRead function to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
-psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/005-function/007-EntityDataRead.sql
+psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/005-function/008-EntityDataRead.sql
 
 unset PGPASSWORD
 

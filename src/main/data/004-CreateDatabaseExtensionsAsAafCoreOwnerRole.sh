@@ -14,8 +14,11 @@ postgresPassword=$7
 
 export PGPASSWORD=$postgresPassword
 
-echo "Adding UUID extentions to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
+echo "Adding UUID extensions to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
 psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/002-database/002-Uuid-Extension.sql
+
+echo "Adding cryptographic extensions to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
+psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/002-database/003-Crypto-Extension.sql
 
 unset PGPASSWORD
 

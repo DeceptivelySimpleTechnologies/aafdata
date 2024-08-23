@@ -13,9 +13,9 @@ CREATE TABLE "OrganizationalUnitHierarchy"."OrganizationalUnitHierarchy"
     "ParentOrganizationalUnitId" bigint NOT NULL,
     "ChildOrganizationalUnitId" bigint NOT NULL,
 
-    "ResourceName" character varying(100) COLLATE pg_catalog."default" NOT NULL,
-    "Ordinal" bigint NOT NULL,
-    "IsActive" boolean NOT NULL,
+    "ResourceName" character varying(100) COLLATE pg_catalog."default" NOT NULL DEFAULT '',
+    "Ordinal" bigint NOT NULL DEFAULT -1,
+    "IsActive" boolean NOT NULL DEFAULT true,
     "CorrelationUuid" uuid NOT NULL,
     "Digest" character varying(500) COLLATE pg_catalog."default" NOT NULL,
     "CreatedAtDateTimeUtc" timestamp without time zone NOT NULL,
@@ -39,5 +39,5 @@ CREATE TABLE "OrganizationalUnitHierarchy"."OrganizationalUnitHierarchy"
 
     TABLESPACE pg_default;
 
-CREATE INDEX "OrganizationalUnitHierarchy_IDX_ParentOrganizationalUnitId" ON "OrganizationalUnitHierarchy"."OrganizationalUnitHierarchy" ("ParentOrganizationalUnitId")
+CREATE INDEX "OrganizationalUnitHierarchy_IDX_ParentOrganizationalUnitId" ON "OrganizationalUnitHierarchy"."OrganizationalUnitHierarchy" ("ParentOrganizationalUnitId");
 CREATE INDEX "OrganizationalUnitHierarchy_IDX_ChildOrganizationalUnitId" ON "OrganizationalUnitHierarchy"."OrganizationalUnitHierarchy" ("ChildOrganizationalUnitId")

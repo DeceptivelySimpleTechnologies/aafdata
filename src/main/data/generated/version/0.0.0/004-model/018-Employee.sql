@@ -13,9 +13,9 @@ CREATE TABLE "Employee"."Employee"
     "OrganizationId" bigint NOT NULL,
     "PersonId" bigint NOT NULL,
 
-    "ResourceName" character varying(100) COLLATE pg_catalog."default" NOT NULL,
-    "Ordinal" bigint NOT NULL,
-    "IsActive" boolean NOT NULL,
+    "ResourceName" character varying(100) COLLATE pg_catalog."default" NOT NULL DEFAULT '',
+    "Ordinal" bigint NOT NULL DEFAULT -1,
+    "IsActive" boolean NOT NULL DEFAULT true,
     "CorrelationUuid" uuid NOT NULL,
     "Digest" character varying(500) COLLATE pg_catalog."default" NOT NULL,
     "CreatedAtDateTimeUtc" timestamp without time zone NOT NULL,
@@ -39,5 +39,5 @@ CREATE TABLE "Employee"."Employee"
 
     TABLESPACE pg_default;
 
-CREATE INDEX "Employee_IDX_OrganizationId" ON "Employee"."Employee" ("OrganizationId")
+CREATE INDEX "Employee_IDX_OrganizationId" ON "Employee"."Employee" ("OrganizationId");
 CREATE INDEX "Employee_IDX_PersonId" ON "Employee"."Employee" ("PersonId")

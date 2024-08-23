@@ -17,9 +17,9 @@ CREATE TABLE "EntityTypeDefinition"."EntityTypeDefinition"
     "DataLocationEntitySubtypeId" bigint NOT NULL,
     "DataStructureEntitySubtypeId" bigint NOT NULL,
 
-    "ResourceName" character varying(100) COLLATE pg_catalog."default" NOT NULL,
-    "Ordinal" bigint NOT NULL,
-    "IsActive" boolean NOT NULL,
+    "ResourceName" character varying(100) COLLATE pg_catalog."default" NOT NULL DEFAULT '',
+    "Ordinal" bigint NOT NULL DEFAULT -1,
+    "IsActive" boolean NOT NULL DEFAULT true,
     "CorrelationUuid" uuid NOT NULL,
     "Digest" character varying(500) COLLATE pg_catalog."default" NOT NULL,
     "CreatedAtDateTimeUtc" timestamp without time zone NOT NULL,
