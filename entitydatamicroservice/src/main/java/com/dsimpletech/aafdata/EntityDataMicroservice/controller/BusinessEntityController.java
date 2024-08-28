@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 //import org.json.*;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 
@@ -20,6 +21,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpCookie;
+import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 
 import org.springframework.util.MultiValueMap;
@@ -34,6 +36,7 @@ import org.springframework.web.server.ServerWebExchange;
 import java.lang.Exception;
 
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.time.Instant;
@@ -208,7 +211,7 @@ public class BusinessEntityController
 //        }
 //    }
 //
-    @PostMapping("/{entityTypeName}")
+    @PostMapping(value = "/{entityTypeName}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> PostBusinessEntity(@PathVariable("entityTypeName") String entityTypeName, ServerWebExchange exchange) throws Exception
     {
         ServerHttpRequest request = null;
@@ -368,7 +371,7 @@ public class BusinessEntityController
                             break;
 
                         //NOTE: DefaultTextKey
-                        //TODO: Log non-pattern matching provided values
+                        //TODO: Log non-pattern matching provided TextKey values
                         case 25:
                             //NOTE: Optional value
                             if (bodyJwtPayload.get("body").has("TextKey"))
@@ -480,7 +483,7 @@ public class BusinessEntityController
                 selectClause = selectClause.substring(0, selectClause.length() - 1);
             }
 
-            //TODO: Get UTC time in Postgres function (currently getting local)
+            //TODO: *** Get UTC time in Postgres function (currently getting local) for Create, Update, and Delete operations
 
             //TODO: Since EntityDataCreate() is in public, ensure that is locked down to correct role(s) only
             //TODO: Refactor the statements below to be reusable for validation, local caching, etc
@@ -548,7 +551,7 @@ public class BusinessEntityController
         return new ResponseEntity<String>(entityData, HttpStatus.OK);
     }
 
-    @GetMapping("/{entityTypeName}")
+    @GetMapping(value = "/{entityTypeName}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity<String> GetBusinessEntities(@PathVariable("entityTypeName") String entityTypeName, @RequestParam(defaultValue = "") String whereClause, @RequestParam(defaultValue = "") String sortClause, @RequestParam(defaultValue = "#{T(java.time.Instant).now()}") Instant asOfDateTimeUtc, @RequestParam(defaultValue = "1") long graphDepthLimit, @RequestParam(defaultValue = "1") long pageNumber, @RequestParam(defaultValue = "20") long pageSize, ServerWebExchange exchange) throws Exception
     {
@@ -575,17 +578,15 @@ public class BusinessEntityController
         //NOTE: Add automation batch script at infrastructure root
         //NOTE: Add uniqueness constraints to table/model scripts
         //NOTE: *** Add indexes to name, association id, and parent/child id columns in table/model scripts
-        //TODO: *** Implement Create
-        //TODO: *** Implement Update
         //TODO: *** Implement Delete
-        //TODO: *** Finish Swagger/OpenAPI documentation
+        //TODO: *** Finish Swagger/OpenAPI documentation (try /entities/{entityTypeName}...)
         //NOTE: *** Finish health check
 
         //TODO: *** Finish README.md
         //TODO: *** Unit testing
         //TODO: *** Security testing (database table direct access, etc)
         //TODO: *** Dockerfile with AWS CloudFront logging driver, etc
-        //TODO: *** Add EDM to DockerHub
+        //TODO: *** Add EDM image to DockerHub
 
         //TODO: ** Set up Terraform Remote Backend With AWS Using A Bash Script
         //TODO: ** Set up JWT infrastructure with request body in token
@@ -643,7 +644,6 @@ public class BusinessEntityController
             //NOTE: Build query parameter array while validating explicit filter criteria and logging invalid attribute names, etc to be returned (see Create GET Method AAF-48)
             //NOTE: Use GetBusinessEntities() to get attributes for specified EntityTypeDefinition
             //NOTE: Remove attributes that should never be returned, e.g. Digest, from selectClause
-            //TODO: *** For Create and Update, get SystemGenerated from attributes, not from settings
             //NOTE: Use GetBusinessEntities() to cache EntityTypeDefinition, EntityTypeAttribute, and EntityTypeDefinitionEntityTypeAttributeAssociation for input validation at service startup
 
             //NOTE: Nothing returned for GeographicUnitHierarchy, Language, Locale, Person, OrganizationalUnitHierarchy, Employee,
@@ -725,11 +725,11 @@ public class BusinessEntityController
             if (sortClause.length() > 0)
             {
                 sortClause = "ORDER BY " + sortClause;
-            }
 
-            if (!sortClause.contains("Ordinal"))
-            {
-                sortClause = sortClause + ", \"Ordinal ASC\" = true";
+                if (!sortClause.contains("Ordinal"))
+                {
+                    sortClause = sortClause + ", \"Ordinal ASC\" = true";
+                }
             }
 
             //NOTE: Validate and sanitize asOfDateTimeUtc
@@ -843,13 +843,296 @@ public class BusinessEntityController
         logger.info("GetBusinessEntities() succeeded for " + entityTypeName);
         //result = new JSONObject("{\"EntityData\":" + entityData + "}");
         //return "{\"EntityData\":" + entityData + "}";
-        //TODO: Echo input parameters in Postgres function return JSON
+        //TODO: Echo input parameters in Postgres function return JSON???
         return new ResponseEntity<String>(entityData, HttpStatus.OK);
     }
 
-    @PatchMapping
-    public void UpdateBusinessEntity()
+    @PatchMapping(value = "/{entityTypeName}/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> UpdateBusinessEntity(@PathVariable("entityTypeName") String entityTypeName, @PathVariable("id") Long id, ServerWebExchange exchange) throws Exception
     {
+        ServerHttpRequest request = null;
+        MultiValueMap<String,String> queryParams = null;
+
+        ResponseEntity<String> existingEntityData = null;
+
+        int entityTypeId = -1;
+        ArrayList<Integer> entityTypeAssociations = null;
+
+        String[] sqlBlacklistValues = null;
+        String errorValues = "";
+
+        String requestHeader = "";
+
+        HttpCookie authenticationJwt = null;
+        Base64.Decoder decoderBase64 = Base64.getUrlDecoder();
+        String[] authenticationJwtSections = null;
+        JsonNode authenticationJwtHeader = null;
+        JsonNode authenticationJwtPayload = null;
+        String authenticationJwtSignature = "";
+        int userId = -1;
+
+        Flux<DataBuffer> requestBody = null;
+        Mono<String> requestBodyData = null;
+        String[] bodyJwtSections = null;
+        ObjectMapper objectMapper = null;
+        JsonNode bodyJwtHeader = null;
+        JsonNode bodyJwtPayload = null;
+        String bodyJwtSignature = "";
+
+        String[] entityTypeAttributesNeverToReturn = null;
+
+        String updateClause = "";
+
+        String selectClause = "";
+
+        String entityData = "";
+
+        JsonNode entityDataJsonCurrent = null;
+        JsonNode entityDataNodeCurrent = null;
+
+        JsonNode entityDataJsonPrevious = null;
+        JsonNode entityDataNodePrevious = null;
+
+        ObjectNode entityDataNodeCombined = null;
+
+        //NOTE: Rather than validating the EntityTypeDefinition name, we're going to optimistically pass it through to the database if it returns attributes
+        //NOTE: We don't request versions our business entity data structure explicitly in the base URL; instead our explicit (v1.2.3) versioning is maintained internally, based on/derived from the AsOfUtcDateTime query parameter
+        //NOTE: Since we're not automatically parsing the resulting JSON into an object, we're returning a JSON String rather than a JSONObject
+        try
+        {
+            logger.info("Attempting to UpdateBusinessEntity() for " + entityTypeName);
+
+            request = exchange.getRequest();
+            queryParams = request.getQueryParams();
+
+            existingEntityData = GetBusinessEntities(entityTypeName, URLEncoder.encode("\"Id\" = " + id, StandardCharsets.UTF_8), "", Instant.now(), 1, 1, 1, exchange);
+
+            DB_DRIVER_CLASS = "postgresql";
+            DB_URL = environment.getProperty("spring.jdbc.url");
+            DB_USERNAME = environment.getProperty("spring.jdbc.username");
+            DB_PASSWORD = environment.getProperty("spring.jdbc.password");
+
+            databaseConnection = new DatabaseConnection();
+            connection = databaseConnection.GetDatabaseConnection(DB_DRIVER_CLASS, DB_URL, DB_USERNAME, DB_PASSWORD);
+
+            if (connection == null)
+            {
+                throw new Exception("Unable to get database connection");
+            }
+
+            //NOTE: Example request http://localhost:8080/Person with "Authentication" JWT and JWT request body
+            //NOTE: https://learning.postman.com/docs/sending-requests/response-data/cookies/
+//            Authentication JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IkF1dGhlbnRpY2F0ZWQiLCJhdWQiOiJBQUZEYXRhLUVudGl0eURhdGFNaWNyb3NlcnZpY2UiLCJleHAiOjE3MjM4MTY5MjAsImlhdCI6MTcyMzgxNjgwMCwibmJmIjoxNzIzODE2Nzg5LCJqdGkiOiJlZjRhZjRlMy1lNzM2LTQyNWEtYWFmZi1lY2EwM2I3YjliMjgiLCJib2R5Ijp7IkVtYWlsQWRkcmVzcyI6ImFteS5hbmRlcnNvbkBhbXlzYWNjb3VudGluZy5jb20ifX0.Djq5LYPEK1QFgBk9aN5Vei37K6Cb8TxNH3ADWDcUaHs
+//            Request JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IlBPU1QgL0VudGl0eVR5cGUiLCJhdWQiOiJBQUZEYXRhLUVudGl0eURhdGFNaWNyb3NlcnZpY2UiLCJleHAiOjE3MjM4MTY5MjAsImlhdCI6MTcyMzgxNjgwMCwibmJmIjoxNzIzODE2Nzg5LCJqdGkiOiI4NzUyZjIzYi0xYTliLTQyMmEtOGIyNi0zNzQyNDM0ZGY0NzYiLCJib2R5Ijp7IkVudGl0eVN1YnR5cGVJZCI6LTEsIlRleHRLZXkiOiJwZXJzb24tbm9uZS1iaWxsLWJha2VyIiwiTGVnYWxHaXZlbk5hbWUiOiJCaWxsIiwiTGVnYWxTdXJuYW1lIjoiQmFrZXIiLCJCb3JuQXREYXRlVGltZVV0YyI6IjIwMDItMDItMDMgMTE6MTI6MTMuMTIzIiwiTGVnYWxDaXRpemVuT2ZDb3VudHJ5R2VvZ3JhcGhpY1VuaXRJZCI6MSwiTG9jYWxlSWQiOjEsIk9yZGluYWwiOi0xLCJJc0FjdGl2ZSI6dHJ1ZX19.rWNowmEoPkF8N0Q5KC5-W83g3hMqIf9TV8KHzLgNbio
+
+            //TODO: Validate JWT
+            requestHeader = exchange.getRequest().getHeaders().getFirst("Temp-Body");
+            bodyJwtSections = requestHeader.split("\\.");
+            objectMapper = new ObjectMapper();
+            bodyJwtHeader = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[0]));
+            bodyJwtPayload = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[1]));
+            //TODO: Validate JWT signature per https://www.baeldung.com/java-jwt-token-decode
+
+            logger.info(("Request from '" + bodyJwtPayload.get("iss").asText() + "' for '" + bodyJwtPayload.get("aud").asText() + "' using key '" + bodyJwtHeader.get("kid").asText() + "'"));
+
+            //TODO: Validate JWT
+            authenticationJwt = request.getCookies().getFirst("Authentication");
+            authenticationJwtSections = authenticationJwt.getValue().split("\\.");
+            authenticationJwtHeader = objectMapper.readTree(decoderBase64.decode(authenticationJwtSections[0]));
+            authenticationJwtPayload = objectMapper.readTree(decoderBase64.decode(authenticationJwtSections[1]));
+            //TODO: Validate JWT signature per https://www.baeldung.com/java-jwt-token-decode
+
+            logger.info(("Requested by '" + authenticationJwtPayload.get("body").get("EmailAddress").asText() + "' using key '" + authenticationJwtHeader.get("kid").asText() + "'"));
+
+            //TODO: Look up InformationSystemUser.Id using the authenticated user's EmailAddress in the Authentication JWT payload, and assign it below
+            userId = -100;
+
+            //TODO: Check user's role(s) and permissions for this operation
+
+            sqlBlacklistValues = environment.getProperty("sqlNotToAllow").toLowerCase().split(",");
+
+            //TODO: *** Only check request body for SQL injection
+            errorValues = GuardAgainstSqlIssues(queryParams.toString(), sqlBlacklistValues);
+
+//            requestBody = request.getBody();
+//            requestBodyData = DataBufferUtils.join(requestBody).map(dataBuffer -> {
+//                byte[] bytes = new byte[dataBuffer.readableByteCount()];
+//                dataBuffer.read(bytes);
+//                DataBufferUtils.release(dataBuffer);
+//                return bytes.toString();
+//            });
+//
+//            bodyJwtSections = requestBodyData.toString().split("\\.");
+//            bodyJwtHeader = new String(decoderBase64.decode(bodyJwtSections[0]));
+//            bodyJwtPayload = new String(decoderBase64.decode(bodyJwtSections[1]));
+//            bodyJwtSignature = new String(decoderBase64.decode(bodyJwtSections[2]));
+            //TODO: Validate JWT signature per https://www.baeldung.com/java-jwt-token-decode
+
+            //NOTE: Get the Id of the requested entityTypeName
+            for (int i = 0 ; i < entityTypeDefinitions.size() ; i++)
+            {
+                if (entityTypeDefinitions.get(i).getLocalizedName().equals(entityTypeName))
+                {
+                    entityTypeId = entityTypeDefinitions.get(i).getId();
+                    break;
+                }
+            }
+
+            if (entityTypeId == -1)
+            {
+                throw new Exception("Invalid 'entityTypeName' query parameter '" + entityTypeName + "'");
+            }
+
+            //NOTE: Get the Ids of any associated EntityTypeAttributes
+            entityTypeAssociations = new ArrayList<Integer>();
+
+            for (int i = 0 ; i < entityTypeDefinitionEntityTypeAttributeAssociations.size() ; i++)
+            {
+                if (entityTypeDefinitionEntityTypeAttributeAssociations.get(i).getEntityTypeDefinitionId() == entityTypeId)
+                {
+                    entityTypeAssociations.add(entityTypeDefinitionEntityTypeAttributeAssociations.get(i).getEntityTypeAttributeId());
+                }
+            }
+
+            if (entityTypeAssociations.size() == 0)
+            {
+                throw new Exception("No associated EntityTypeAttributes for 'entityTypeName' query parameter '" + entityTypeName + "'");
+            }
+
+            //NOTE: Build the updateClause using the associated EntityTypeAttributes LocalizedNames, while filtering out any entityTypeAttributesNeverToReturn
+            //NOTE: updateClause = "\"Id\",\"LocalizedName\"";
+            entityTypeAttributesNeverToReturn = environment.getProperty("entityTypeAttributesNeverToReturn").split(",");
+
+            for (int i = 0 ; i < entityTypeAttributes.size() ; i++)
+            {
+                if (entityTypeAssociations.contains(entityTypeAttributes.get(i).getId())) {
+                    switch (entityTypeAttributes.get(i).getEntityTypeAttributeValueEntitySubtypeId()) {
+                        //NOTE: PrimaryKey, Uuid, CreatedDateTime, CreatedByUserId, UpdatedDateTime, UpdatedByUserId, DeletedDateTime, DeletedByUserId, CorrelationUuid, Digest
+                        case 23, 24, 27, 28, 29, 30, 31, 32, 33, 34:
+                            if (bodyJwtPayload.get("body").has(entityTypeAttributes.get(i).getLocalizedName())) {
+                                //NOTE: System-generated (server-side) values
+                                logger.warn(("Attempt to specify system-generated '" + entityTypeAttributes.get(i).getLocalizedName() + "' value as " + authenticationJwtPayload.get("body").get(entityTypeAttributes.get(i).getLocalizedName()).asText() + "'"));
+                            }
+                            break;
+
+                        //NOTE: DefaultTextKey
+                        //TODO: Log non-pattern matching provided TextKey values
+//                        case 25:
+//
+                        //NOTE: Required and optional values
+                        default:
+                            if (bodyJwtPayload.get("body").has(entityTypeAttributes.get(i).getLocalizedName())) {
+                                switch (entityTypeAttributes.get(i).getGeneralizedDataTypeEntitySubtypeId()) {
+                                    //NOTE: Boolean, Integer, Decimal
+                                    case 10, 11, 16:
+                                        updateClause = updateClause + "\"" + entityTypeAttributes.get(i).getLocalizedName() + "\" = " + bodyJwtPayload.get("body").get(entityTypeAttributes.get(i).getLocalizedName()).asText() + ", ";
+                                        break;
+                                    //NOTE: UnicodeCharacter, UnicodeString, DateTime
+                                    case 12, 13, 14:
+                                        updateClause = updateClause + "\"" + entityTypeAttributes.get(i).getLocalizedName() + "\" = '" + bodyJwtPayload.get("body").get(entityTypeAttributes.get(i).getLocalizedName()).asText() + "', ";
+                                        break;
+                                }
+                            }
+                            break;
+                    }
+                }
+
+                if (entityTypeAssociations.contains(entityTypeAttributes.get(i).getId()) && !Arrays.asList(entityTypeAttributesNeverToReturn).contains(entityTypeAttributes.get(i).getLocalizedName()))
+                {
+                    selectClause = selectClause + "\"" + entityTypeAttributes.get(i).getLocalizedName() + "\",";
+                }
+            }
+
+            if (updateClause.length() > 0){
+                updateClause = updateClause.substring(0, updateClause.length() - 2);
+            }
+
+            if (selectClause.length() > 0){
+                selectClause = selectClause.substring(0, selectClause.length() - 1);
+            }
+
+            //TODO: *** Get UTC time in Postgres function (currently getting local) for Create, Update, and Delete operations
+
+            //TODO: Since EntityDataCreate() is in public, ensure that is locked down to correct role(s) only
+            //TODO: Refactor the statements below to be reusable for validation, local caching, etc
+            if (errorValues.length() == 0)
+            {
+                statement = connection.prepareCall("{call \"EntityDataUpdate\"(?,?,?,?,?,?,?)}");
+                statement.setString(1, entityTypeName);
+                statement.setString(2, updateClause);
+                statement.setString(3, selectClause);
+                statement.setObject(4, bodyJwtPayload.get("jti").asText(), Types.OTHER);
+                statement.setLong(5, userId);
+                statement.setLong(6, id);
+
+                //NOTE: Register the data OUT parameter before calling the stored procedure
+                statement.registerOutParameter(7, Types.LONGVARCHAR);
+                statement.executeUpdate();
+
+                //NOTE: Read the OUT parameter now
+                entityData = statement.getString(7);
+
+                if (entityData == null)
+                {
+                    //TODO: Improve this error output???
+                    entityData = "{[]}";
+                }
+                else
+                {
+                    entityDataJsonCurrent = objectMapper.readTree(entityData);
+                    entityDataNodeCurrent = objectMapper.readTree(entityDataJsonCurrent.path("EntityData").toString());
+
+                    entityDataJsonPrevious = objectMapper.readTree(existingEntityData.getBody());
+                    entityDataNodePrevious = objectMapper.readTree(entityDataJsonPrevious.path("EntityData").toString());
+
+                    entityDataNodeCombined = objectMapper.createObjectNode();
+
+                    entityDataNodeCombined.put("EntityType", entityDataJsonCurrent.path("EntityType").asText());
+                    entityDataNodeCombined.put("TotalRows", entityDataJsonCurrent.path("TotalRows").asLong());
+
+                    entityDataNodeCombined.set("EntityData", entityDataNodeCurrent);
+                    entityDataNodeCombined.set("EntityDataPrevious", entityDataNodePrevious);
+                }
+
+                //TODO: Filter or mask unauthorized or sensitive attributes for this InformationSystemUserRole (as JSON)???
+            }
+        }
+        catch (Exception e)
+        {
+            logger.error("UpdateBusinessEntity() failed due to: " + e);
+            //TODO: Improve this error output???
+            return new ResponseEntity<String>("{[]}", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        finally
+        {
+            try
+            {
+                if (resultSet != null) {
+                    resultSet.close();
+                    resultSet = null;
+                }
+
+                if (statement != null) {
+                    statement.close();
+                    statement = null;
+                }
+
+                if (connection != null) {
+                    connection.close();
+                    connection = null;
+                }
+            }
+            catch (SQLException e)
+            {
+                logger.error("Failed to close statement and/or connection resource in UpdateBusinessEntity() due to: " + e);
+            }
+        }
+
+        logger.info("UpdateBusinessEntity() succeeded for " + entityTypeName);
+        //result = new JSONObject("{\"EntityData\":" + entityData + "}");
+        //return "{\"EntityData\":" + entityData + "}";
+        //TODO: Echo input parameters in Postgres function return JSON???
+        return new ResponseEntity<String>(entityDataNodeCombined.toString(), HttpStatus.OK);
     }
 
     @DeleteMapping

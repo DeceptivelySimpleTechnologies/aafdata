@@ -58,15 +58,14 @@ AS $BODY$
 	EXECUTE insertQuery;
 
 	countQuery := 'SELECT COUNT("Id") FROM "' || entitytypename || '"."' || entitytypename || '" WHERE "IsActive" = true AND "DeletedAtDateTimeUtc" = ''9999-12-31T23:59:59.999'';';
-	dataQuery := 'WITH JsonData AS (SELECT * FROM "'|| entitytypename ||'"."'|| entitytypename ||'" WHERE "Id" = 2) SELECT JSON_AGG(JsonData.*) FROM JsonData;';
---	dataQuery := 'WITH JsonData AS (SELECT * FROM "'|| entitytypename ||'"."'|| entitytypename ||'" WHERE "Id" = '|| newRecordId ||') SELECT JSON_AGG(JsonData.*) FROM JsonData;';
---	dataQuery := 'WITH JsonData AS (SELECT '|| selectClause ||' FROM "'|| entitytypename ||'"."'|| entitytypename ||'" WHERE "Id" = '|| newRecordId ||') SELECT JSON_AGG(JsonData.*) FROM JsonData;';
+--	dataQuery := 'WITH JsonData AS (SELECT * FROM "'|| entitytypename ||'"."'|| entitytypename ||'" WHERE "Id" = 2) SELECT JSON_AGG(JsonData.*) FROM JsonData;';
+	dataQuery := 'WITH JsonData AS (SELECT '|| selectClause ||' FROM "'|| entitytypename ||'"."'|| entitytypename ||'" WHERE "Id" = '|| newRecordId ||') SELECT JSON_AGG(JsonData.*) FROM JsonData;';
 
 	EXECUTE countQuery INTO entityCount;
 	EXECUTE dataQuery INTO entityData;
 
-	RETURN '{"EntityType":"' || entitytypename || '","TotalRows":' || entityCount || ',"EntityData":' || entityData || '}';
 --	RETURN '{"EntityType":"' || entitytypename || '","TotalRows":' || entityCount || ',"newRecordId":' || newRecordId || ',"EntityData":' || entityData || '}';
+	RETURN '{"EntityType":"' || entitytypename || '","TotalRows":' || entityCount || ',"EntityData":' || entityData || '}';
 
   END;
 $BODY$;
