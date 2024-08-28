@@ -41,6 +41,9 @@ psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresData
 echo "Adding EntityDataUpdate function to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
 psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/005-function/009-EntityDataUpdate.sql
 
+echo "Adding EntityDataDelete function to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
+psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/005-function/010-EntityDataDelete.sql
+
 unset PGPASSWORD
 
 # Log in using custom AafCorePublisher role
