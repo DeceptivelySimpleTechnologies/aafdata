@@ -16,6 +16,8 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ResolvableType;
+import org.springframework.core.codec.DataBufferDecoder;
 import org.springframework.core.env.Environment;
 
 import org.springframework.core.io.buffer.DataBuffer;
@@ -211,8 +213,8 @@ public class BusinessEntityController
 //        }
 //    }
 //
-    @PostMapping(value = "/{entityTypeName}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> PostBusinessEntity(@PathVariable("entityTypeName") String entityTypeName, ServerWebExchange exchange) throws Exception
+    @PostMapping(value = "/entityTypes/{entityTypeName}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> PostBusinessEntity(@PathVariable("entityTypeName") String entityTypeName, @RequestBody String requestBody, ServerWebExchange exchange) throws Exception
     {
         ServerHttpRequest request = null;
 //        MultiValueMap<String,String> queryParams = null;
@@ -233,8 +235,6 @@ public class BusinessEntityController
         String authenticationJwtSignature = "";
         int userId = -1;
 
-        Flux<DataBuffer> requestBody = null;
-        Mono<String> requestBodyData = null;
         String[] bodyJwtSections = null;
         ObjectMapper objectMapper = null;
         JsonNode bodyJwtHeader = null;
@@ -278,10 +278,16 @@ public class BusinessEntityController
 //            Authentication JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IkF1dGhlbnRpY2F0ZWQiLCJhdWQiOiJBQUZEYXRhLUVudGl0eURhdGFNaWNyb3NlcnZpY2UiLCJleHAiOjE3MjM4MTY5MjAsImlhdCI6MTcyMzgxNjgwMCwibmJmIjoxNzIzODE2Nzg5LCJqdGkiOiJlZjRhZjRlMy1lNzM2LTQyNWEtYWFmZi1lY2EwM2I3YjliMjgiLCJib2R5Ijp7IkVtYWlsQWRkcmVzcyI6ImFteS5hbmRlcnNvbkBhbXlzYWNjb3VudGluZy5jb20ifX0.Djq5LYPEK1QFgBk9aN5Vei37K6Cb8TxNH3ADWDcUaHs
 //            Request JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IlBPU1QgL0VudGl0eVR5cGUiLCJhdWQiOiJBQUZEYXRhLUVudGl0eURhdGFNaWNyb3NlcnZpY2UiLCJleHAiOjE3MjM4MTY5MjAsImlhdCI6MTcyMzgxNjgwMCwibmJmIjoxNzIzODE2Nzg5LCJqdGkiOiI4NzUyZjIzYi0xYTliLTQyMmEtOGIyNi0zNzQyNDM0ZGY0NzYiLCJib2R5Ijp7IkVudGl0eVN1YnR5cGVJZCI6LTEsIlRleHRLZXkiOiJwZXJzb24tbm9uZS1iaWxsLWJha2VyIiwiTGVnYWxHaXZlbk5hbWUiOiJCaWxsIiwiTGVnYWxTdXJuYW1lIjoiQmFrZXIiLCJCb3JuQXREYXRlVGltZVV0YyI6IjIwMDItMDItMDMgMTE6MTI6MTMuMTIzIiwiTGVnYWxDaXRpemVuT2ZDb3VudHJ5R2VvZ3JhcGhpY1VuaXRJZCI6MSwiTG9jYWxlSWQiOjEsIk9yZGluYWwiOi0xLCJJc0FjdGl2ZSI6dHJ1ZX19.rWNowmEoPkF8N0Q5KC5-W83g3hMqIf9TV8KHzLgNbio
 
-            //TODO: Validate JWT
-            requestHeader = exchange.getRequest().getHeaders().getFirst("Temp-Body");
-            bodyJwtSections = requestHeader.split("\\.");
             objectMapper = new ObjectMapper();
+
+            //TODO: Validate JWT
+            //NOTE: Example of how to get a header JWT value from a request and decode it
+//            requestHeader = exchange.getRequest().getHeaders().getFirst("Temp-Body");
+//            bodyJwtSections = requestHeader.split("\\.");
+//            bodyJwtHeader = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[0]));
+//            bodyJwtPayload = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[1]));
+
+            bodyJwtSections = requestBody.split("\\.");
             bodyJwtHeader = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[0]));
             bodyJwtPayload = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[1]));
             //TODO: Validate JWT signature per https://www.baeldung.com/java-jwt-token-decode
@@ -306,20 +312,6 @@ public class BusinessEntityController
 
             //TODO: *** Only check request body for SQL injection
 //            errorValues = GuardAgainstSqlIssues(queryParams.toString(), sqlBlacklistValues);
-
-//            requestBody = request.getBody();
-//            requestBodyData = DataBufferUtils.join(requestBody).map(dataBuffer -> {
-//                byte[] bytes = new byte[dataBuffer.readableByteCount()];
-//                dataBuffer.read(bytes);
-//                DataBufferUtils.release(dataBuffer);
-//                return bytes.toString();
-//            });
-//
-//            bodyJwtSections = requestBodyData.toString().split("\\.");
-//            bodyJwtHeader = new String(decoderBase64.decode(bodyJwtSections[0]));
-//            bodyJwtPayload = new String(decoderBase64.decode(bodyJwtSections[1]));
-//            bodyJwtSignature = new String(decoderBase64.decode(bodyJwtSections[2]));
-            //TODO: Validate JWT signature per https://www.baeldung.com/java-jwt-token-decode
 
             //NOTE: Get the Id of the requested entityTypeName
             for (int i = 0 ; i < entityTypeDefinitions.size() ; i++)
@@ -379,7 +371,7 @@ public class BusinessEntityController
                                 switch (entityTypeAttributes.get(i).getGeneralizedDataTypeEntitySubtypeId()) {
                                     //NOTE: Boolean, Integer, Decimal
                                     case 10, 11, 16:
-                                        //TODO: Find and replace "magic", hard-coded values, e.g. "TextKey"
+                                        //TODO: ** Find and replace "magic", hard-coded values, e.g. "TextKey"
                                         insertValues = insertValues + bodyJwtPayload.get("body").get("TextKey").asText() + ",";
                                         break;
                                     //NOTE: UnicodeCharacter, UnicodeString, DateTime
@@ -483,8 +475,6 @@ public class BusinessEntityController
                 selectClause = selectClause.substring(0, selectClause.length() - 1);
             }
 
-            //TODO: *** Get UTC time in Postgres function (currently getting local) for Create, Update, and Delete operations
-
             //TODO: Since EntityDataCreate() is in public, ensure that is locked down to correct role(s) only
             //TODO: Refactor the statements below to be reusable for validation, local caching, etc
             if (errorValues.length() == 0)
@@ -551,7 +541,7 @@ public class BusinessEntityController
         return new ResponseEntity<String>(entityData, HttpStatus.OK);
     }
 
-    @GetMapping(value = "/{entityTypeName}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/entityTypes/{entityTypeName}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity<String> GetBusinessEntities(@PathVariable("entityTypeName") String entityTypeName, @RequestParam(defaultValue = "") String whereClause, @RequestParam(defaultValue = "") String sortClause, @RequestParam(defaultValue = "#{T(java.time.Instant).now()}") Instant asOfDateTimeUtc, @RequestParam(defaultValue = "1") long graphDepthLimit, @RequestParam(defaultValue = "1") long pageNumber, @RequestParam(defaultValue = "20") long pageSize, ServerWebExchange exchange) throws Exception
     {
@@ -578,8 +568,8 @@ public class BusinessEntityController
         //NOTE: Add automation batch script at infrastructure root
         //NOTE: Add uniqueness constraints to table/model scripts
         //NOTE: *** Add indexes to name, association id, and parent/child id columns in table/model scripts
-        //TODO: *** Implement Delete
-        //TODO: *** Finish Swagger/OpenAPI documentation (try /entities/{entityTypeName}...)
+        //TODO: *** Get UTC time in Postgres function (currently getting local) for Create, Update, and Delete operations
+        //TODO: *** Finish Swagger/OpenAPI documentation
         //NOTE: *** Finish health check
 
         //TODO: *** Finish README.md
@@ -847,8 +837,8 @@ public class BusinessEntityController
         return new ResponseEntity<String>(entityData, HttpStatus.OK);
     }
 
-    @PatchMapping(value = "/{entityTypeName}/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> UpdateBusinessEntity(@PathVariable("entityTypeName") String entityTypeName, @PathVariable("id") Long id, ServerWebExchange exchange) throws Exception
+    @PatchMapping(value = "/entityTypes/{entityTypeName}/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> UpdateBusinessEntity(@PathVariable("entityTypeName") String entityTypeName, @PathVariable("id") Long id, @RequestBody String requestBody, ServerWebExchange exchange) throws Exception
     {
         ServerHttpRequest request = null;
         MultiValueMap<String,String> queryParams = null;
@@ -856,12 +846,14 @@ public class BusinessEntityController
         ResponseEntity<String> existingEntityData = null;
 
         int entityTypeId = -1;
+
         ArrayList<Integer> entityTypeAssociations = null;
 
         String[] sqlBlacklistValues = null;
         String errorValues = "";
 
-        String requestHeader = "";
+        //NOTE: Variable declaration for request header example below
+//        String requestHeader = "";
 
         HttpCookie authenticationJwt = null;
         Base64.Decoder decoderBase64 = Base64.getUrlDecoder();
@@ -871,13 +863,11 @@ public class BusinessEntityController
         String authenticationJwtSignature = "";
         int userId = -1;
 
-        Flux<DataBuffer> requestBody = null;
-        Mono<String> requestBodyData = null;
         String[] bodyJwtSections = null;
         ObjectMapper objectMapper = null;
         JsonNode bodyJwtHeader = null;
         JsonNode bodyJwtPayload = null;
-        String bodyJwtSignature = "";
+        JsonNode bodyJwtSignature = null;
 
         String[] entityTypeAttributesNeverToReturn = null;
 
@@ -925,10 +915,16 @@ public class BusinessEntityController
 //            Authentication JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IkF1dGhlbnRpY2F0ZWQiLCJhdWQiOiJBQUZEYXRhLUVudGl0eURhdGFNaWNyb3NlcnZpY2UiLCJleHAiOjE3MjM4MTY5MjAsImlhdCI6MTcyMzgxNjgwMCwibmJmIjoxNzIzODE2Nzg5LCJqdGkiOiJlZjRhZjRlMy1lNzM2LTQyNWEtYWFmZi1lY2EwM2I3YjliMjgiLCJib2R5Ijp7IkVtYWlsQWRkcmVzcyI6ImFteS5hbmRlcnNvbkBhbXlzYWNjb3VudGluZy5jb20ifX0.Djq5LYPEK1QFgBk9aN5Vei37K6Cb8TxNH3ADWDcUaHs
 //            Request JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IlBBVENIIC9FbnRpdHlUeXBlIiwiYXVkIjoiQUFGRGF0YS1FbnRpdHlEYXRhTWljcm9zZXJ2aWNlIiwiZXhwIjoxNzIzODE2OTIwLCJpYXQiOjE3MjM4MTY4MDAsIm5iZiI6MTcyMzgxNjc4OSwianRpIjoiMzZkMGRiMjYtZjIyYy00NTc3LTgwNzYtMTZjZGFkMThjZDU4IiwiYm9keSI6eyJMZWdhbEdpdmVuTmFtZSI6IldpbGxpYW0iLCJMZWdhbFN1cm5hbWUiOiJCYWtlci1QQVRDSEVEIiwiQm9ybkF0RGF0ZVRpbWVVdGMiOiIyMDAyLTAzLTA0IDEyOjEzOjE0LjIzNCJ9fQ.kZRsD0iQ0gADzWEkY2-8R80TDlhC4Jm1P3qWYLwbkhk
 
-            //TODO: Validate JWT
-            requestHeader = exchange.getRequest().getHeaders().getFirst("Temp-Body");
-            bodyJwtSections = requestHeader.split("\\.");
             objectMapper = new ObjectMapper();
+
+            //TODO: Validate JWT
+            //NOTE: Example of how to get a header JWT value from a request and decode it
+//            requestHeader = exchange.getRequest().getHeaders().getFirst("Temp-Body");
+//            bodyJwtSections = requestHeader.split("\\.");
+//            bodyJwtHeader = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[0]));
+//            bodyJwtPayload = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[1]));
+
+            bodyJwtSections = requestBody.split("\\.");
             bodyJwtHeader = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[0]));
             bodyJwtPayload = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[1]));
             //TODO: Validate JWT signature per https://www.baeldung.com/java-jwt-token-decode
@@ -953,20 +949,6 @@ public class BusinessEntityController
 
             //TODO: *** Only check request body for SQL injection
             errorValues = GuardAgainstSqlIssues(queryParams.toString(), sqlBlacklistValues);
-
-//            requestBody = request.getBody();
-//            requestBodyData = DataBufferUtils.join(requestBody).map(dataBuffer -> {
-//                byte[] bytes = new byte[dataBuffer.readableByteCount()];
-//                dataBuffer.read(bytes);
-//                DataBufferUtils.release(dataBuffer);
-//                return bytes.toString();
-//            });
-//
-//            bodyJwtSections = requestBodyData.toString().split("\\.");
-//            bodyJwtHeader = new String(decoderBase64.decode(bodyJwtSections[0]));
-//            bodyJwtPayload = new String(decoderBase64.decode(bodyJwtSections[1]));
-//            bodyJwtSignature = new String(decoderBase64.decode(bodyJwtSections[2]));
-            //TODO: Validate JWT signature per https://www.baeldung.com/java-jwt-token-decode
 
             //NOTE: Get the Id of the requested entityTypeName
             for (int i = 0 ; i < entityTypeDefinitions.size() ; i++)
@@ -1135,13 +1117,14 @@ public class BusinessEntityController
         return new ResponseEntity<String>(entityDataNodeCombined.toString(), HttpStatus.OK);
     }
 
-    @DeleteMapping(value = "/{entityTypeName}/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> DeleteBusinessEntity(@PathVariable("entityTypeName") String entityTypeName, @PathVariable("id") Long id, ServerWebExchange exchange) throws Exception
+    @DeleteMapping(value = "/entityTypes/{entityTypeName}/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> DeleteBusinessEntity(@PathVariable("entityTypeName") String entityTypeName, @PathVariable("id") Long id, @RequestBody String requestBody, ServerWebExchange exchange) throws Exception
     {
         ServerHttpRequest request = null;
         MultiValueMap<String,String> queryParams = null;
 
         int entityTypeId = -1;
+
         ArrayList<Integer> entityTypeAssociations = null;
 
         String[] sqlBlacklistValues = null;
@@ -1157,8 +1140,6 @@ public class BusinessEntityController
         String authenticationJwtSignature = "";
         int userId = -1;
 
-        Flux<DataBuffer> requestBody = null;
-        Mono<String> requestBodyData = null;
         String[] bodyJwtSections = null;
         ObjectMapper objectMapper = null;
         JsonNode bodyJwtHeader = null;
@@ -1199,10 +1180,16 @@ public class BusinessEntityController
 //            Authentication JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IkF1dGhlbnRpY2F0ZWQiLCJhdWQiOiJBQUZEYXRhLUVudGl0eURhdGFNaWNyb3NlcnZpY2UiLCJleHAiOjE3MjM4MTY5MjAsImlhdCI6MTcyMzgxNjgwMCwibmJmIjoxNzIzODE2Nzg5LCJqdGkiOiJlZjRhZjRlMy1lNzM2LTQyNWEtYWFmZi1lY2EwM2I3YjliMjgiLCJib2R5Ijp7IkVtYWlsQWRkcmVzcyI6ImFteS5hbmRlcnNvbkBhbXlzYWNjb3VudGluZy5jb20ifX0.Djq5LYPEK1QFgBk9aN5Vei37K6Cb8TxNH3ADWDcUaHs
 //            Request JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IkRFTEVURSAvRW50aXR5VHlwZSIsImF1ZCI6IkFBRkRhdGEtRW50aXR5RGF0YU1pY3Jvc2VydmljZSIsImV4cCI6MTcyMzgxNjkyMCwiaWF0IjoxNzIzODE2ODAwLCJuYmYiOjE3MjM4MTY3ODksImp0aSI6Ijg3NTJmMjNiLTFhOWItNDIyYS04YjI2LTM3NDI0MzRkZjQ3NiIsImJvZHkiOnt9fQ.EXVVn6GyQc7IWnEGLlxZcLrb-Jn6P9s11xq0_W-il4I
 
-            //TODO: Validate JWT
-            requestHeader = exchange.getRequest().getHeaders().getFirst("Temp-Body");
-            bodyJwtSections = requestHeader.split("\\.");
             objectMapper = new ObjectMapper();
+
+            //TODO: Validate JWT
+            //NOTE: Example of how to get a header JWT value from a request and decode it
+//            requestHeader = exchange.getRequest().getHeaders().getFirst("Temp-Body");
+//            bodyJwtSections = requestHeader.split("\\.");
+//            bodyJwtHeader = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[0]));
+//            bodyJwtPayload = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[1]));
+
+            bodyJwtSections = requestBody.split("\\.");
             bodyJwtHeader = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[0]));
             bodyJwtPayload = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[1]));
             //TODO: Validate JWT signature per https://www.baeldung.com/java-jwt-token-decode
@@ -1227,20 +1214,6 @@ public class BusinessEntityController
 
             //TODO: *** Only check request body for SQL injection
             errorValues = GuardAgainstSqlIssues(queryParams.toString(), sqlBlacklistValues);
-
-//            requestBody = request.getBody();
-//            requestBodyData = DataBufferUtils.join(requestBody).map(dataBuffer -> {
-//                byte[] bytes = new byte[dataBuffer.readableByteCount()];
-//                dataBuffer.read(bytes);
-//                DataBufferUtils.release(dataBuffer);
-//                return bytes.toString();
-//            });
-//
-//            bodyJwtSections = requestBodyData.toString().split("\\.");
-//            bodyJwtHeader = new String(decoderBase64.decode(bodyJwtSections[0]));
-//            bodyJwtPayload = new String(decoderBase64.decode(bodyJwtSections[1]));
-//            bodyJwtSignature = new String(decoderBase64.decode(bodyJwtSections[2]));
-            //TODO: Validate JWT signature per https://www.baeldung.com/java-jwt-token-decode
 
             //NOTE: Get the Id of the requested entityTypeName
             for (int i = 0 ; i < entityTypeDefinitions.size() ; i++)
