@@ -1,0 +1,12 @@
+-- NOTE: Run this script as the custom AafCorePublisher database role/account, which should be created by the AafCoreOwner role.
+
+-- Table: LegalEntity.LegalEntity
+
+INSERT INTO "LegalEntity"."LegalEntity"
+    ("Id", "Uuid", "EntitySubtypeId", "TextKey", "OrganizationalUnitId", "PersonId", "LocalizedName", "LocalizedDescription", "LocalizedAbbreviation", "ResourceName", "Ordinal", "IsActive", "CorrelationUuid", "Digest", "CreatedAtDateTimeUtc", "CreatedByInformationSystemUserId", "UpdatedAtDateTimeUtc", "UpdatedByInformationSystemUserId", "DeletedAtDateTimeUtc", "DeletedByInformationSystemUserId")
+VALUES
+    (-1, '48d8779d-d820-41f4-91a4-358bb20df9b4', 0, 'legalentity-unknown-unknown', -1, -1, 'Unknown', 'Represents an as yet undetermined LegalEntity value, often used as an initial default value or as a temporary placeholder that will be updated in the future', 'Lgl Ent Ukwn', '', -1, true, '00000000-0000-0000-0000-000000000000', '890a40f9206d05ec5c27266055a212d8a362a55c8df026c53da87098ddfe4eb2', '2022-06-01 00:00:00.000', 0, '2022-06-01 00:00:00.000', 0, '9999-12-31 23:59:59.999', 0),
+    (0, '78149958-8bb2-4a50-a447-8543b4d40100', 0, 'legalentity-none-none', 0, 0, 'None', 'Represents a value indicating that LegalEntity does not apply in this case, is intentionally omitted or undefined, or is not relevant', 'Lgl Ent None', '', -1, true, '00000000-0000-0000-0000-000000000000', '96c1d35efd9bc23b1bcc5da3b544a668e2ebc17676af7ae86a1c5d7e9b873579', '2022-06-01 00:00:00.000', 0, '2022-06-01 00:00:00.000', 0, '9999-12-31 23:59:59.999', 0),
+    (1, 'b8c7c9e6-db5a-4c4e-8abd-f022a3e85a1a', 50, 'legalentity-person-amyanderson', 0, 1, 'Amy Anderson', 'A LegalEntity that is an individual Person', 'AA Pers', '', -1, true, '00000000-0000-0000-0000-000000000000', 'e95988c8202f65936f40dff6d3e2f9d24f5d5817cc58cfaea0f595a8dc86e9ae', '2022-06-01 00:00:00.000', 0, '2022-06-01 00:00:00.000', 0, '9999-12-31 23:59:59.999', 0),
+    (2, '51a8c20b-68cc-4117-a4f7-6ed951a2d5f7', 48, 'legalentity-organization-amysaccounting', 3, 0, 'Amys Accounting', 'A LegalEntity that is a corporate legal entity', 'AA Org', '', -1, true, '00000000-0000-0000-0000-000000000000', 'e01fae3f1240dccec8ec837252ad830f85e786a800149be5c78f70906aa26d1d', '2022-06-01 00:00:00.000', 0, '2022-06-01 00:00:00.000', 0, '9999-12-31 23:59:59.999', 0)
+;
