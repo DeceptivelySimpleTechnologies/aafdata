@@ -1,14 +1,24 @@
+//NOTE: Copyright © 2003-2024 Deceptively Simple Technologies Inc. Some rights reserved. Please see the aafdata/LICENSE.txt file for details.
+
 package com.dsimpletech.aafdata.EntityDataMicroservice.controller;
 
 
 import com.dsimpletech.aafdata.EntityDataMicroservice.database.*;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-//import org.json.*;
-
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 
@@ -16,12 +26,8 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.ResolvableType;
-import org.springframework.core.codec.DataBufferDecoder;
 import org.springframework.core.env.Environment;
 
-import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -44,10 +50,8 @@ import java.sql.*;
 import java.time.Instant;
 import java.util.*;
 
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
-
+@Tag(name = "Adaptív Application Foundation (AAF) Data Layer (AAF Data)", description = "Locally-Sourced, Artisanal Data™")
 @RestController
 @RequestMapping(value = "/")
 public class BusinessEntityController
@@ -194,13 +198,16 @@ public class BusinessEntityController
             logger.info("GetEntityData() succeeded");
     }
 
-    //NOTE: Implement this
     @PreDestroy
     private void DeleteEntityData() {
+        logger.info("Attempting to DeleteEntityData()");
+
         entityTypeDefinitions = null;
         entityTypeAttributes = null;
         entityTypeDefinitionEntityTypeAttributeAssociations = null;
         entitySubtypes = null;
+
+        logger.info("DeleteEntityData() succeeded");
     }
 
     //NOTE: Suppress browser-based favicon.ico requests
@@ -213,6 +220,12 @@ public class BusinessEntityController
 //        }
 //    }
 //
+    @Operation(summary = "Create entity data for the specified EntityType", description = "Create entity data by providing the valid, required data and any valid, optional data as a JSON Web Token (JWT, please see https://jwt.io/) in the HTTP request body")
+    @Parameter(in = ParameterIn.COOKIE, description = "JWT Authentication token", name = "Authentication", content = @Content(schema = @Schema(type = "string")))
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Created", content = @Content(schema = @Schema(type = "string"))),
+        @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
+    })
     @PostMapping(value = "/entityTypes/{entityTypeName}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> PostBusinessEntity(@PathVariable("entityTypeName") String entityTypeName, @RequestBody String requestBody, ServerWebExchange exchange) throws Exception
     {
@@ -538,9 +551,15 @@ public class BusinessEntityController
         //result = new JSONObject("{\"EntityData\":" + entityData + "}");
         //return "{\"EntityData\":" + entityData + "}";
         //TODO: Echo input parameters in Postgres function return JSON
-        return new ResponseEntity<String>(entityData, HttpStatus.OK);
+        return new ResponseEntity<String>(entityData, HttpStatus.CREATED);
     }
 
+    @Operation(summary = "Read entity data for the specified EntityType", description = "Read entity data by providing optional, URL-encoded 'whereClause' (not including the 'WHERE' keyword), 'sortClause' (not including the 'ORDER BY' keywords), 'pageNumber', and 'pageSize' query parameters.  Please note that the 'asOfDateTimeUtc' and 'graphDepthLimit' query parameters are not currently implemented and so have no effect.")
+    @Parameter(in = ParameterIn.COOKIE, description = "JWT Authentication token", name = "Authentication", content = @Content(schema = @Schema(type = "string")))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(type = "string"))),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
+    })
     @GetMapping(value = "/entityTypes/{entityTypeName}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity<String> GetBusinessEntities(@PathVariable("entityTypeName") String entityTypeName, @RequestParam(defaultValue = "") String whereClause, @RequestParam(defaultValue = "") String sortClause, @RequestParam(defaultValue = "#{T(java.time.Instant).now()}") Instant asOfDateTimeUtc, @RequestParam(defaultValue = "1") long graphDepthLimit, @RequestParam(defaultValue = "1") long pageNumber, @RequestParam(defaultValue = "20") long pageSize, ServerWebExchange exchange) throws Exception
@@ -562,29 +581,17 @@ public class BusinessEntityController
 
         String entityData = "";
 
-        //NOTE: In Postgres function, if possible change ALTER FUNCTION public."EntityDataRead"(character varying) OWNER TO postgres to GRANT
-        //NOTE: Add ReadWrite and ReadOnly roles, and remove direct table access with SQL GRANTs; CRUD only enforced upstream through process service calls
-
-        //NOTE: Add automation batch script at infrastructure root
-        //NOTE: Add uniqueness constraints to table/model scripts
-        //NOTE: *** Add indexes to name, association id, and parent/child id columns in table/model scripts
-        //TODO: *** Get UTC time in Postgres function (currently getting local) for Create, Update, and Delete operations
-        //TODO: *** Finish Swagger/OpenAPI documentation
-        //NOTE: *** Finish health check
-
-        //TODO: *** Finish README.md
-        //TODO: *** Unit testing
-        //TODO: *** Security testing (database table direct access, etc)
         //TODO: *** Dockerfile with AWS CloudFront logging driver, etc
         //TODO: *** Add EDM image to DockerHub
+        //TODO: *** Unit testing
+        //TODO: *** LOC environment setup (with profiles, etc)
+        //TODO: *** Security testing (database table direct access, etc)
 
         //TODO: ** Set up Terraform Remote Backend With AWS Using A Bash Script
-        //TODO: ** Set up JWT infrastructure with request body in token
+        //TODO: ** Enhance Swagger/OpenAPI documentation with cached EntityType, etc data
 
         //TODO: * Test performance and possibly add indexes to Uuid, EntitySubtypeId, and TextKey columns in table/model scripts
         //TODO: * Extend health check per https://reflectoring.io/spring-boot-health-check/
-
-        //NOTE: Test pagination (currently only 1 at a time, not pageNumber x pageSize)
 
         //TODO: Validate API key upstream in Client Communication Service (CCS)
         //TODO: Validate JWT upstream in Client Communication Service (CCS)
@@ -837,6 +844,12 @@ public class BusinessEntityController
         return new ResponseEntity<String>(entityData, HttpStatus.OK);
     }
 
+    @Operation(summary = "Update entity data for the specified EntityType by Id", description = "Update entity data by providing a valid entity Id query parameter and the valid data for any entity attribute(s) to be changed as a JSON Web Token (JWT, please see https://jwt.io/) in the HTTP request body")
+    @Parameter(in = ParameterIn.COOKIE, description = "JWT Authentication token", name = "Authentication", content = @Content(schema = @Schema(type = "string")))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Created", content = @Content(schema = @Schema(type = "string"))),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
+    })
     @PatchMapping(value = "/entityTypes/{entityTypeName}/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> UpdateBusinessEntity(@PathVariable("entityTypeName") String entityTypeName, @PathVariable("id") Long id, @RequestBody String requestBody, ServerWebExchange exchange) throws Exception
     {
@@ -1117,6 +1130,12 @@ public class BusinessEntityController
         return new ResponseEntity<String>(entityDataNodeCombined.toString(), HttpStatus.OK);
     }
 
+    @Operation(summary = "Mark entity data for the specified EntityType for deletion by Id", description = "Mark entity data for deletion (i.e. \"soft\" delete) by providing a valid entity Id query parameter and the valid, required data and any valid, optional data as a JSON Web Token (JWT, please see https://jwt.io/) in the HTTP request body")
+    @Parameter(in = ParameterIn.COOKIE, description = "JWT Authentication token", name = "Authentication", content = @Content(schema = @Schema(type = "string")))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Created", content = @Content(schema = @Schema(type = "string"))),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
+    })
     @DeleteMapping(value = "/entityTypes/{entityTypeName}/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> DeleteBusinessEntity(@PathVariable("entityTypeName") String entityTypeName, @PathVariable("id") Long id, @RequestBody String requestBody, ServerWebExchange exchange) throws Exception
     {

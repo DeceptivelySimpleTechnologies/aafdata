@@ -32,7 +32,7 @@ AS $BODY$
 
   BEGIN
 
-	startTime := now();
+	startTime := now() at time zone 'utc';
 	newDigest := public.digest(''|| recordId ||', '|| updateClause  ||', '''|| correlationUuid ||''', '', '''|| startTime ||''', '|| userId ||', '''|| startTime ||''', '|| userId ||', '''|| startTime ||''', -1', 'sha256');
 	newDigest := RIGHT(newDigest, LENGTH(newDigest) - 2);
 

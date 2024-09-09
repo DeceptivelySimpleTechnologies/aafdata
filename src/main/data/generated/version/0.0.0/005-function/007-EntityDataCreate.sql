@@ -36,7 +36,7 @@ AS $BODY$
 
   BEGIN
 
-	startTime := now();
+	startTime := now() at time zone 'utc';
 	newRecordIdQuery := 'SELECT MAX("Id") + 1 FROM "'|| entitytypename ||'"."'|| entitytypename ||'"';
 	EXECUTE newRecordIdQuery INTO newRecordId;
 	newUuid := public.uuid_generate_v4();
