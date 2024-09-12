@@ -4,5 +4,5 @@
 !src/
 # Include the pom.xml file
 !pom.xml
-# Exclude the target directory and its contents
-target/
+# Include the target directory and its contents
+!target/
