@@ -29,19 +29,6 @@
 
 
 ## TL;DR
-In the 30 years or so that I've been designing, developing, and delivering software, I've seen anti-patterns (things that one should never do) 
-like object-relational mappers (ORMs) and data transfer objects (DTOs) become not only acceptable but standard operating procedure.
-
-Code size, dependencies, and complexity have skyrocketed while fundamentals, performance, and maintainability have plummeted to the point where 
-many developers no longer know the basics of their craft or use the right tool for the job.
-
-I've written about this in my [Look, Fuckers](https://medium.com/look-fuckers) publication on Medium, and I've led several teams 
-to implement my ideas -- the best practice ideas now "baked into" this AAF Data layer product -- in custom, commercial applications, 
-but this process is time-consuming and expensive.
-
-So, I have worked slowly but steadily over the years, creating this free, Open Source implementation in order to to remove the "costs too much/takes too long" 
-risks and objections that have complicated custom implementations, and I am very excited to offer these assets and capabilities for your consideration and use.
-
 **Today, AAF Data is**:
 - A standalone set of
   - Generalized **business entity models**,
@@ -53,6 +40,14 @@ risks and objections that have complicated custom implementations, and I am very
   - **U**pdate, and
   - **D**elete (**CRUD**) operations,
 - And **SwaggerDoc** **OpenAPI** application programming interface (API) **documentation**.
+
+
+**Project Website**: [Deceptively Simple Technologies Inc](https://deceptivelysimpletechnologies.com/tools/adaptiv-application-foundation-aaf/aaf-data/)
+
+
+**To Provide Product Feedback & Be Notified of Updates**: [2-Minute Feedback Form](https://docs.google.com/forms/d/1hSlFRKYAgQf97kp533ccgLwm2UuhjXsaQFCR7On5oIg/edit)
+
+**Note**: Cygnus Technology Services, who is collecting product feedback, is a Deceptively Simple Technologies (DST) **service partner**, providing AAF Data  **implementation**, **customization**, **training**, and **support** services.  If you are interested in becoming a DST partner, please email partners@deceptivelysimpletechnologies.com.
 
 
 **Features**
@@ -137,7 +132,7 @@ You will need:
 
 Before running the EntityDataMicroservice, you must:
 
-1. Make executable and run the eight (8) BASH command line scripts in `aafdata/src/main/data/` in your PostgreSQL database server in the specified order and with the specified roles to create the necessary roles, schemas, tables, functions, and data:
+1. Change directory (`cd`) to `aafdata/src/main/data/`, make executable (`chmod +x <fileName>`), and run the eight (8) BASH command line scripts in `aafdata/src/main/data/` in your PostgreSQL database server in the specified order and with the specified roles (changing the `postgres` role's password if necessary) to create the necessary roles, schemas, tables, functions, and data:
    1. `./001-CreateDatabaseServer.sh PostgreSQL 14 localhost 5432 postgres postgres postgres`
    1. `./002-CreateDatabaseRoleAafCoreOwnerAsPostgresRole.sh PostgreSQL 14 localhost 5432 postgres postgres postgres`
    1. `./003-CreateDatabaseRolesAndDatabaseAsAafCoreOwnerRole.sh PostgreSQL 14 localhost 5432 AafCoreOwner postgres 0wn3rCl13nt!`
@@ -148,6 +143,30 @@ Before running the EntityDataMicroservice, you must:
    1. `./008-CreateDatabaseDataAsAafCorePublisher.sh PostgreSQL 14 localhost 5432 AafCorePublisher AafCore Publ15h3rCl13nt!`
 
 Please **note** that **this first AAF Data release is primarily for demonstration and evaluation purposes**.  It supports a single, very simple local environment (LOC) and **is not intended to be used in a production environment**.  **Later releases** will support shared development (DEV), staging (STG), and production (PRD) environments and **will utilize secrets management and other security best practices**.  Crawl, walk, run.
+
+2. **Run the EntityDataMicroservice**:
+   1. **Locally** in IDE:
+      1. **Open** the `aafdata` project in **IntelliJ IDEA**.
+      1. **Run** the `EntityDataMicroservice` class.
+   1. **Locally** from the command line:
+      1. **Change directory** (`cd`) to `aafdata/EntityDataMicroservice/`.
+      1. **Build** the project:
+         ```sh
+         mvn clean install
+         ```
+      1. **Run** the project:
+         ```sh
+         java -jar target/EntityDataMicroservice-0.0.1-SNAPSHOT.jar
+         ```
+   1. **In Docker**:
+      1. **Pull** the Docker image from DockerHub:
+         ```sh
+         docker pull deceptivelysimpletechnologies/aafdata:latest
+         ```
+      1. **Run** the Docker container:
+         ```sh
+         docker run -p 8080:8080 deceptivelysimpletechnologies/aafdata:latest
+         ```
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -232,6 +251,19 @@ AAF Data is the crucial first layer -- business entity data modeling and persist
 
 
 ## History
+In the 30 years or so that I've been designing, developing, and delivering software, I've seen anti-patterns (things that one should never do)
+like object-relational mappers (ORMs) and data transfer objects (DTOs) become not only acceptable but standard operating procedure.
+
+Code size, dependencies, and complexity have skyrocketed while fundamentals, performance, and maintainability have plummeted to the point where
+many developers no longer know the basics of their craft or use the right tool for the job.
+
+I've written about this in my [Look, Fuckers](https://medium.com/look-fuckers) publication on Medium, and I've led several teams
+to implement my ideas -- the best practice ideas now "baked into" this AAF Data layer product -- in custom, commercial applications,
+but this process is time-consuming and expensive.
+
+So, I have worked slowly but steadily over the years, creating this free, Open Source implementation in order to to remove the "costs too much/takes too long"
+risks and objections that have complicated custom implementations, and I am very excited to offer these assets and capabilities for your consideration and use.
+
 The Adaptív Application Foundation (AAF) is the result of a number of related, reinforcing, and enabling ideas for software application technical design and implementation I've had and worked to realize and refine starting in 2003.  These ideas have come to illustrate and embody my [Metis](https://cygnustechnologyservices.com/metis-methodology/) approach to system design and architecture (my definition [here](https://frickingruvin.medium.com/defining-architecture-edcb334d5cbb)).
 
 In 2006 I founded Deceptively Simple Technologies Inc to take up the further development and promotion of technology product ideas like the AAF.  Cygnus Techology Services is my services company, which focuses on consulting, customization, and commercialization of these ideas and products, guided by my own 25+ years of experience with technology leadership & strategy, people, product & process, and technology & tactics.
