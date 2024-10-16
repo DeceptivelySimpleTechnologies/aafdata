@@ -77,6 +77,8 @@ public class BusinessEntityController
     private ArrayList<EntityTypeDefinitionEntityTypeAttributeAssociation> entityTypeDefinitionEntityTypeAttributeAssociations = null;
     private ArrayList<EntitySubtype> entitySubtypes = null;
 
+    private String ENVIRONMENT_JWT_SHARED_SECRET = "";
+
     //NOTE: Spring Boot Logback default logging implemented per https://www.baeldung.com/spring-boot-logging
     Logger logger = LoggerFactory.getLogger(BusinessEntityController.class);
 
@@ -554,7 +556,7 @@ public class BusinessEntityController
         return new ResponseEntity<String>(entityData, HttpStatus.CREATED);
     }
 
-    @Operation(summary = "Read entity data for the specified EntityType", description = "Read entity data by providing optional, URL-encoded 'whereClause' (not including the 'WHERE' keyword), 'sortClause' (not including the 'ORDER BY' keywords), 'pageNumber', and 'pageSize' query parameters.  Please note that the 'asOfDateTimeUtc' and 'graphDepthLimit' query parameters are not currently implemented and so have no effect.")
+    @Operation(summary = "Read entity data for the specified EntityType", description = "Read entity data by providing optional, URL-encoded 'whereClause' (not including the 'WHERE' keyword), URL-encoded 'sortClause' (not including the 'ORDER BY' keywords), 'pageNumber', and 'pageSize' query parameters.  Please note that the 'asOfDateTimeUtc' and 'graphDepthLimit' query parameters are not currently implemented and so have no effect.")
     @Parameter(in = ParameterIn.COOKIE, description = "JWT Authentication token", name = "Authentication", content = @Content(schema = @Schema(type = "string")))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(type = "string"))),
@@ -581,14 +583,18 @@ public class BusinessEntityController
 
         String entityData = "";
 
-        //TODO: *** Dockerfile with AWS CloudFront logging driver, etc
+        //TODO: *** Add API key & validation
+        //TODO: *** JWT sign and encode response bodies if environmentJwtSharedSecret property is set???
         //TODO: *** Add EDM image to DockerHub
-        //TODO: *** Unit testing
-        //TODO: *** LOC environment setup (with profiles, etc)
-        //TODO: *** Security testing (database table direct access, etc)
+        //TODO: *** Clean up old SQL scripts, etc, and add updated Postman collection
 
         //TODO: ** Set up Terraform Remote Backend With AWS Using A Bash Script
         //TODO: ** Enhance Swagger/OpenAPI documentation with cached EntityType, etc data
+        //TODO: ** Unit tests for UPDATE and DELETE (no mocks and should be starting Netty)
+        //TODO: ** Security testing (database table direct access, etc)
+        //TODO: ** Document that intended environments (loc, min, dev, stg, or prd) and profile setup in the README file
+        //TODO: ** Add preconfigured AWS Docker image with CloudFront logging driver, etc to DockerHub (https://docs.docker.com/engine/logging/drivers/awslogs/)
+        //TODO: ** Refactor GetEntityData() and DeleteEntityData() to CacheEntityData() and UncacheEntityData()
 
         //TODO: * Test performance and possibly add indexes to Uuid, EntitySubtypeId, and TextKey columns in table/model scripts
         //TODO: * Extend health check per https://reflectoring.io/spring-boot-health-check/
@@ -626,6 +632,8 @@ public class BusinessEntityController
             {
                 throw new Exception("Unable to get database connection");
             }
+
+            ENVIRONMENT_JWT_SHARED_SECRET = environment.getProperty("environmentJwtSharedSecret");
 
             //NOTE: Example request http://localhost:8080/EntityType?whereClause=%22Id%22%20%3E%20-2&sortClause=%22Ordinal%22%252C%22Id%22&asOfDateTimeUtc=2023-01-01T00:00:00.000Z&graphDepthLimit=1&pageNumber=1&pageSize=20
 
@@ -704,11 +712,15 @@ public class BusinessEntityController
             if (whereClause.length() > 0)
             {
                 whereClause = "WHERE " + whereClause;
-            }
 
-            if (!whereClause.contains("IsActive"))
+                if (!whereClause.contains("IsActive"))
+                {
+                    whereClause = whereClause + " AND \"IsActive\" = true";
+                }
+            }
+            else
             {
-                whereClause = whereClause + " AND \"IsActive\" = true";
+                whereClause = "WHERE \"IsActive\" = true";
             }
 
             whereClause = whereClause + " AND \"DeletedAtDateTimeUtc\" = '9999-12-31T23:59:59.999'";
@@ -725,8 +737,12 @@ public class BusinessEntityController
 
                 if (!sortClause.contains("Ordinal"))
                 {
-                    sortClause = sortClause + ", \"Ordinal ASC\" = true";
+                    sortClause = sortClause + ", \"Ordinal\" ASC";
                 }
+            }
+            else
+            {
+                sortClause = "ORDER BY " + "\"Ordinal\" ASC";
             }
 
             //NOTE: Validate and sanitize asOfDateTimeUtc
@@ -801,6 +817,7 @@ public class BusinessEntityController
                     //TODO: Improve this error output???
                     entityData = "{[]}";
                 }
+                //TODO: ENVIRONMENT_JWT_SHARED_SECRET
 
                 //TODO: Filter or mask unauthorized or sensitive attributes for this InformationSystemUserRole (as JSON)???
             }
@@ -847,7 +864,7 @@ public class BusinessEntityController
     @Operation(summary = "Update entity data for the specified EntityType by Id", description = "Update entity data by providing a valid entity Id query parameter and the valid data for any entity attribute(s) to be changed as a JSON Web Token (JWT, please see https://jwt.io/) in the HTTP request body")
     @Parameter(in = ParameterIn.COOKIE, description = "JWT Authentication token", name = "Authentication", content = @Content(schema = @Schema(type = "string")))
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Created", content = @Content(schema = @Schema(type = "string"))),
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(type = "string"))),
             @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
     })
     @PatchMapping(value = "/entityTypes/{entityTypeName}/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -1133,7 +1150,7 @@ public class BusinessEntityController
     @Operation(summary = "Mark entity data for the specified EntityType for deletion by Id", description = "Mark entity data for deletion (i.e. \"soft\" delete) by providing a valid entity Id query parameter and the valid, required data and any valid, optional data as a JSON Web Token (JWT, please see https://jwt.io/) in the HTTP request body")
     @Parameter(in = ParameterIn.COOKIE, description = "JWT Authentication token", name = "Authentication", content = @Content(schema = @Schema(type = "string")))
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Created", content = @Content(schema = @Schema(type = "string"))),
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(type = "string"))),
             @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
     })
     @DeleteMapping(value = "/entityTypes/{entityTypeName}/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -168,6 +168,15 @@ Please **note** that **this first AAF Data release is primarily for demonstratio
          docker run -p 8080:8080 deceptivelysimpletechnologies/aafdata:latest
          ```
 
+Create a JAR file with `mvn package`
+Run the JAR file with `java -jar target/EntityDataMicroservice-0.0.1-SNAPSHOT.jar`
+Build a Docker image with `docker build -t deceptivelysimpletechnologies/aafdata:2024101515040000 .`
+Run the Docker image with `docker run -d --name aafdata-min -e spring_profiles_active=min -p 8080:8080 -t deceptivelysimpletechnologies/aafdata:2024101515040000`
+Set the environment variable with `export spring_profiles_active=min`
+Remove the environment variable with `unset spring_profiles_active`
+
+
+
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 

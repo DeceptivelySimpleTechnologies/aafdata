@@ -2,7 +2,7 @@
 
 FROM openjdk:17-jdk-alpine
 MAINTAINER deceptivelysimpletechnologies.com
-LABEL description="AAF Data: Entity Data Microservice"
+LABEL description="AAF Data: Entity Data Microservice (EDM)"
 LABEL copyright="Copyright © 2003-2024 Deceptively Simple Technologies Inc. Some rights reserved. Please see the aafdata/LICENSE.txt file for details."
 ARG JAR_FILE=target/*.jar
 COPY ${JAR_FILE} app.jar
