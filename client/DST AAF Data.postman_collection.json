@@ -46,12 +46,37 @@
 			"response": []
 		},
 		{
-			"name": "GET EntityData",
+			"name": "GET Swagger UI Page",
 			"request": {
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8080/entityTypes/EntityType?whereClause=%22Id%22%20%3E%200&sortClause=%22Ordinal%22%252C%22Id%22&asOfDateTimeUtc=2023-01-01T00:00:00.000Z&graphDepthLimit=1&pageNumber=1&pageSize=20",
+					"raw": "http://localhost:8080/swagger-ui.html",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"swagger-ui.html"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET EntityData (EntitySubtype)",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "ApiKey",
+						"value": "6fdcf7a4-6442-4c1e-a375-9f8064ea34d0",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/entityTypes/EntitySubtype?whereClause=%22Id%22%20%3E%200&sortClause=%22LocalizedName%22%20ASC&pageNumber=1&pageSize=20",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -59,7 +84,7 @@
 					"port": "8080",
 					"path": [
 						"entityTypes",
-						"EntityType"
+						"EntitySubtype"
 					],
 					"query": [
 						{
@@ -68,15 +93,7 @@
 						},
 						{
 							"key": "sortClause",
-							"value": "%22Ordinal%22%252C%22Id%22"
-						},
-						{
-							"key": "asOfDateTimeUtc",
-							"value": "2023-01-01T00:00:00.000Z"
-						},
-						{
-							"key": "graphDepthLimit",
-							"value": "1"
+							"value": "%22LocalizedName%22%20ASC"
 						},
 						{
 							"key": "pageNumber",
@@ -92,16 +109,22 @@
 			"response": []
 		},
 		{
-			"name": "POST EntityData",
+			"name": "POST EntityData (Person) with JSON Body",
 			"request": {
 				"method": "POST",
-				"header": [],
+				"header": [
+					{
+						"key": "ApiKey",
+						"type": "text",
+						"value": "6fdcf7a4-6442-4c1e-a375-9f8064ea34d0"
+					}
+				],
 				"body": {
 					"mode": "raw",
-					"raw": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IlBPU1QgL0VudGl0eVR5cGUiLCJhdWQiOiJBQUZEYXRhLUVudGl0eURhdGFNaWNyb3NlcnZpY2UiLCJleHAiOjE3MjM4MTY5MjAsImlhdCI6MTcyMzgxNjgwMCwibmJmIjoxNzIzODE2Nzg5LCJqdGkiOiI4NzUyZjIzYi0xYTliLTQyMmEtOGIyNi0zNzQyNDM0ZGY0NzYiLCJib2R5Ijp7IkVudGl0eVN1YnR5cGVJZCI6LTEsIlRleHRLZXkiOiJwZXJzb24tbm9uZS1iaWxsLWJha2VyIiwiTGVnYWxHaXZlbk5hbWUiOiJCaWxsIiwiTGVnYWxTdXJuYW1lIjoiQmFrZXIiLCJCb3JuQXREYXRlVGltZVV0YyI6IjIwMDItMDItMDMgMTE6MTI6MTMuMTIzIiwiTGVnYWxDaXRpemVuT2ZDb3VudHJ5R2VvZ3JhcGhpY1VuaXRJZCI6MSwiTG9jYWxlSWQiOjEsIk9yZGluYWwiOi0xLCJJc0FjdGl2ZSI6dHJ1ZX19.rWNowmEoPkF8N0Q5KC5-W83g3hMqIf9TV8KHzLgNbio",
+					"raw": "{\n    \"EntitySubtypeId\": -1,\n    \"TextKey\": \"person-none-bill-baker\",\n    \"LegalGivenName\": \"Bill\",\n    \"LegalSurname\": \"Baker\",\n    \"BornAtDateTimeUtc\": \"2002-02-03 11:12:13.123\",\n    \"LegalCitizenOfCountryGeographicUnitId\": 1,\n    \"LocaleId\": 1,\n    \"Ordinal\": -1,\n    \"IsActive\": true\n  }",
 					"options": {
 						"raw": {
-							"language": "text"
+							"language": "json"
 						}
 					}
 				},
@@ -121,79 +144,108 @@
 			"response": []
 		},
 		{
-			"name": "PATCH EntityData",
-			"request": {
-				"method": "PATCH",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IlBBVENIIC9FbnRpdHlUeXBlIiwiYXVkIjoiQUFGRGF0YS1FbnRpdHlEYXRhTWljcm9zZXJ2aWNlIiwiZXhwIjoxNzIzODE2OTIwLCJpYXQiOjE3MjM4MTY4MDAsIm5iZiI6MTcyMzgxNjc4OSwianRpIjoiMzZkMGRiMjYtZjIyYy00NTc3LTgwNzYtMTZjZGFkMThjZDU4IiwiYm9keSI6eyJMZWdhbEdpdmVuTmFtZSI6IldpbGxpYW0iLCJMZWdhbFN1cm5hbWUiOiJCYWtlci1QQVRDSEVEIiwiQm9ybkF0RGF0ZVRpbWVVdGMiOiIyMDAyLTAzLTA0IDEyOjEzOjE0LjIzNCJ9fQ.kZRsD0iQ0gADzWEkY2-8R80TDlhC4Jm1P3qWYLwbkhk",
-					"options": {
-						"raw": {
-							"language": "text"
-						}
-					}
-				},
-				"url": {
-					"raw": "http://localhost:8080/entityTypes/Person/2",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"entityTypes",
-						"Person",
-						"2"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "DELETE EntityData",
-			"request": {
-				"method": "DELETE",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IkRFTEVURSAvRW50aXR5VHlwZSIsImF1ZCI6IkFBRkRhdGEtRW50aXR5RGF0YU1pY3Jvc2VydmljZSIsImV4cCI6MTcyMzgxNjkyMCwiaWF0IjoxNzIzODE2ODAwLCJuYmYiOjE3MjM4MTY3ODksImp0aSI6Ijg3NTJmMjNiLTFhOWItNDIyYS04YjI2LTM3NDI0MzRkZjQ3NiIsImJvZHkiOnt9fQ.EXVVn6GyQc7IWnEGLlxZcLrb-Jn6P9s11xq0_W-il4I",
-					"options": {
-						"raw": {
-							"language": "text"
-						}
-					}
-				},
-				"url": {
-					"raw": "http://localhost:8080/entityTypes/Person/2",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"entityTypes",
-						"Person",
-						"2"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "GET Swagger UI Page",
+			"name": "GET EntityData (Person)",
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "ApiKey",
+						"value": "6fdcf7a4-6442-4c1e-a375-9f8064ea34d0",
+						"type": "text"
+					}
+				],
 				"url": {
-					"raw": "http://localhost:8080/swagger-ui.html",
+					"raw": "http://localhost:8080/entityTypes/Person?pageNumber=1&pageSize=20",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
-						"swagger-ui.html"
+						"entityTypes",
+						"Person"
+					],
+					"query": [
+						{
+							"key": "pageNumber",
+							"value": "1"
+						},
+						{
+							"key": "pageSize",
+							"value": "20"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PATCH EntityData (Person) with JSON Body",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "ApiKey",
+						"type": "text",
+						"value": "6fdcf7a4-6442-4c1e-a375-9f8064ea34d0"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"LegalGivenName\": \"William\",\n    \"LegalSurname\": \"Baker-PATCHED\",\n    \"BornAtDateTimeUtc\": \"2002-03-04 12:13:14.234\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/entityTypes/Person/2",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"entityTypes",
+						"Person",
+						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DELETE EntityData (Person) with JSON Body",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "ApiKey",
+						"type": "text",
+						"value": "6fdcf7a4-6442-4c1e-a375-9f8064ea34d0"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/entityTypes/Person/2",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"entityTypes",
+						"Person",
+						"2"
 					]
 				}
 			},

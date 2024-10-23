@@ -5,7 +5,6 @@ package com.dsimpletech.aafdata.EntityDataMicroservice.controller;
 
 import com.dsimpletech.aafdata.EntityDataMicroservice.database.*;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -84,10 +83,10 @@ public class BusinessEntityController
 
     //NOTE: Implement this
     @PostConstruct
-    private void GetEntityData() {
+    private void CacheEntityData() {
 
         try {
-            logger.info("Attempting to GetEntityData()");
+            logger.info("Attempting to CacheEntityData()");
 
             DB_DRIVER_CLASS = "postgresql";
             DB_URL = environment.getProperty("spring.jdbc.url");
@@ -171,7 +170,7 @@ public class BusinessEntityController
             logger.info(entitySubtypes.size() + " EntitySubtypes cached locally");
         }
         catch (Exception e) {
-            logger.error("GetEntityData() failed due to: " + e);
+            logger.error("CacheEntityData() failed due to: " + e);
         }
         finally {
             try
@@ -193,23 +192,23 @@ public class BusinessEntityController
             }
             catch (SQLException e)
             {
-                logger.error("Failed to close resultset and/or statement resource in GetEntityData() due to: " + e);
+                logger.error("Failed to close resultset and/or statement resource in CacheEntityData() due to: " + e);
             }
         }
 
-            logger.info("GetEntityData() succeeded");
+            logger.info("CacheEntityData() succeeded");
     }
 
     @PreDestroy
-    private void DeleteEntityData() {
-        logger.info("Attempting to DeleteEntityData()");
+    private void UncacheEntityData() {
+        logger.info("Attempting to UncacheEntityData()");
 
         entityTypeDefinitions = null;
         entityTypeAttributes = null;
         entityTypeDefinitionEntityTypeAttributeAssociations = null;
         entitySubtypes = null;
 
-        logger.info("DeleteEntityData() succeeded");
+        logger.info("UncacheEntityData() succeeded");
     }
 
     //NOTE: Suppress browser-based favicon.ico requests
@@ -232,7 +231,6 @@ public class BusinessEntityController
     public ResponseEntity<String> PostBusinessEntity(@PathVariable("entityTypeName") String entityTypeName, @RequestBody String requestBody, ServerWebExchange exchange) throws Exception
     {
         ServerHttpRequest request = null;
-//        MultiValueMap<String,String> queryParams = null;
 
         int entityTypeId = -1;
         ArrayList<Integer> entityTypeAssociations = null;
@@ -240,21 +238,20 @@ public class BusinessEntityController
         String[] sqlBlacklistValues = null;
         String errorValues = "";
 
-        String requestHeader = "";
+        String apiKey = "";
+
+        ObjectMapper objectMapper = null;
 
         HttpCookie authenticationJwt = null;
         Base64.Decoder decoderBase64 = Base64.getUrlDecoder();
         String[] authenticationJwtSections = null;
         JsonNode authenticationJwtHeader = null;
         JsonNode authenticationJwtPayload = null;
-        String authenticationJwtSignature = "";
         int userId = -1;
 
         String[] bodyJwtSections = null;
-        ObjectMapper objectMapper = null;
         JsonNode bodyJwtHeader = null;
         JsonNode bodyJwtPayload = null;
-        String bodyJwtSignature = "";
 
         String[] entityTypeAttributesNeverToReturn = null;
 
@@ -273,7 +270,6 @@ public class BusinessEntityController
             logger.info("Attempting to PostBusinessEntity() for " + entityTypeName);
 
             request = exchange.getRequest();
-//            queryParams = request.getQueryParams();
 
             DB_DRIVER_CLASS = "postgresql";
             DB_URL = environment.getProperty("spring.jdbc.url");
@@ -288,26 +284,21 @@ public class BusinessEntityController
                 throw new Exception("Unable to get database connection");
             }
 
-            //NOTE: Example request http://localhost:8080/Person with "Authentication" JWT and JWT request body
-            //NOTE: https://learning.postman.com/docs/sending-requests/response-data/cookies/
-//            Authentication JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IkF1dGhlbnRpY2F0ZWQiLCJhdWQiOiJBQUZEYXRhLUVudGl0eURhdGFNaWNyb3NlcnZpY2UiLCJleHAiOjE3MjM4MTY5MjAsImlhdCI6MTcyMzgxNjgwMCwibmJmIjoxNzIzODE2Nzg5LCJqdGkiOiJlZjRhZjRlMy1lNzM2LTQyNWEtYWFmZi1lY2EwM2I3YjliMjgiLCJib2R5Ijp7IkVtYWlsQWRkcmVzcyI6ImFteS5hbmRlcnNvbkBhbXlzYWNjb3VudGluZy5jb20ifX0.Djq5LYPEK1QFgBk9aN5Vei37K6Cb8TxNH3ADWDcUaHs
-//            Request JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IlBPU1QgL0VudGl0eVR5cGUiLCJhdWQiOiJBQUZEYXRhLUVudGl0eURhdGFNaWNyb3NlcnZpY2UiLCJleHAiOjE3MjM4MTY5MjAsImlhdCI6MTcyMzgxNjgwMCwibmJmIjoxNzIzODE2Nzg5LCJqdGkiOiI4NzUyZjIzYi0xYTliLTQyMmEtOGIyNi0zNzQyNDM0ZGY0NzYiLCJib2R5Ijp7IkVudGl0eVN1YnR5cGVJZCI6LTEsIlRleHRLZXkiOiJwZXJzb24tbm9uZS1iaWxsLWJha2VyIiwiTGVnYWxHaXZlbk5hbWUiOiJCaWxsIiwiTGVnYWxTdXJuYW1lIjoiQmFrZXIiLCJCb3JuQXREYXRlVGltZVV0YyI6IjIwMDItMDItMDMgMTE6MTI6MTMuMTIzIiwiTGVnYWxDaXRpemVuT2ZDb3VudHJ5R2VvZ3JhcGhpY1VuaXRJZCI6MSwiTG9jYWxlSWQiOjEsIk9yZGluYWwiOi0xLCJJc0FjdGl2ZSI6dHJ1ZX19.rWNowmEoPkF8N0Q5KC5-W83g3hMqIf9TV8KHzLgNbio
+            ENVIRONMENT_JWT_SHARED_SECRET = environment.getProperty("environmentJwtSharedSecret");
+
+            apiKey = exchange.getRequest().getHeaders().getFirst("ApiKey");
+
+            if ((apiKey == null) || (apiKey.length() < 1))
+            {
+                throw new Exception("No 'ApiKey' header included in the request");
+            }
+            else
+            {
+                //TODO: Validate API key by looking it up in the database, ensuring that it is not disabled, checking its associated permissions extent, and (later) checking that it is associated with the authenticated user's OrganizationalUnit
+                logger.info(("ApiKey header '" + apiKey + "' included in the request"));
+            }
 
             objectMapper = new ObjectMapper();
-
-            //TODO: Validate JWT
-            //NOTE: Example of how to get a header JWT value from a request and decode it
-//            requestHeader = exchange.getRequest().getHeaders().getFirst("Temp-Body");
-//            bodyJwtSections = requestHeader.split("\\.");
-//            bodyJwtHeader = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[0]));
-//            bodyJwtPayload = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[1]));
-
-            bodyJwtSections = requestBody.split("\\.");
-            bodyJwtHeader = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[0]));
-            bodyJwtPayload = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[1]));
-            //TODO: Validate JWT signature per https://www.baeldung.com/java-jwt-token-decode
-
-            logger.info(("Request from '" + bodyJwtPayload.get("iss").asText() + "' for '" + bodyJwtPayload.get("aud").asText() + "' using key '" + bodyJwtHeader.get("kid").asText() + "'"));
 
             //TODO: Validate JWT
             authenticationJwt = request.getCookies().getFirst("Authentication");
@@ -323,10 +314,24 @@ public class BusinessEntityController
 
             //TODO: Check user's role(s) and permissions for this operation
 
-            sqlBlacklistValues = environment.getProperty("sqlNotToAllow").toLowerCase().split(",");
+            //NOTE: Example request http://localhost:8080/Person with "Authentication" JWT and JWT request body
+            //NOTE: https://learning.postman.com/docs/sending-requests/response-data/cookies/
+//            Authentication JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IkF1dGhlbnRpY2F0ZWQiLCJhdWQiOiJBQUZEYXRhLUVudGl0eURhdGFNaWNyb3NlcnZpY2UiLCJleHAiOjE3MjM4MTY5MjAsImlhdCI6MTcyMzgxNjgwMCwibmJmIjoxNzIzODE2Nzg5LCJqdGkiOiJlZjRhZjRlMy1lNzM2LTQyNWEtYWFmZi1lY2EwM2I3YjliMjgiLCJib2R5Ijp7IkVtYWlsQWRkcmVzcyI6ImFteS5hbmRlcnNvbkBhbXlzYWNjb3VudGluZy5jb20ifX0.Djq5LYPEK1QFgBk9aN5Vei37K6Cb8TxNH3ADWDcUaHs
+//            Request JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IlBPU1QgL0VudGl0eVR5cGUiLCJhdWQiOiJBQUZEYXRhLUVudGl0eURhdGFNaWNyb3NlcnZpY2UiLCJleHAiOjE3MjM4MTY5MjAsImlhdCI6MTcyMzgxNjgwMCwibmJmIjoxNzIzODE2Nzg5LCJqdGkiOiI4NzUyZjIzYi0xYTliLTQyMmEtOGIyNi0zNzQyNDM0ZGY0NzYiLCJib2R5Ijp7IkVudGl0eVN1YnR5cGVJZCI6LTEsIlRleHRLZXkiOiJwZXJzb24tbm9uZS1iaWxsLWJha2VyIiwiTGVnYWxHaXZlbk5hbWUiOiJCaWxsIiwiTGVnYWxTdXJuYW1lIjoiQmFrZXIiLCJCb3JuQXREYXRlVGltZVV0YyI6IjIwMDItMDItMDMgMTE6MTI6MTMuMTIzIiwiTGVnYWxDaXRpemVuT2ZDb3VudHJ5R2VvZ3JhcGhpY1VuaXRJZCI6MSwiTG9jYWxlSWQiOjEsIk9yZGluYWwiOi0xLCJJc0FjdGl2ZSI6dHJ1ZX19.rWNowmEoPkF8N0Q5KC5-W83g3hMqIf9TV8KHzLgNbio
 
+            //TODO: Validate JWT
+//            bodyJwtSections = requestBody.split("\\.");
+//            bodyJwtHeader = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[0]));
+//            bodyJwtPayload = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[1]));
+            //TODO: Validate JWT signature per https://www.baeldung.com/java-jwt-token-decode
+            bodyJwtPayload = objectMapper.readTree(requestBody);
+
+            logger.info(("Request from '" + bodyJwtPayload.get("iss").asText() + "' for '" + bodyJwtPayload.get("aud").asText() + "' using key '" + bodyJwtHeader.get("kid").asText() + "'"));
+
+            sqlBlacklistValues = environment.getProperty("sqlNotToAllow").toLowerCase().split(",");
             //TODO: *** Only check request body for SQL injection
-//            errorValues = GuardAgainstSqlIssues(queryParams.toString(), sqlBlacklistValues);
+            errorValues = GuardAgainstSqlIssues(bodyJwtPayload.toString(), sqlBlacklistValues);
+
 
             //NOTE: Get the Id of the requested entityTypeName
             for (int i = 0 ; i < entityTypeDefinitions.size() ; i++)
@@ -575,7 +580,16 @@ public class BusinessEntityController
         String[] sqlBlacklistValues = null;
         String errorValues = "";
 
-//        MultiValueMap<String, HttpCookie> authenticationCookie = null;
+        String apiKey = "";
+
+        ObjectMapper objectMapper = null;
+
+        HttpCookie authenticationJwt = null;
+        Base64.Decoder decoderBase64 = Base64.getUrlDecoder();
+        String[] authenticationJwtSections = null;
+        JsonNode authenticationJwtHeader = null;
+        JsonNode authenticationJwtPayload = null;
+        int userId = -1;
 
         String[] entityTypeAttributesNeverToReturn = null;
 
@@ -583,18 +597,20 @@ public class BusinessEntityController
 
         String entityData = "";
 
-        //TODO: *** Add API key & validation
-        //TODO: *** JWT sign and encode response bodies if environmentJwtSharedSecret property is set???
-        //TODO: *** Add EDM image to DockerHub
-        //TODO: *** Clean up old SQL scripts, etc, and add updated Postman collection
+        //TODO: *** Test create, update, and delete without JWT body
+        //TODO: *** Clean up old SQL scripts, etc, add updated Postman collection, and merge
+        //TODO: *** Add repackage, rebuild Docker image, and push EDM image to DockerHub
+        //TODO: *** Update README and landing page with DockerHub info
 
+        //TODO: Add Unknown and None to EntityTypeDefinition data???
+
+        //TODO: ** JWT sign and encode response bodies if environmentJwtSharedSecret property is set
         //TODO: ** Set up Terraform Remote Backend With AWS Using A Bash Script
         //TODO: ** Enhance Swagger/OpenAPI documentation with cached EntityType, etc data
         //TODO: ** Unit tests for UPDATE and DELETE (no mocks and should be starting Netty)
         //TODO: ** Security testing (database table direct access, etc)
         //TODO: ** Document that intended environments (loc, min, dev, stg, or prd) and profile setup in the README file
         //TODO: ** Add preconfigured AWS Docker image with CloudFront logging driver, etc to DockerHub (https://docs.docker.com/engine/logging/drivers/awslogs/)
-        //TODO: ** Refactor GetEntityData() and DeleteEntityData() to CacheEntityData() and UncacheEntityData()
 
         //TODO: * Test performance and possibly add indexes to Uuid, EntitySubtypeId, and TextKey columns in table/model scripts
         //TODO: * Extend health check per https://reflectoring.io/spring-boot-health-check/
@@ -635,15 +651,41 @@ public class BusinessEntityController
 
             ENVIRONMENT_JWT_SHARED_SECRET = environment.getProperty("environmentJwtSharedSecret");
 
+            apiKey = exchange.getRequest().getHeaders().getFirst("ApiKey");
+
+            if ((apiKey == null) || (apiKey.length() < 1))
+            {
+                throw new Exception("No 'ApiKey' header included in the request");
+            }
+            else
+            {
+                //TODO: Validate API key by looking it up in the database, ensuring that it is not disabled, checking its associated permissions extent, and (later) checking that it is associated with the authenticated user's OrganizationalUnit
+                logger.info(("ApiKey header '" + apiKey + "' included in the request"));
+            }
+
+            objectMapper = new ObjectMapper();
+
+            //TODO: Validate JWT
+            authenticationJwt = request.getCookies().getFirst("Authentication");
+            authenticationJwtSections = authenticationJwt.getValue().split("\\.");
+            authenticationJwtHeader = objectMapper.readTree(decoderBase64.decode(authenticationJwtSections[0]));
+            authenticationJwtPayload = objectMapper.readTree(decoderBase64.decode(authenticationJwtSections[1]));
+            //TODO: Validate JWT signature per https://www.baeldung.com/java-jwt-token-decode
+
+            logger.info(("Requested by '" + authenticationJwtPayload.get("body").get("EmailAddress").asText() + "' using key '" + authenticationJwtHeader.get("kid").asText() + "'"));
+
+            //TODO: Look up InformationSystemUser.Id using the authenticated user's EmailAddress in the Authentication JWT payload, and assign it below
+            userId = -100;
+
+            //TODO: Check user's role(s) and permissions for this operation
+
             //NOTE: Example request http://localhost:8080/EntityType?whereClause=%22Id%22%20%3E%20-2&sortClause=%22Ordinal%22%252C%22Id%22&asOfDateTimeUtc=2023-01-01T00:00:00.000Z&graphDepthLimit=1&pageNumber=1&pageSize=20
 
-            //TODO: Add Unknown and None to EntityTypeDefinition data???
-
             sqlBlacklistValues = environment.getProperty("sqlNotToAllow").toLowerCase().split(",");
-            //TODO: *** Only check whereClause and sortClause for SQL injection, not other query parameters
-            errorValues = GuardAgainstSqlIssues(queryParams.toString(), sqlBlacklistValues);
 
-//            authenticationCookie = (MultiValueMap<String, HttpCookie>) exchange.getRequest().getCookies().getFirst("Authentication");
+            errorValues = GuardAgainstSqlIssues(URLDecoder.decode(whereClause, StandardCharsets.UTF_8), sqlBlacklistValues);
+            errorValues = errorValues + GuardAgainstSqlIssues(URLDecoder.decode(sortClause, StandardCharsets.UTF_8), sqlBlacklistValues);
+
 
             //NOTE: Build selectClause, based on EntityTypeDefinition.LocalizedName > EntityTypeAttribute.LocalizedName
             //NOTE: Build query parameter array while validating explicit filter criteria and logging invalid attribute names, etc to be returned (see Create GET Method AAF-48)
@@ -654,7 +696,6 @@ public class BusinessEntityController
             //NOTE: Nothing returned for GeographicUnitHierarchy, Language, Locale, Person, OrganizationalUnitHierarchy, Employee,
             //NOTE: Error on OrganizationalUnit: "PersonId" does not exist (now "LocalizedName")
             //NOTE: No associated EntityTypeAttributes for 'entityTypeName' query parameter 'LegalEntity'
-            //TODO: *** Error when whereClause removed from query string
 
             //NOTE: Get the Id of the requested entityTypeName
             for (int i = 0 ; i < entityTypeDefinitions.size() ; i++)
@@ -882,8 +923,9 @@ public class BusinessEntityController
         String[] sqlBlacklistValues = null;
         String errorValues = "";
 
-        //NOTE: Variable declaration for request header example below
-//        String requestHeader = "";
+        String apiKey = "";
+
+        ObjectMapper objectMapper = null;
 
         HttpCookie authenticationJwt = null;
         Base64.Decoder decoderBase64 = Base64.getUrlDecoder();
@@ -894,7 +936,6 @@ public class BusinessEntityController
         int userId = -1;
 
         String[] bodyJwtSections = null;
-        ObjectMapper objectMapper = null;
         JsonNode bodyJwtHeader = null;
         JsonNode bodyJwtPayload = null;
         JsonNode bodyJwtSignature = null;
@@ -940,26 +981,26 @@ public class BusinessEntityController
                 throw new Exception("Unable to get database connection");
             }
 
+            ENVIRONMENT_JWT_SHARED_SECRET = environment.getProperty("environmentJwtSharedSecret");
+
+            apiKey = exchange.getRequest().getHeaders().getFirst("ApiKey");
+
+            if ((apiKey == null) || (apiKey.length() < 1))
+            {
+                throw new Exception("No 'ApiKey' header included in the request");
+            }
+            else
+            {
+                //TODO: Validate API key by looking it up in the database, ensuring that it is not disabled, checking its associated permissions extent, and (later) checking that it is associated with the authenticated user's OrganizationalUnit
+                logger.info(("ApiKey header '" + apiKey + "' included in the request"));
+            }
+
             //NOTE: Example request http://localhost:8080/Person with "Authentication" JWT and JWT request body
             //NOTE: https://learning.postman.com/docs/sending-requests/response-data/cookies/
 //            Authentication JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IkF1dGhlbnRpY2F0ZWQiLCJhdWQiOiJBQUZEYXRhLUVudGl0eURhdGFNaWNyb3NlcnZpY2UiLCJleHAiOjE3MjM4MTY5MjAsImlhdCI6MTcyMzgxNjgwMCwibmJmIjoxNzIzODE2Nzg5LCJqdGkiOiJlZjRhZjRlMy1lNzM2LTQyNWEtYWFmZi1lY2EwM2I3YjliMjgiLCJib2R5Ijp7IkVtYWlsQWRkcmVzcyI6ImFteS5hbmRlcnNvbkBhbXlzYWNjb3VudGluZy5jb20ifX0.Djq5LYPEK1QFgBk9aN5Vei37K6Cb8TxNH3ADWDcUaHs
 //            Request JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IlBBVENIIC9FbnRpdHlUeXBlIiwiYXVkIjoiQUFGRGF0YS1FbnRpdHlEYXRhTWljcm9zZXJ2aWNlIiwiZXhwIjoxNzIzODE2OTIwLCJpYXQiOjE3MjM4MTY4MDAsIm5iZiI6MTcyMzgxNjc4OSwianRpIjoiMzZkMGRiMjYtZjIyYy00NTc3LTgwNzYtMTZjZGFkMThjZDU4IiwiYm9keSI6eyJMZWdhbEdpdmVuTmFtZSI6IldpbGxpYW0iLCJMZWdhbFN1cm5hbWUiOiJCYWtlci1QQVRDSEVEIiwiQm9ybkF0RGF0ZVRpbWVVdGMiOiIyMDAyLTAzLTA0IDEyOjEzOjE0LjIzNCJ9fQ.kZRsD0iQ0gADzWEkY2-8R80TDlhC4Jm1P3qWYLwbkhk
 
             objectMapper = new ObjectMapper();
-
-            //TODO: Validate JWT
-            //NOTE: Example of how to get a header JWT value from a request and decode it
-//            requestHeader = exchange.getRequest().getHeaders().getFirst("Temp-Body");
-//            bodyJwtSections = requestHeader.split("\\.");
-//            bodyJwtHeader = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[0]));
-//            bodyJwtPayload = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[1]));
-
-            bodyJwtSections = requestBody.split("\\.");
-            bodyJwtHeader = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[0]));
-            bodyJwtPayload = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[1]));
-            //TODO: Validate JWT signature per https://www.baeldung.com/java-jwt-token-decode
-
-            logger.info(("Request from '" + bodyJwtPayload.get("iss").asText() + "' for '" + bodyJwtPayload.get("aud").asText() + "' using key '" + bodyJwtHeader.get("kid").asText() + "'"));
 
             //TODO: Validate JWT
             authenticationJwt = request.getCookies().getFirst("Authentication");
@@ -975,10 +1016,20 @@ public class BusinessEntityController
 
             //TODO: Check user's role(s) and permissions for this operation
 
+            //TODO: Validate JWT
+//            bodyJwtSections = requestBody.split("\\.");
+//            bodyJwtHeader = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[0]));
+//            bodyJwtPayload = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[1]));
+            //TODO: Validate JWT signature per https://www.baeldung.com/java-jwt-token-decode
+            bodyJwtPayload = objectMapper.readTree(requestBody);
+
+            logger.info(("Request from '" + bodyJwtPayload.get("iss").asText() + "' for '" + bodyJwtPayload.get("aud").asText() + "' using key '" + bodyJwtHeader.get("kid").asText() + "'"));
+
             sqlBlacklistValues = environment.getProperty("sqlNotToAllow").toLowerCase().split(",");
 
             //TODO: *** Only check request body for SQL injection
             errorValues = GuardAgainstSqlIssues(queryParams.toString(), sqlBlacklistValues);
+
 
             //NOTE: Get the Id of the requested entityTypeName
             for (int i = 0 ; i < entityTypeDefinitions.size() ; i++)
@@ -1166,7 +1217,9 @@ public class BusinessEntityController
         String[] sqlBlacklistValues = null;
         String errorValues = "";
 
-        String requestHeader = "";
+        String apiKey = "";
+
+        ObjectMapper objectMapper = null;
 
         HttpCookie authenticationJwt = null;
         Base64.Decoder decoderBase64 = Base64.getUrlDecoder();
@@ -1177,7 +1230,6 @@ public class BusinessEntityController
         int userId = -1;
 
         String[] bodyJwtSections = null;
-        ObjectMapper objectMapper = null;
         JsonNode bodyJwtHeader = null;
         JsonNode bodyJwtPayload = null;
         String bodyJwtSignature = "";
@@ -1211,26 +1263,21 @@ public class BusinessEntityController
                 throw new Exception("Unable to get database connection");
             }
 
-            //NOTE: Example request http://localhost:8080/Person with "Authentication" JWT and JWT request body
-            //NOTE: https://learning.postman.com/docs/sending-requests/response-data/cookies/
-//            Authentication JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IkF1dGhlbnRpY2F0ZWQiLCJhdWQiOiJBQUZEYXRhLUVudGl0eURhdGFNaWNyb3NlcnZpY2UiLCJleHAiOjE3MjM4MTY5MjAsImlhdCI6MTcyMzgxNjgwMCwibmJmIjoxNzIzODE2Nzg5LCJqdGkiOiJlZjRhZjRlMy1lNzM2LTQyNWEtYWFmZi1lY2EwM2I3YjliMjgiLCJib2R5Ijp7IkVtYWlsQWRkcmVzcyI6ImFteS5hbmRlcnNvbkBhbXlzYWNjb3VudGluZy5jb20ifX0.Djq5LYPEK1QFgBk9aN5Vei37K6Cb8TxNH3ADWDcUaHs
-//            Request JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IkRFTEVURSAvRW50aXR5VHlwZSIsImF1ZCI6IkFBRkRhdGEtRW50aXR5RGF0YU1pY3Jvc2VydmljZSIsImV4cCI6MTcyMzgxNjkyMCwiaWF0IjoxNzIzODE2ODAwLCJuYmYiOjE3MjM4MTY3ODksImp0aSI6Ijg3NTJmMjNiLTFhOWItNDIyYS04YjI2LTM3NDI0MzRkZjQ3NiIsImJvZHkiOnt9fQ.EXVVn6GyQc7IWnEGLlxZcLrb-Jn6P9s11xq0_W-il4I
+            ENVIRONMENT_JWT_SHARED_SECRET = environment.getProperty("environmentJwtSharedSecret");
+
+            apiKey = exchange.getRequest().getHeaders().getFirst("ApiKey");
+
+            if ((apiKey == null) || (apiKey.length() < 1))
+            {
+                throw new Exception("No 'ApiKey' header included in the request");
+            }
+            else
+            {
+                //TODO: Validate API key by looking it up in the database, ensuring that it is not disabled, checking its associated permissions extent, and (later) checking that it is associated with the authenticated user's OrganizationalUnit
+                logger.info(("ApiKey header '" + apiKey + "' included in the request"));
+            }
 
             objectMapper = new ObjectMapper();
-
-            //TODO: Validate JWT
-            //NOTE: Example of how to get a header JWT value from a request and decode it
-//            requestHeader = exchange.getRequest().getHeaders().getFirst("Temp-Body");
-//            bodyJwtSections = requestHeader.split("\\.");
-//            bodyJwtHeader = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[0]));
-//            bodyJwtPayload = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[1]));
-
-            bodyJwtSections = requestBody.split("\\.");
-            bodyJwtHeader = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[0]));
-            bodyJwtPayload = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[1]));
-            //TODO: Validate JWT signature per https://www.baeldung.com/java-jwt-token-decode
-
-            logger.info(("Request from '" + bodyJwtPayload.get("iss").asText() + "' for '" + bodyJwtPayload.get("aud").asText() + "' using key '" + bodyJwtHeader.get("kid").asText() + "'"));
 
             //TODO: Validate JWT
             authenticationJwt = request.getCookies().getFirst("Authentication");
@@ -1246,10 +1293,25 @@ public class BusinessEntityController
 
             //TODO: Check user's role(s) and permissions for this operation
 
+            //NOTE: Example request http://localhost:8080/Person with "Authentication" JWT and JWT request body
+            //NOTE: https://learning.postman.com/docs/sending-requests/response-data/cookies/
+//            Authentication JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IkF1dGhlbnRpY2F0ZWQiLCJhdWQiOiJBQUZEYXRhLUVudGl0eURhdGFNaWNyb3NlcnZpY2UiLCJleHAiOjE3MjM4MTY5MjAsImlhdCI6MTcyMzgxNjgwMCwibmJmIjoxNzIzODE2Nzg5LCJqdGkiOiJlZjRhZjRlMy1lNzM2LTQyNWEtYWFmZi1lY2EwM2I3YjliMjgiLCJib2R5Ijp7IkVtYWlsQWRkcmVzcyI6ImFteS5hbmRlcnNvbkBhbXlzYWNjb3VudGluZy5jb20ifX0.Djq5LYPEK1QFgBk9aN5Vei37K6Cb8TxNH3ADWDcUaHs
+//            Request JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IkRFTEVURSAvRW50aXR5VHlwZSIsImF1ZCI6IkFBRkRhdGEtRW50aXR5RGF0YU1pY3Jvc2VydmljZSIsImV4cCI6MTcyMzgxNjkyMCwiaWF0IjoxNzIzODE2ODAwLCJuYmYiOjE3MjM4MTY3ODksImp0aSI6Ijg3NTJmMjNiLTFhOWItNDIyYS04YjI2LTM3NDI0MzRkZjQ3NiIsImJvZHkiOnt9fQ.EXVVn6GyQc7IWnEGLlxZcLrb-Jn6P9s11xq0_W-il4I
+
+            //TODO: Validate JWT
+//            bodyJwtSections = requestBody.split("\\.");
+//            bodyJwtHeader = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[0]));
+//            bodyJwtPayload = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[1]));
+            //TODO: Validate JWT signature per https://www.baeldung.com/java-jwt-token-decode
+            bodyJwtPayload = objectMapper.readTree(requestBody);
+
+            logger.info(("Request from '" + bodyJwtPayload.get("iss").asText() + "' for '" + bodyJwtPayload.get("aud").asText() + "' using key '" + bodyJwtHeader.get("kid").asText() + "'"));
+
             sqlBlacklistValues = environment.getProperty("sqlNotToAllow").toLowerCase().split(",");
 
             //TODO: *** Only check request body for SQL injection
             errorValues = GuardAgainstSqlIssues(queryParams.toString(), sqlBlacklistValues);
+
 
             //NOTE: Get the Id of the requested entityTypeName
             for (int i = 0 ; i < entityTypeDefinitions.size() ; i++)
@@ -1390,7 +1452,7 @@ public class BusinessEntityController
             //NOTE: Based on Spring Tips: Configuration (https://spring.io/blog/2020/04/23/spring-tips-configuration)
             //filterIssueValues = new String[]{environment.getProperty("sqlToAllowInWhereClause").toLowerCase()};
 
-            logger.info("Attempting to GuardAgainstSqlIssues() for " + sqlFragment);
+            logger.info("Attempting to GuardAgainstSqlIssues() for '" + sqlFragment + "'");
 
             for (String sqlBlacklistValue : sqlBlacklistValues) {
                 if (sqlFragment.contains(sqlBlacklistValue.toLowerCase())) {
@@ -1404,7 +1466,7 @@ public class BusinessEntityController
             return issueValues;
         }
 
-        logger.info("GuardAgainstSqlIssues succeeded when " + sqlFragment + " did not contain " + Arrays.toString(sqlBlacklistValues));
+        logger.info("GuardAgainstSqlIssues succeeded when '" + sqlFragment + "' did not contain '" + Arrays.toString(sqlBlacklistValues) + "'");
         return issueValues;
     }
 }

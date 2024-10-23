@@ -64,7 +64,7 @@ public class BusinessEntityControllerTest
         {
             //NOTE: Create headers
             HttpHeaders headers = new HttpHeaders();
-            headers.add("ApiKey", "8f67f68e-dec9-4fdb-be0b-10e4f0451e42");
+            headers.add("ApiKey", "6fdcf7a4-6442-4c1e-a375-9f8064ea34d0");
             headers.add("Cookie", "Authentication=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IkF1dGhlbnRpY2F0ZWQiLCJhdWQiOiJBQUZEYXRhLUVudGl0eURhdGFNaWNyb3NlcnZpY2UiLCJleHAiOjE3MjM4MTY5MjAsImlhdCI6MTcyMzgxNjgwMCwibmJmIjoxNzIzODE2Nzg5LCJqdGkiOiJlZjRhZjRlMy1lNzM2LTQyNWEtYWFmZi1lY2EwM2I3YjliMjgiLCJib2R5Ijp7IkVtYWlsQWRkcmVzcyI6ImFteS5hbmRlcnNvbkBhbXlzYWNjb3VudGluZy5jb20ifX0.Djq5LYPEK1QFgBk9aN5Vei37K6Cb8TxNH3ADWDcUaHs");
 
             //NOTE: Create request body
@@ -108,7 +108,7 @@ public class BusinessEntityControllerTest
         {
             //NOTE: Create headers
             HttpHeaders headers = new HttpHeaders();
-            headers.add("ApiKey", "8f67f68e-dec9-4fdb-be0b-10e4f0451e42");
+            headers.add("ApiKey", "6fdcf7a4-6442-4c1e-a375-9f8064ea34d0");
             headers.add("Cookie", "Authentication=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IkF1dGhlbnRpY2F0ZWQiLCJhdWQiOiJBQUZEYXRhLUVudGl0eURhdGFNaWNyb3NlcnZpY2UiLCJleHAiOjE3MjM4MTY5MjAsImlhdCI6MTcyMzgxNjgwMCwibmJmIjoxNzIzODE2Nzg5LCJqdGkiOiJlZjRhZjRlMy1lNzM2LTQyNWEtYWFmZi1lY2EwM2I3YjliMjgiLCJib2R5Ijp7IkVtYWlsQWRkcmVzcyI6ImFteS5hbmRlcnNvbkBhbXlzYWNjb3VudGluZy5jb20ifX0.Djq5LYPEK1QFgBk9aN5Vei37K6Cb8TxNH3ADWDcUaHs");
 
             //NOTE: Create WHERE clause
