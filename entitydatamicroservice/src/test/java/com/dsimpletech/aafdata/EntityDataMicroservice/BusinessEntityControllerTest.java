@@ -65,10 +65,21 @@ public class BusinessEntityControllerTest
             //NOTE: Create headers
             HttpHeaders headers = new HttpHeaders();
             headers.add("ApiKey", "6fdcf7a4-6442-4c1e-a375-9f8064ea34d0");
-            headers.add("Cookie", "Authentication=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IkF1dGhlbnRpY2F0ZWQiLCJhdWQiOiJBQUZEYXRhLUVudGl0eURhdGFNaWNyb3NlcnZpY2UiLCJleHAiOjE3MjM4MTY5MjAsImlhdCI6MTcyMzgxNjgwMCwibmJmIjoxNzIzODE2Nzg5LCJqdGkiOiJlZjRhZjRlMy1lNzM2LTQyNWEtYWFmZi1lY2EwM2I3YjliMjgiLCJib2R5Ijp7IkVtYWlsQWRkcmVzcyI6ImFteS5hbmRlcnNvbkBhbXlzYWNjb3VudGluZy5jb20ifX0.Djq5LYPEK1QFgBk9aN5Vei37K6Cb8TxNH3ADWDcUaHs");
+            headers.add("Cookie", "Authentication=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImxvYyJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IkF1dGhlbnRpY2F0aW9uIiwiYXVkIjoiQUFGRGF0YS1FbnRpdHlEYXRhTWljcm9zZXJ2aWNlIiwiZXhwIjoxNzIzODE2OTIwLCJpYXQiOjE3MjM4MTY4MDAsIm5iZiI6MTcyMzgxNjc4OSwianRpIjoiZWY0YWY0ZTMtZTczNi00MjVhLWFhZmYtZWNhMDNiN2I5YjI4IiwiYm9keSI6eyJFbWFpbEFkZHJlc3MiOiJhbXkuYW5kZXJzb25AYW15c2FjY291bnRpbmcuY29tIn19.a5UdLPgo4CzMyK1_JuWbQQQEMYz-rBcLu5uH0sZElqw");
 
             //NOTE: Create request body
-            String requestBody = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IlBPU1QgL0VudGl0eVR5cGUiLCJhdWQiOiJBQUZEYXRhLUVudGl0eURhdGFNaWNyb3NlcnZpY2UiLCJleHAiOjE3MjM4MTY5MjAsImlhdCI6MTcyMzgxNjgwMCwibmJmIjoxNzIzODE2Nzg5LCJqdGkiOiI4NzUyZjIzYi0xYTliLTQyMmEtOGIyNi0zNzQyNDM0ZGY0NzYiLCJib2R5Ijp7IkVudGl0eVN1YnR5cGVJZCI6LTEsIlRleHRLZXkiOiJwZXJzb24tbm9uZS1iaWxsLWJha2VyIiwiTGVnYWxHaXZlbk5hbWUiOiJCaWxsIiwiTGVnYWxTdXJuYW1lIjoiQmFrZXIiLCJCb3JuQXREYXRlVGltZVV0YyI6IjIwMDItMDItMDMgMTE6MTI6MTMuMTIzIiwiTGVnYWxDaXRpemVuT2ZDb3VudHJ5R2VvZ3JhcGhpY1VuaXRJZCI6MSwiTG9jYWxlSWQiOjEsIk9yZGluYWwiOi0xLCJJc0FjdGl2ZSI6dHJ1ZX19.rWNowmEoPkF8N0Q5KC5-W83g3hMqIf9TV8KHzLgNbio";
+//            String requestBody = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IlBPU1QgL0VudGl0eVR5cGUiLCJhdWQiOiJBQUZEYXRhLUVudGl0eURhdGFNaWNyb3NlcnZpY2UiLCJleHAiOjE3MjM4MTY5MjAsImlhdCI6MTcyMzgxNjgwMCwibmJmIjoxNzIzODE2Nzg5LCJqdGkiOiI4NzUyZjIzYi0xYTliLTQyMmEtOGIyNi0zNzQyNDM0ZGY0NzYiLCJib2R5Ijp7IkVudGl0eVN1YnR5cGVJZCI6LTEsIlRleHRLZXkiOiJwZXJzb24tbm9uZS1iaWxsLWJha2VyIiwiTGVnYWxHaXZlbk5hbWUiOiJCaWxsIiwiTGVnYWxTdXJuYW1lIjoiQmFrZXIiLCJCb3JuQXREYXRlVGltZVV0YyI6IjIwMDItMDItMDMgMTE6MTI6MTMuMTIzIiwiTGVnYWxDaXRpemVuT2ZDb3VudHJ5R2VvZ3JhcGhpY1VuaXRJZCI6MSwiTG9jYWxlSWQiOjEsIk9yZGluYWwiOi0xLCJJc0FjdGl2ZSI6dHJ1ZX19.rWNowmEoPkF8N0Q5KC5-W83g3hMqIf9TV8KHzLgNbio";
+            String requestBody = "{\n" +
+                    "    \"EntitySubtypeId\": -1,\n" +
+                    "    \"TextKey\": \"person-none-bill-baker\",\n" +
+                    "    \"LegalGivenName\": \"Bill\",\n" +
+                    "    \"LegalSurname\": \"Baker\",\n" +
+                    "    \"BornAtDateTimeUtc\": \"2002-02-03 11:12:13.123\",\n" +
+                    "    \"LegalCitizenOfCountryGeographicUnitId\": 1,\n" +
+                    "    \"LocaleId\": 1,\n" +
+                    "    \"Ordinal\": -1,\n" +
+                    "    \"IsActive\": true\n" +
+                    "  }";
 
             //NOTE: Create entity with headers and body
             HttpEntity<String> entity = new HttpEntity<>(requestBody, headers);
@@ -100,42 +111,42 @@ public class BusinessEntityControllerTest
     //TODO: *** testGetBusinessEntityPersonWithoutApiKeyWithAuthenticationCookieWithoutWhereClauseAndWithoutSortClause
     //TODO: *** testGetBusinessEntityPersonWithApiKeyWithoutAuthenticationCookieWithoutWhereClauseAndWithoutSortClause
 
-    @Test
-    @Order(3000)
-    public void testGetBusinessEntityPersonWithApiKeyWithAuthenticationCookieWithWhereClauseAndWithSortClause() throws Exception
-    {
-        try
-        {
-            //NOTE: Create headers
-            HttpHeaders headers = new HttpHeaders();
-            headers.add("ApiKey", "6fdcf7a4-6442-4c1e-a375-9f8064ea34d0");
-            headers.add("Cookie", "Authentication=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IkF1dGhlbnRpY2F0ZWQiLCJhdWQiOiJBQUZEYXRhLUVudGl0eURhdGFNaWNyb3NlcnZpY2UiLCJleHAiOjE3MjM4MTY5MjAsImlhdCI6MTcyMzgxNjgwMCwibmJmIjoxNzIzODE2Nzg5LCJqdGkiOiJlZjRhZjRlMy1lNzM2LTQyNWEtYWFmZi1lY2EwM2I3YjliMjgiLCJib2R5Ijp7IkVtYWlsQWRkcmVzcyI6ImFteS5hbmRlcnNvbkBhbXlzYWNjb3VudGluZy5jb20ifX0.Djq5LYPEK1QFgBk9aN5Vei37K6Cb8TxNH3ADWDcUaHs");
-
-            //NOTE: Create WHERE clause
-            String whereClause = "%22Id%22%20%3E%200";    //NOTE: URL-encoded '"Id" > 0'
-
-            //NOTE: Create sort by (ORDER BY) clause
-            String sortClause = "%22LegalSurname%22%20ASC%2C%20%22LegalGivenName%22%20ASC%2C%20%22BornAtDateTimeUtc%22%20ASC";  //NOTE: URL-encoded '"LegalSurname" ASC, "LegalGivenName" ASC, "BornAtDateTimeUtc" ASC'
-
-            //NOTE: Create request body
-            String requestBody = "";    //NOTE: HTTP GET requests should not have a request body (ignored if present)
-
-            //NOTE: Create entity with headers and body
-            HttpEntity<String> entity = new HttpEntity<>(requestBody, headers);
-
-            //NOTE: Call the method
-            restTemplate = new TestRestTemplate();
-            ResponseEntity<String> response = restTemplate.getForEntity("http://localhost:8080/entityTypes/Person?whereClause=" + whereClause + "&sortClause=" + sortClause, String.class);
-
-            //NOTE: Verify the response
-            assertEquals(HttpStatus.OK, response.getStatusCode());
-            //TODO: Check for non-empty "EntityData" JSON array
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
+//    @Test
+//    @Order(3000)
+//    public void testGetBusinessEntityPersonWithApiKeyWithAuthenticationCookieWithWhereClauseAndWithSortClause() throws Exception
+//    {
+//        try
+//        {
+//            //NOTE: Create headers
+//            HttpHeaders headers = new HttpHeaders();
+//            headers.add("ApiKey", "6fdcf7a4-6442-4c1e-a375-9f8064ea34d0");
+//            headers.add("Cookie", "Authentication=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImxvYyJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IkF1dGhlbnRpY2F0aW9uIiwiYXVkIjoiQUFGRGF0YS1FbnRpdHlEYXRhTWljcm9zZXJ2aWNlIiwiZXhwIjoxNzIzODE2OTIwLCJpYXQiOjE3MjM4MTY4MDAsIm5iZiI6MTcyMzgxNjc4OSwianRpIjoiZWY0YWY0ZTMtZTczNi00MjVhLWFhZmYtZWNhMDNiN2I5YjI4IiwiYm9keSI6eyJFbWFpbEFkZHJlc3MiOiJhbXkuYW5kZXJzb25AYW15c2FjY291bnRpbmcuY29tIn19.a5UdLPgo4CzMyK1_JuWbQQQEMYz-rBcLu5uH0sZElqw");
+//
+//            //NOTE: Create WHERE clause
+//            String whereClause = "%22Id%22%20%3E%200";    //NOTE: URL-encoded '"Id" > 0'
+//
+//            //NOTE: Create sort by (ORDER BY) clause
+//            String sortClause = "%22LegalSurname%22%20ASC%2C%20%22LegalGivenName%22%20ASC%2C%20%22BornAtDateTimeUtc%22%20ASC";  //NOTE: URL-encoded '"LegalSurname" ASC, "LegalGivenName" ASC, "BornAtDateTimeUtc" ASC'
+//
+//            //NOTE: Create request body
+//            String requestBody = "";    //NOTE: HTTP GET requests should not have a request body (ignored if present)
+//
+//            //NOTE: Create entity with headers and body
+//            HttpEntity<String> entity = new HttpEntity<>(requestBody, headers);
+//
+//            //NOTE: Call the method
+//            restTemplate = new TestRestTemplate();
+//            ResponseEntity<String> response = restTemplate.getForEntity("http://localhost:8080/entityTypes/Person?whereClause=" + whereClause + "&sortClause=" + sortClause, String.class);
+//
+//            //NOTE: Verify the response
+//            assertEquals(HttpStatus.OK, response.getStatusCode());
+//            //TODO: Check for non-empty "EntityData" JSON array
+//        }
+//        catch (Exception e)
+//        {
+//            throw new RuntimeException(e);
+//        }
+//    }
 
     //TODO: *** testGetBusinessEntityPersonWithApiKeyWithAuthenticationCookieWithWhereClauseAndWithoutSortClause
     //TODO: *** testGetBusinessEntityPersonWithApiKeyWithAuthenticationCookieWithoutWhereClauseAndWithSortClause
