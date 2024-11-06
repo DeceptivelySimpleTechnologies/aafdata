@@ -307,7 +307,14 @@ public class BusinessEntityController
             authenticationJwtPayload = objectMapper.readTree(decoderBase64.decode(authenticationJwtSections[1]));
             //TODO: Validate JWT signature per https://www.baeldung.com/java-jwt-token-decode
 
-            logger.info(("Requested by '" + authenticationJwtPayload.get("body").get("EmailAddress").asText() + "' using key '" + authenticationJwtHeader.get("kid").asText() + "'"));
+            if ((authenticationJwtHeader != null) && (authenticationJwtPayload != null))
+            {
+                logger.info(("Requested by '" + authenticationJwtPayload.get("body").get("EmailAddress").asText() + "' using key '" + authenticationJwtHeader.get("kid").asText() + "'"));
+            }
+            else
+            {
+                throw new Exception("Missing or invalid 'Authentication' cookie included with the request");
+            }
 
             //TODO: Look up InformationSystemUser.Id using the authenticated user's EmailAddress in the Authentication JWT payload, and assign it below
             userId = -100;
@@ -326,7 +333,33 @@ public class BusinessEntityController
             //TODO: Validate JWT signature per https://www.baeldung.com/java-jwt-token-decode
             bodyJwtPayload = objectMapper.readTree(requestBody);
 
-            logger.info(("Request from '" + bodyJwtPayload.get("iss").asText() + "' for '" + bodyJwtPayload.get("aud").asText() + "' using key '" + bodyJwtHeader.get("kid").asText() + "'"));
+            if (bodyJwtPayload != null)
+            {
+                if (bodyJwtPayload.has("body"))
+                {
+                    //NOTE: Contains a JWT request body
+                    logger.info(("Request from '" + bodyJwtPayload.get("iss").asText() + "' for '" + bodyJwtPayload.get("aud").asText() + "' using key '" + authenticationJwtHeader.get("kid").asText() + "'"));
+                }
+                else
+                {
+                    //NOTE: Create a JWT request body from the simple JSON request body
+                    bodyJwtPayload = objectMapper.createObjectNode();
+                    ((ObjectNode) bodyJwtPayload).put("iss", "AAFData-TBD");
+                    ((ObjectNode) bodyJwtPayload).put("sub", "TBD");
+                    ((ObjectNode) bodyJwtPayload).put("aud", "AAFData-TBD");
+                    ((ObjectNode) bodyJwtPayload).put("exp", "1723816920");
+                    ((ObjectNode) bodyJwtPayload).put("iat", "1723816800");
+                    ((ObjectNode) bodyJwtPayload).put("nbf", "1723816789");
+                    ((ObjectNode) bodyJwtPayload).put("jti", UUID.randomUUID().toString());
+                    ((ObjectNode) bodyJwtPayload).put("body", objectMapper.readTree(requestBody));
+
+                    logger.info(("Request from '" + bodyJwtPayload.get("iss").asText() + "' for '" + bodyJwtPayload.get("aud").asText() + "' using key '" + authenticationJwtHeader.get("kid").asText() + "'"));
+                }
+            }
+            else
+            {
+                throw new Exception("Missing or invalid request body");
+            }
 
             sqlBlacklistValues = environment.getProperty("sqlNotToAllow").toLowerCase().split(",");
             //TODO: *** Only check request body for SQL injection
@@ -420,10 +453,7 @@ public class BusinessEntityController
                                         insertValues = insertValues + "'" + entityTypeAttributes.get(i).getLocalizedName().toLowerCase() + "-" + entitySubtypes.get(bodyJwtPayload.get("body").get("EntitySubtypeId").asInt()).getLocalizedName().toLowerCase() + "-" + bodyJwtPayload.get("body").get("LegalSurname").asText().toLowerCase() + "-" + bodyJwtPayload.get("body").get("LegalGivenName").asText().toLowerCase() + "',";
                                         break;
                                     default:
-                                        insertValues = insertValues + "'" + entityTypeAttributes.get(i).getLocalizedName().toLowerCase() + "-" + entitySubtypes.get(bodyJwtPayload.get("body").get("EntitySubtypeId").asInt()).getLocalizedName().toLowerCase() + "-" + new Random().ints(97, 123)
-                                                                                                                                                                                                                                                                        .limit(5)
-                                                                                                                                                                                                                                                                        .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
-                                                                                                                                                                                                                                                                        .toString() + "',";
+                                        insertValues = insertValues + "'" + entityTypeAttributes.get(i).getLocalizedName().toLowerCase() + "-" + entitySubtypes.get(bodyJwtPayload.get("body").get("EntitySubtypeId").asInt()).getLocalizedName().toLowerCase() + "-" + new Random().ints(97, 123);
                                         break;
                                 }
                             }
@@ -597,11 +627,6 @@ public class BusinessEntityController
 
         String entityData = "";
 
-        //TODO: *** Test create, update, and delete without JWT body
-        //TODO: *** Clean up old SQL scripts, etc, add updated Postman collection, and merge
-        //TODO: *** Add repackage, rebuild Docker image, and push EDM image to DockerHub
-        //TODO: *** Update README and landing page with DockerHub info
-
         //TODO: Add Unknown and None to EntityTypeDefinition data???
 
         //TODO: ** JWT sign and encode response bodies if environmentJwtSharedSecret property is set
@@ -672,7 +697,14 @@ public class BusinessEntityController
             authenticationJwtPayload = objectMapper.readTree(decoderBase64.decode(authenticationJwtSections[1]));
             //TODO: Validate JWT signature per https://www.baeldung.com/java-jwt-token-decode
 
-            logger.info(("Requested by '" + authenticationJwtPayload.get("body").get("EmailAddress").asText() + "' using key '" + authenticationJwtHeader.get("kid").asText() + "'"));
+            if ((authenticationJwtHeader != null) && (authenticationJwtPayload != null))
+            {
+                logger.info(("Requested by '" + authenticationJwtPayload.get("body").get("EmailAddress").asText() + "' using key '" + authenticationJwtHeader.get("kid").asText() + "'"));
+            }
+            else
+            {
+                throw new Exception("Missing or invalid 'Authentication' cookie included with the request");
+            }
 
             //TODO: Look up InformationSystemUser.Id using the authenticated user's EmailAddress in the Authentication JWT payload, and assign it below
             userId = -100;
@@ -1009,7 +1041,14 @@ public class BusinessEntityController
             authenticationJwtPayload = objectMapper.readTree(decoderBase64.decode(authenticationJwtSections[1]));
             //TODO: Validate JWT signature per https://www.baeldung.com/java-jwt-token-decode
 
-            logger.info(("Requested by '" + authenticationJwtPayload.get("body").get("EmailAddress").asText() + "' using key '" + authenticationJwtHeader.get("kid").asText() + "'"));
+            if ((authenticationJwtHeader != null) && (authenticationJwtPayload != null))
+            {
+                logger.info(("Requested by '" + authenticationJwtPayload.get("body").get("EmailAddress").asText() + "' using key '" + authenticationJwtHeader.get("kid").asText() + "'"));
+            }
+            else
+            {
+                throw new Exception("Missing or invalid 'Authentication' cookie included with the request");
+            }
 
             //TODO: Look up InformationSystemUser.Id using the authenticated user's EmailAddress in the Authentication JWT payload, and assign it below
             userId = -100;
@@ -1023,7 +1062,33 @@ public class BusinessEntityController
             //TODO: Validate JWT signature per https://www.baeldung.com/java-jwt-token-decode
             bodyJwtPayload = objectMapper.readTree(requestBody);
 
-            logger.info(("Request from '" + bodyJwtPayload.get("iss").asText() + "' for '" + bodyJwtPayload.get("aud").asText() + "' using key '" + bodyJwtHeader.get("kid").asText() + "'"));
+            if (bodyJwtPayload != null)
+            {
+                if (bodyJwtPayload.has("body"))
+                {
+                    //NOTE: Contains a JWT request body
+                    logger.info(("Request from '" + bodyJwtPayload.get("iss").asText() + "' for '" + bodyJwtPayload.get("aud").asText() + "' using key '" + authenticationJwtHeader.get("kid").asText() + "'"));
+                }
+                else
+                {
+                    //NOTE: Create a JWT request body from the simple JSON request body
+                    bodyJwtPayload = objectMapper.createObjectNode();
+                    ((ObjectNode) bodyJwtPayload).put("iss", "AAFData-TBD");
+                    ((ObjectNode) bodyJwtPayload).put("sub", "TBD");
+                    ((ObjectNode) bodyJwtPayload).put("aud", "AAFData-TBD");
+                    ((ObjectNode) bodyJwtPayload).put("exp", "1723816920");
+                    ((ObjectNode) bodyJwtPayload).put("iat", "1723816800");
+                    ((ObjectNode) bodyJwtPayload).put("nbf", "1723816789");
+                    ((ObjectNode) bodyJwtPayload).put("jti", UUID.randomUUID().toString());
+                    ((ObjectNode) bodyJwtPayload).put("body", objectMapper.readTree(requestBody));
+
+                    logger.info(("Request from '" + bodyJwtPayload.get("iss").asText() + "' for '" + bodyJwtPayload.get("aud").asText() + "' using key '" + authenticationJwtHeader.get("kid").asText() + "'"));
+                }
+            }
+            else
+            {
+                throw new Exception("Missing or invalid request body");
+            }
 
             sqlBlacklistValues = environment.getProperty("sqlNotToAllow").toLowerCase().split(",");
 
@@ -1286,7 +1351,14 @@ public class BusinessEntityController
             authenticationJwtPayload = objectMapper.readTree(decoderBase64.decode(authenticationJwtSections[1]));
             //TODO: Validate JWT signature per https://www.baeldung.com/java-jwt-token-decode
 
-            logger.info(("Requested by '" + authenticationJwtPayload.get("body").get("EmailAddress").asText() + "' using key '" + authenticationJwtHeader.get("kid").asText() + "'"));
+            if ((authenticationJwtHeader != null) && (authenticationJwtPayload != null))
+            {
+                logger.info(("Requested by '" + authenticationJwtPayload.get("body").get("EmailAddress").asText() + "' using key '" + authenticationJwtHeader.get("kid").asText() + "'"));
+            }
+            else
+            {
+                throw new Exception("Missing or invalid 'Authentication' cookie included with the request");
+            }
 
             //TODO: Look up InformationSystemUser.Id using the authenticated user's EmailAddress in the Authentication JWT payload, and assign it below
             userId = -100;
@@ -1305,7 +1377,33 @@ public class BusinessEntityController
             //TODO: Validate JWT signature per https://www.baeldung.com/java-jwt-token-decode
             bodyJwtPayload = objectMapper.readTree(requestBody);
 
-            logger.info(("Request from '" + bodyJwtPayload.get("iss").asText() + "' for '" + bodyJwtPayload.get("aud").asText() + "' using key '" + bodyJwtHeader.get("kid").asText() + "'"));
+            if (bodyJwtPayload != null)
+            {
+                if (bodyJwtPayload.has("body"))
+                {
+                    //NOTE: Contains a JWT request body
+                    logger.info(("Request from '" + bodyJwtPayload.get("iss").asText() + "' for '" + bodyJwtPayload.get("aud").asText() + "' using key '" + authenticationJwtHeader.get("kid").asText() + "'"));
+                }
+                else
+                {
+                    //NOTE: Create a JWT request body from the simple JSON request body
+                    bodyJwtPayload = objectMapper.createObjectNode();
+                    ((ObjectNode) bodyJwtPayload).put("iss", "AAFData-TBD");
+                    ((ObjectNode) bodyJwtPayload).put("sub", "TBD");
+                    ((ObjectNode) bodyJwtPayload).put("aud", "AAFData-TBD");
+                    ((ObjectNode) bodyJwtPayload).put("exp", "1723816920");
+                    ((ObjectNode) bodyJwtPayload).put("iat", "1723816800");
+                    ((ObjectNode) bodyJwtPayload).put("nbf", "1723816789");
+                    ((ObjectNode) bodyJwtPayload).put("jti", UUID.randomUUID().toString());
+                    ((ObjectNode) bodyJwtPayload).put("body", objectMapper.readTree(requestBody));
+
+                    logger.info(("Request from '" + bodyJwtPayload.get("iss").asText() + "' for '" + bodyJwtPayload.get("aud").asText() + "' using key '" + authenticationJwtHeader.get("kid").asText() + "'"));
+                }
+            }
+            else
+            {
+                throw new Exception("Missing or invalid request body");
+            }
 
             sqlBlacklistValues = environment.getProperty("sqlNotToAllow").toLowerCase().split(",");
 
