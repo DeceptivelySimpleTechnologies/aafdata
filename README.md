@@ -149,24 +149,29 @@ Please **note** that **this first AAF Data release is primarily for demonstratio
       1. **Open** the `aafdata` project in **IntelliJ IDEA**.
       1. **Run** the `EntityDataMicroservice` class.
    1. **Locally** from the command line:
+      1. Set the profile environment variable with `export spring_profiles_active=min` (NOTE: Remove it with `unset spring_profiles_active`)
       1. **Change directory** (`cd`) to `aafdata/EntityDataMicroservice/`.
       1. **Build** the project:
          ```sh
-         mvn clean install
+         mvn clean package
          ```
       1. **Run** the project:
          ```sh
          java -jar target/EntityDataMicroservice-0.0.1-SNAPSHOT.jar
          ```
    1. **In Docker**:
+      1. Set the profile environment variable with `export spring_profiles_active=min` (NOTE: Remove it with `unset spring_profiles_active`)
+      1. **Build** a Docker image with `docker build -t deceptivelysimpletechnologies/aafdata:$(date +%Y%m%d_%H%M%S) .`
       1. **Pull** the Docker image from DockerHub:
          ```sh
          docker pull deceptivelysimpletechnologies/aafdata:latest
          ```
       1. **Run** the Docker container:
          ```sh
-         docker run -p 8080:8080 deceptivelysimpletechnologies/aafdata:latest
+         docker run -d --name aafdata-min -e spring_profiles_active=min -p 8080:8080 -t deceptivelysimpletechnologies/aafdata:latest
          ```
+
+
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
