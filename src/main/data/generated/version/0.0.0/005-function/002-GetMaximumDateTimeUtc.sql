@@ -1,4 +1,4 @@
--- NOTE: Run this script as the custom AafCorePublisher database role/account, which should be created by the AafCoreOwner role.
+-- NOTE: Run this script as the custom AafCoreModeler database role/account, which should be created by the AafCoreOwner role.
 -- FUNCTION: GetMaximumDateTimeUtc
 
 -- DROP FUNCTION "GetMaximumDateTimeUtc";
@@ -24,7 +24,7 @@ END;
 $BODY$;
 
 --ALTER FUNCTION "GetMaximumDateTimeUtc"(character varying)
---	OWNER TO AafCorePublisher;
+--	OWNER TO AafCoreModeler;
 
 REVOKE EXECUTE ON FUNCTION public."GetMaximumDateTimeUtc" FROM PUBLIC;
 

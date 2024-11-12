@@ -1,4 +1,4 @@
--- NOTE: Run this script as the custom AafCorePublisher database role/account, which should be created by the AafCoreOwner role.
+-- NOTE: Run this script as the custom AafCoreModeler database role/account, which should be created by the AafCoreOwner role.
 -- Table: Organization.Organization
 
 -- DROP TABLE "Organization"."Organization";

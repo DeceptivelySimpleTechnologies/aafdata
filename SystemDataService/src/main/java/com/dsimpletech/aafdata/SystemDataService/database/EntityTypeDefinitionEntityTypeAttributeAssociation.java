@@ -16,27 +16,36 @@ public class EntityTypeDefinitionEntityTypeAttributeAssociation {
 
     @Getter private int EntityTypeDefinitionId;
     @Getter private int EntityTypeAttributeId;
+    @Getter Timestamp PublishedAtDateTimeUtc;
+    @Getter int PublishedByInformationSystemUserId;
 
     //    String ResourceName;
     @Getter private int Ordinal;
     @Getter private boolean IsActive;
     //    UUID CorrelationUuid;
-//    String Digest;
-//    Timestamp CreatedAtDateTimeUtc;
-//    int CreatedByInformationSystemUserId;
-//    Timestamp UpdatedAtDateTimeUtc;
-//    int UpdatedByInformationSystemUserId;
+    //    String Digest;
+    @Getter Timestamp CreatedAtDateTimeUtc;
+    @Getter int CreatedByInformationSystemUserId;
+    @Getter Timestamp UpdatedAtDateTimeUtc;
+    @Getter int UpdatedByInformationSystemUserId;
     @Getter private Timestamp DeletedAtDateTimeUtc;
-//    int DeletedByInformationSystemUserId;
+    @Getter int DeletedByInformationSystemUserId;
 
-    public EntityTypeDefinitionEntityTypeAttributeAssociation(int id, int entitySubtypeId, String textKey, int entityTypeDefinitionId, int entityTypeAttributeId, int ordinal, boolean isActive, Timestamp deletedAtDateTimeUtc) {
+    public EntityTypeDefinitionEntityTypeAttributeAssociation(int id, int entitySubtypeId, String textKey, int entityTypeDefinitionId, int entityTypeAttributeId, Timestamp publishedAtDateTimeUtc, int publishedByInformationSystemUserId, int ordinal, boolean isActive, Timestamp createdAtDateTimeUtc, int createdByInformationSystemUserId, Timestamp updatedAtDateTimeUtc, int updatedByInformationSystemUserId, Timestamp deletedAtDateTimeUtc, int deletedByInformationSystemUserId) {
         Id = id;
         EntitySubtypeId = entitySubtypeId;
         TextKey = textKey;
         EntityTypeDefinitionId = entityTypeDefinitionId;
         EntityTypeAttributeId = entityTypeAttributeId;
+        PublishedAtDateTimeUtc = publishedAtDateTimeUtc;
+        PublishedByInformationSystemUserId = publishedByInformationSystemUserId;
         Ordinal = ordinal;
         IsActive = isActive;
+        CreatedAtDateTimeUtc = createdAtDateTimeUtc;
+        CreatedByInformationSystemUserId = createdByInformationSystemUserId;
+        UpdatedAtDateTimeUtc = updatedAtDateTimeUtc;
+        UpdatedByInformationSystemUserId = updatedByInformationSystemUserId;
         DeletedAtDateTimeUtc = deletedAtDateTimeUtc;
+        DeletedByInformationSystemUserId = deletedByInformationSystemUserId;
     }
 }
