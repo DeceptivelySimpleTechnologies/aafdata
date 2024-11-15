@@ -15,6 +15,8 @@ CREATE TABLE "EntitySubtype"."EntitySubtype"
     "LocalizedName" character varying(100) COLLATE pg_catalog."default" NOT NULL,
     "LocalizedDescription" character varying(2000) COLLATE pg_catalog."default" NOT NULL,
     "LocalizedAbbreviation" character varying(15) COLLATE pg_catalog."default" NOT NULL,
+    "PublishedAtDateTimeUtc" timestamp without time zone NOT NULL,
+    "PublishedByInformationSystemUserId" bigint NOT NULL,
 
     "ResourceName" character varying(100) COLLATE pg_catalog."default" NOT NULL DEFAULT '',
     "Ordinal" bigint NOT NULL DEFAULT -1,

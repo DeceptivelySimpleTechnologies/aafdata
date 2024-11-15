@@ -7,6 +7,7 @@ import com.dsimpletech.aafdata.SystemDataService.database.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,8 +32,6 @@ import org.springframework.http.HttpCookie;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 
-import org.springframework.util.MultiValueMap;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -42,9 +41,6 @@ import org.springframework.web.server.ServerWebExchange;
 
 import java.lang.Exception;
 
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.time.Instant;
 import java.util.*;
@@ -84,7 +80,6 @@ public class BusinessEntityController {
     @PostConstruct
     private void CacheEntityData()
     {
-
         try {
             logger.info("Attempting to CacheEntityData()");
 
@@ -130,7 +125,7 @@ public class BusinessEntityController {
             entityTypeAttributes = new ArrayList<EntityTypeAttribute>();
 
             while (resultSet.next()) {
-                entityTypeAttributes.add(new EntityTypeAttribute(resultSet.getInt("Id"), resultSet.getInt("EntitySubtypeId"), resultSet.getString("TextKey"), resultSet.getString("LocalizedName"), resultSet.getInt("GeneralizedDataTypeEntitySubtypeId"), resultSet.getInt("EntityTypeAttributeValueEntitySubtypeId"), resultSet.getString("DefaultValue"), resultSet.getInt("Ordinal"), resultSet.getBoolean("IsActive"), resultSet.getTimestamp("CreatedAtDateTimeUtc"), resultSet.getInt("CreatedByInformationSystemUserId"), resultSet.getTimestamp("UpdatedAtDateTimeUtc"), resultSet.getInt("UpdatedByInformationSystemUserId"), resultSet.getTimestamp("DeletedAtDateTimeUtc"), resultSet.getInt("DeletedByInformationSystemUserId")));
+                entityTypeAttributes.add(new EntityTypeAttribute(resultSet.getInt("Id"), resultSet.getInt("EntitySubtypeId"), resultSet.getString("TextKey"), resultSet.getString("LocalizedName"), resultSet.getString("LocalizedInformation"), resultSet.getString("LocalizedPlaceholder"), resultSet.getBoolean("IsLocalizable"), resultSet.getInt("GeneralizedDataTypeEntitySubtypeId"), resultSet.getInt("DataSizeOrMaximumLengthInBytesOrCharacters"), resultSet.getInt("DataPrecision"), resultSet.getInt("DataScale"), resultSet.getInt("KeyTypeEntitySubtypeId"), resultSet.getInt("RelatedEntityTypeId"), resultSet.getInt("RelatedEntityTypeAttributeId"), resultSet.getInt("RelatedEntityTypeCardinalityEntitySubtypeId"), resultSet.getString("EntitySubtypeGroupKey"), resultSet.getInt("EntityTypeAttributeValueEntitySubtypeId"), resultSet.getString("DefaultValue"), resultSet.getString("MinimumValue"), resultSet.getString("MaximumValue"), resultSet.getString("RegExValidationPattern"), resultSet.getFloat("StepIncrementValue"), resultSet.getString("RemoteValidationMethodAsAjaxUri"), resultSet.getInt("IndexEntitySubtypeId"), resultSet.getInt("UniquenessEntitySubtypeId"), resultSet.getInt("SensitivityEntitySubtypeId"), resultSet.getTimestamp("PublishedAtDateTimeUtc"), resultSet.getInt("PublishedByInformationSystemUserId"), resultSet.getInt("Ordinal"), resultSet.getBoolean("IsActive"), resultSet.getTimestamp("CreatedAtDateTimeUtc"), resultSet.getInt("CreatedByInformationSystemUserId"), resultSet.getTimestamp("UpdatedAtDateTimeUtc"), resultSet.getInt("UpdatedByInformationSystemUserId"), resultSet.getTimestamp("DeletedAtDateTimeUtc"), resultSet.getInt("DeletedByInformationSystemUserId")));
             }
 
             logger.info(entityTypeAttributes.size() + " EntityTypeAttributes cached locally");
@@ -164,7 +159,7 @@ public class BusinessEntityController {
             entitySubtypes = new ArrayList<EntitySubtype>();
 
             while (resultSet.next()) {
-                entitySubtypes.add(new EntitySubtype(resultSet.getInt("Id"), resultSet.getString("TextKey"), resultSet.getString("LocalizedName"), resultSet.getInt("Ordinal"), resultSet.getBoolean("IsActive"), resultSet.getTimestamp("DeletedAtDateTimeUtc")));
+                entitySubtypes.add(new EntitySubtype(resultSet.getInt("Id"), resultSet.getInt("EntitySubtypeId"), resultSet.getString("TextKey"), resultSet.getString("LocalizedName"), resultSet.getString("LocalizedDescription"), resultSet.getString("LocalizedAbbreviation"), resultSet.getTimestamp("PublishedAtDateTimeUtc"), resultSet.getInt("PublishedByInformationSystemUserId"), resultSet.getInt("Ordinal"), resultSet.getBoolean("IsActive"), resultSet.getTimestamp("CreatedAtDateTimeUtc"), resultSet.getInt("CreatedByInformationSystemUserId"), resultSet.getTimestamp("UpdatedAtDateTimeUtc"), resultSet.getInt("UpdatedByInformationSystemUserId"), resultSet.getTimestamp("DeletedAtDateTimeUtc"), resultSet.getInt("DeletedByInformationSystemUserId")));
             }
 
             logger.info(entitySubtypes.size() + " EntitySubtypes cached locally");
@@ -230,12 +225,12 @@ public class BusinessEntityController {
             @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
     })
     @PostMapping(value = "/databases/{databaseName}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> PublishBusinessEntity(@PathVariable("databaseName") String databaseName, @RequestBody String requestBody, ServerWebExchange exchange) throws Exception
+    public ResponseEntity<String> PublishBusinessEntity(@PathVariable("databaseName") String databaseName, @RequestParam(defaultValue = "#{T(java.time.Instant).now()}") Instant asOfDateTimeUtc, @RequestBody String requestBody, ServerWebExchange exchange) throws Exception
     {
         ServerHttpRequest request = null;
 
-        int entityTypeId = -1;
-        ArrayList<Integer> entityTypeAssociations = null;
+//        int entityTypeId = -1;
+//        ArrayList<Integer> entityTypeAssociations = null;
 
         String[] sqlBlacklistValues = null;
         String errorValues = "";
@@ -255,12 +250,16 @@ public class BusinessEntityController {
         JsonNode bodyJwtHeader = null;
         JsonNode bodyJwtPayload = null;
 
-        String[] entityTypeAttributesNeverToReturn = null;
+        ObjectNode unpublishedEntityData = null;
 
-        String insertClause = "";
-        String insertValues = "";
+//        String[] entityTypeAttributesNeverToReturn = null;
 
-        String selectClause = "";
+//        String insertClause = "";
+//        String insertValues = "";
+
+//        String selectClause = "";
+
+        String preparedStatementSql = "";
 
         String entityData = "";
 
@@ -367,51 +366,88 @@ public class BusinessEntityController {
             //TODO: *** Only check request body for SQL injection
             errorValues = GuardAgainstSqlIssues(bodyJwtPayload.toString(), sqlBlacklistValues);
 
-            //TODO: Validate structure
-            //NOTE: Remove the Publisher role, i.e. publish becomes a privilege???
-            //NOTE: Add columns to EntityTypeDefinition table
-            //TODO: Add columns to EntityTypeAttribute table
-            //NOTE: Add columns to EntityTypeDefinitionEntityTypeAttributeAssociation table
-            //TODO: Add columns to EntitySubtype table???
-            //TODO: How to handle modeling and publishing scripted data???
+            //TODO: Client Communication Service (CCS) to validate request, etc
 
-            //TODO: Get unpublished EntityTypeDefinitions
+            //TODO: Validate structure method
+            //NOTE: Remove the Publisher role, i.e. publish becomes a privilege???
+            //NOTE: Add publishing columns to EntityTypeDefinition table
+            //NOTE: Add publishing columns to EntityTypeAttribute table
+            //NOTE: Add publishing columns to EntityTypeDefinitionEntityTypeAttributeAssociation table
+            //NOTE: Add publishing columns to EntitySubtype table???
+            //TODO: How to handle modeling and publishing scripted data???
+            //TODO: Publish inactive entities???
+
+            //NOTE: Get unpublished EntityTypeDefinitions
             //TODO: Get unpublished EntityTypeAttributes
             //TODO: Get unpublished EntityTypeDefinitionEntityTypeAttributeAssociations
             //TODO: Get unpublished EntitySubtypes
-            //TODO: Generate proposed change list for approval
+            //TODO: Generate pending (new but unpublished as of) change list for approval, and pass it to PublishBusinessEntity() as approval
 
             //NOTE: Create new entity schema
             //TODO: Create new entity table
             //TODO: Create new entity scripted data
             //TODO: Update as published
-            //TODO: Re-cache data
+            //TODO: Re-cache SDS and EDM data
+
+            //TODO: Refactor int to long, etc and other SDS changes in EDM
 
             //TODO: Remove publisher role from EDM and SDS README files
+            //TODO: Consider converting this to a BPMN process when possible
 
             if (errorValues.length() == 0)
             {
-                //preparedStatement = connection.prepareStatement("insert into Emp values(?,?)");
-                //stmt.setInt(1,101);//1 specifies the first parameter in the query
-                //stmt.setString(2,"Ratan");
+                unpublishedEntityData = GetUnpublishedEntityData(1, asOfDateTimeUtc);
 
-                preparedStatement = connection.prepareStatement("CREATE SCHEMA \"LegalEntity\"\n" +
-                        "    AUTHORIZATION \"AafCoreModeler\";\n" +
-                        "\n" +
-//                        "GRANT USAGE ON SCHEMA \"LegalEntity\" TO \"AafCoreModeler\";\n" +
-                        "GRANT USAGE ON SCHEMA \"LegalEntity\" TO \"AafCoreReadWrite\";\n" +
-                        "GRANT USAGE ON SCHEMA \"LegalEntity\" TO \"AafCoreReadOnly\";");
+                if (unpublishedEntityData != null) {
+                    for (int i = 0; i < unpublishedEntityData.get("EntityData").size(); i++) {
+                        //preparedStatement = connection.prepareStatement("insert into Emp values(?,?)");
+                        //stmt.setInt(1,101);//1 specifies the first parameter in the query
+                        //stmt.setString(2,"Ratan");
 
-                preparedStatement.executeUpdate();
+                        preparedStatementSql = "CREATE SCHEMA " + unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("LocalizedName") + "\n" +
+                                "    AUTHORIZATION \"AafCoreModeler\";\n" +
+                                "GRANT USAGE ON SCHEMA " + unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("LocalizedName") + " TO \"AafCoreReadWrite\";\n" +
+                                "GRANT USAGE ON SCHEMA " + unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("LocalizedName") + " TO \"AafCoreReadOnly\";";
+
+                        preparedStatement = connection.prepareStatement(preparedStatementSql);
+                        preparedStatement.executeUpdate();
+                    }
+
+                    //TODO: Update as published
+                }
+                else
+                {
+                    throw new Exception("Failed to publish EntityTypeDefinition schema");
+                }
+
+                unpublishedEntityData = GetUnpublishedEntityData(2, asOfDateTimeUtc);
+
+                if (unpublishedEntityData != null) {
+                    preparedStatementSql = "CREATE TABLE \"EntityTypeDefinition\".\"EntityTypeDefinition\"\n";
+                    preparedStatementSql = preparedStatementSql + "(";
+
+                    for (int i = 0; i < unpublishedEntityData.get("EntityData").size(); i++) {
+                        preparedStatementSql = preparedStatementSql + "    \"" + unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("LocalizedName") + "\" bigint NOT NULL,\n";
+                    }
+
+                    preparedStatement = connection.prepareStatement(preparedStatementSql);
+                    preparedStatement.executeUpdate();
+
+                    //TODO: Update as published
+                }
+                else
+                {
+                    throw new Exception("Failed to publish EntityTypeAttribute schema");
+                }          }
 
                 entityData = "{\n" +
-                        "    \"EntityType\": \"LegalEntity\",\n" +
-                        "    \"TotalRows\": 0,\n" +
+                        "    \"EntityType\": \"Not Applicable (N/A)\",\n" +
+                        "    \"TotalRows\": -1,\n" +
+                        "    \"AsOfDataTimeUtc\": " + unpublishedEntityData.get("AsOfDataTimeUtc") + ",\n" +
                         "    \"EntityData\": []\n" +
                         "}";
 
                 //TODO: Filter or mask unauthorized or sensitive attributes for this InformationSystemUserRole (as JSON)???
-            }
         }
         catch (Exception e)
         {
@@ -456,6 +492,156 @@ public class BusinessEntityController {
         return new ResponseEntity<String>(entityData, HttpStatus.CREATED);
     }
 
+    public ObjectNode GetUnpublishedEntityData(long entityTypeDefinitionId, @RequestParam(defaultValue = "#{T(java.time.Instant).now()}") Instant asOfDateTimeUtc)
+    {
+        ObjectMapper objectMapper = null;
+        ObjectNode unpublishedEntityData = null;
+
+        ArrayNode entityTypeDefinitionData = null;
+        ObjectNode entityTypeDefinition = null;
+
+        try
+        {
+            logger.info("Attempting to GetUnpublishedEntityData() for EntityTypeDefinitionId = " + entityTypeDefinitionId + " as of '" + asOfDateTimeUtc.toString() + "'");
+
+            //NOTE: Validate entityTypeDefinitionId
+            if ((entityTypeDefinitionId < 1) || (entityTypeDefinitionId > 4))
+            {
+                throw new Exception("'entityTypeDefinitionId' query parameter must from 1 to 4, i.e. EntityTypeDefinition, EntityTypeAttribute, EntityTypeDefinitionEntityTypeAttributeAssociation, or EntitySubtype.");
+            }
+
+            //NOTE: Validate and sanitize asOfDateTimeUtc
+            if (asOfDateTimeUtc.isBefore(Instant.parse("1900-01-01T00:00:00.000Z")))
+            {
+                throw new Exception("'asOfDateTimeUtc' query parameter must be greater than or equal to '1900-01-01'.");
+            }
+
+            if (asOfDateTimeUtc.isAfter(Instant.parse("9999-12-31T23:59:59.999Z")))
+            {
+                throw new Exception("'asOfDateTimeUtc' query parameter must be less than or equal to '9999-12-31'.");
+            }
+
+            objectMapper = new ObjectMapper();
+            unpublishedEntityData = objectMapper.createObjectNode();
+
+            entityTypeDefinition= objectMapper.createObjectNode();
+            entityTypeDefinitionData = objectMapper.createArrayNode();
+
+            //NOTE: Only pending (new but unpublished as of asOfDateTimeUtc ) changes in this first version.  Non-breaking changes next.  Etc, etc, etc.  Crawl, walk, run.
+            switch ((int) entityTypeDefinitionId)
+            {
+                //NOTE: EntityTypeDefinition
+                case 1:
+                    unpublishedEntityData.put("EntityType", "EntityTypeDefinition");
+
+                    for (int i = 0 ; i < entityTypeDefinitions.size() ; i++)
+                    {
+                        //TODO: May want to do this with live, not cached data???
+                        //TODO: Capture and check cached data timestamp???
+                        //TODO: Also check if updated since asOfDateTimeUtc???
+                        if (entityTypeDefinitions.get(i).getPublishedAtDateTimeUtc().equals(Timestamp.valueOf("9999-12-31 23:59:59.999")))
+                        {
+                            entityTypeDefinition.put("Id", entityTypeDefinitions.get(i).getId());
+                            entityTypeDefinition.put("LocalizedName", entityTypeDefinitions.get(i).getLocalizedName());
+                            entityTypeDefinition.put("LocalizedDescription", entityTypeDefinitions.get(i).getLocalizedDescription());
+                            entityTypeDefinition.put("LocalizedAbbreviation", entityTypeDefinitions.get(i).getLocalizedAbbreviation());
+                            entityTypeDefinitionData.addObject().put("EntityTypeDefinition", entityTypeDefinition);
+                        }
+                    }
+
+                    unpublishedEntityData.put("TotalRows", entityTypeDefinitionData.size());
+                    unpublishedEntityData.put("AsOfDateTimeUtc", asOfDateTimeUtc.toString());
+                    unpublishedEntityData.set("EntityData", entityTypeDefinitionData);
+                    break;
+
+                //NOTE: EntityTypeAttribute
+                case 2:
+                    unpublishedEntityData.put("EntityType", "EntityTypeAttribute");
+
+                    for (int i = 0 ; i < entityTypeAttributes.size() ; i++)
+                    {
+                        //TODO: May want to do this with live, not cached data???
+                        //TODO: Capture and check cached data timestamp???
+                        //TODO: Also check if updated since asOfDateTimeUtc???
+                        if (entityTypeAttributes.get(i).getPublishedAtDateTimeUtc().equals(Timestamp.valueOf("9999-12-31 23:59:59.999")))
+                        {
+                            entityTypeDefinition.put("Id", entityTypeAttributes.get(i).getId());
+                            entityTypeDefinition.put("LocalizedName", entityTypeAttributes.get(i).getLocalizedName());
+                            entityTypeDefinition.put("GeneralizedDataTypeEntitySubtypeId", entityTypeAttributes.get(i).getGeneralizedDataTypeEntitySubtypeId());
+                            entityTypeDefinition.put("DataSizeOrMaximumLengthInBytesOrCharacters", entityTypeAttributes.get(i).getDataSizeOrMaximumLengthInBytesOrCharacters());
+                            entityTypeDefinition.put("DataPrecision", entityTypeAttributes.get(i).getDataPrecision());
+                            entityTypeDefinition.put("DataScale", entityTypeAttributes.get(i).getDataScale());
+                            entityTypeDefinitionData.addObject().put("EntityTypeDefinition", entityTypeDefinition);
+                        }
+                    }
+
+                    unpublishedEntityData.put("TotalRows", entityTypeDefinitionData.size());
+                    unpublishedEntityData.put("AsOfDateTimeUtc", asOfDateTimeUtc.toString());
+                    unpublishedEntityData.set("EntityData", entityTypeDefinitionData);
+                    break;
+
+                //NOTE: EntityTypeDefinitionEntityTypeAttributeAssociation
+                case 3:
+                    unpublishedEntityData.put("EntityType", "EntityTypeDefinitionEntityTypeAttributeAssociation");
+
+                    for (int i = 0 ; i < entityTypeDefinitionEntityTypeAttributeAssociations.size() ; i++)
+                    {
+                        //TODO: May want to do this with live, not cached data???
+                        //TODO: Capture and check cached data timestamp???
+                        //TODO: Also check if updated since asOfDateTimeUtc???
+                        if (entityTypeDefinitionEntityTypeAttributeAssociations.get(i).getPublishedAtDateTimeUtc().equals(Timestamp.valueOf("9999-12-31 23:59:59.999")))
+                        {
+                            entityTypeDefinition.put("Id", entityTypeDefinitionEntityTypeAttributeAssociations.get(i).getId());
+                            entityTypeDefinition.put("EntityTypeDefinitionId", entityTypeDefinitionEntityTypeAttributeAssociations.get(i).getEntityTypeDefinitionId());
+                            entityTypeDefinition.put("EntityTypeAttributeId", entityTypeDefinitionEntityTypeAttributeAssociations.get(i).getEntityTypeAttributeId());
+                            entityTypeDefinitionData.addObject().put("EntityTypeDefinition", entityTypeDefinition);
+                        }
+                    }
+
+                    unpublishedEntityData.put("TotalRows", entityTypeDefinitionData.size());
+                    unpublishedEntityData.put("AsOfDateTimeUtc", asOfDateTimeUtc.toString());
+                    unpublishedEntityData.set("EntityData", entityTypeDefinitionData);
+                    break;
+
+                //NOTE: EntitySubtype
+                case 4:
+                    unpublishedEntityData.put("EntityType", "EntitySubtype");
+
+                    for (int i = 0 ; i < entitySubtypes.size() ; i++)
+                    {
+                        //TODO: May want to do this with live, not cached data???
+                        //TODO: Capture and check cached data timestamp???
+                        //TODO: Also check if updated since asOfDateTimeUtc???
+                        if (entitySubtypes.get(i).getPublishedAtDateTimeUtc().equals(Timestamp.valueOf("9999-12-31 23:59:59.999")))
+                        {
+                            entityTypeDefinition.put("Id", entitySubtypes.get(i).getId());
+                            entityTypeDefinition.put("LocalizedName", entitySubtypes.get(i).getLocalizedName());
+                            entityTypeDefinition.put("LocalizedDescription", entitySubtypes.get(i).getLocalizedDescription());
+                            entityTypeDefinition.put("LocalizedAbbreviation", entitySubtypes.get(i).getLocalizedAbbreviation());
+                            entityTypeDefinitionData.addObject().put("EntityTypeDefinition", entityTypeDefinition);
+                        }
+                    }
+
+                    unpublishedEntityData.put("TotalRows", entityTypeDefinitionData.size());
+                    unpublishedEntityData.put("AsOfDateTimeUtc", asOfDateTimeUtc.toString());
+                    unpublishedEntityData.set("EntityData", entityTypeDefinitionData);
+                    break;
+
+                default:
+                    throw new Exception("'entityTypeDefinitionId' query parameter must from 1 to 4, i.e. EntityTypeDefinition, EntityTypeAttribute, EntityTypeDefinitionEntityTypeAttributeAssociation, or EntitySubtype.");
+            }
+
+        }
+        catch (Exception e)
+        {
+            logger.error("GetUnpublishedEntityData failed due to: " + e);
+            return unpublishedEntityData;
+        }
+
+        logger.info("GetUnpublishedEntityData succeeded");
+        return unpublishedEntityData;
+    }
+
     public String GuardAgainstSqlIssues(String sqlFragment, String[] sqlBlacklistValues)
     {
         String issueValues = "";
@@ -465,7 +651,7 @@ public class BusinessEntityController {
             //NOTE: Based on Spring Tips: Configuration (https://spring.io/blog/2020/04/23/spring-tips-configuration)
             //filterIssueValues = new String[]{environment.getProperty("sqlToAllowInWhereClause").toLowerCase()};
 
-            logger.info("Attempting to GuardAgainstSqlIssues() for '" + sqlFragment + "'");
+            logger.info("Attempting to GuardAgainstSqlIssues() by checking that '" + sqlFragment + "' does not contain '" + Arrays.toString(sqlBlacklistValues) + "'");
 
             for (String sqlBlacklistValue : sqlBlacklistValues) {
                 if (sqlFragment.contains(sqlBlacklistValue.toLowerCase())) {
@@ -479,7 +665,7 @@ public class BusinessEntityController {
             return issueValues;
         }
 
-        logger.info("GuardAgainstSqlIssues succeeded when '" + sqlFragment + "' did not contain '" + Arrays.toString(sqlBlacklistValues) + "'");
+        logger.info("GuardAgainstSqlIssues succeeded for '" + sqlFragment + "'");
         return issueValues;
     }
 }

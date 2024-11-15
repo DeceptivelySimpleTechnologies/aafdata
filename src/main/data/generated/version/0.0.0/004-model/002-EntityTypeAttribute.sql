@@ -35,6 +35,8 @@ CREATE TABLE "EntityTypeAttribute"."EntityTypeAttribute"
     "IndexEntitySubtypeId" bigint NOT NULL,
     "UniquenessEntitySubtypeId" bigint NOT NULL,
     "SensitivityEntitySubtypeId" bigint NOT NULL,
+    "PublishedAtDateTimeUtc" timestamp without time zone NOT NULL,
+    "PublishedByInformationSystemUserId" bigint NOT NULL,
 
     "ResourceName" character varying(100) COLLATE pg_catalog."default" NOT NULL DEFAULT '',
     "Ordinal" bigint NOT NULL DEFAULT -1,

@@ -9,33 +9,33 @@ import java.sql.Timestamp;
 
 public class EntityTypeDefinition {
 
-    @Getter private int Id;
+    @Getter private long Id;
     //    UUID Uuid;
-    @Getter private int EntitySubtypeId;
+    @Getter private long EntitySubtypeId;
     @Getter private String TextKey;
 
     @Getter private String LocalizedName;
     @Getter private String LocalizedDescription;
     @Getter private String LocalizedAbbreviation;
     //    String VersionTag;
-    //    int DataLocationEntitySubtypeId;
-    //    int DataStructureEntitySubtypeId
+    //    long DataLocationEntitySubtypeId;
+    //    long DataStructureEntitySubtypeId
     @Getter private Timestamp PublishedAtDateTimeUtc;
-    @Getter private int PublishedByInformationSystemUserId;
+    @Getter private long PublishedByInformationSystemUserId;
 
     //    String ResourceName;
-    @Getter private int Ordinal;
+    @Getter private long Ordinal;
     @Getter private boolean IsActive;
     //    UUID CorrelationUuid;
     //    String Digest;
     @Getter private Timestamp CreatedAtDateTimeUtc;
-    @Getter private int CreatedByInformationSystemUserId;
+    @Getter private long CreatedByInformationSystemUserId;
     @Getter private Timestamp UpdatedAtDateTimeUtc;
-    @Getter private int UpdatedByInformationSystemUserId;
+    @Getter private long UpdatedByInformationSystemUserId;
     @Getter private Timestamp DeletedAtDateTimeUtc;
-    @Getter private int DeletedByInformationSystemUserId;
+    @Getter private long DeletedByInformationSystemUserId;
 
-    public EntityTypeDefinition(int id, int entitySubtypeId, String textKey, String localizedName, String localizedDescription, String localizedAbbreviation, Timestamp publishedAtDateTimeUtc, int publishedByInformationSystemUserId, int ordinal, boolean isActive, Timestamp createdAtDateTimeUtc, int createdByInformationSystemUserId, Timestamp updatedAtDateTimeUtc, int updatedByInformationSystemUserId, Timestamp deletedAtDateTimeUtc, int deletedByInformationSystemUserId) {
+    public EntityTypeDefinition(long id, long entitySubtypeId, String textKey, String localizedName, String localizedDescription, String localizedAbbreviation, Timestamp publishedAtDateTimeUtc, long publishedByInformationSystemUserId, long ordinal, boolean isActive, Timestamp createdAtDateTimeUtc, long createdByInformationSystemUserId, Timestamp updatedAtDateTimeUtc, long updatedByInformationSystemUserId, Timestamp deletedAtDateTimeUtc, long deletedByInformationSystemUserId) {
         Id = id;
         EntitySubtypeId = entitySubtypeId;
         TextKey = textKey;
