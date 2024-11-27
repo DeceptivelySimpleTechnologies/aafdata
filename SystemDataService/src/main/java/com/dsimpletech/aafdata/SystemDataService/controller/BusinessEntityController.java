@@ -49,7 +49,8 @@ import java.util.*;
 @Tag(name = "Adaptív Application Foundation (AAF) Data Layer (AAF Data)", description = "Locally-Sourced, Artisanal Data™")
 @RestController
 @RequestMapping(value = "/")
-public class BusinessEntityController {
+public class BusinessEntityController
+{
     @Autowired
     private Environment environment;
 
@@ -125,7 +126,7 @@ public class BusinessEntityController {
             entityTypeAttributes = new ArrayList<EntityTypeAttribute>();
 
             while (resultSet.next()) {
-                entityTypeAttributes.add(new EntityTypeAttribute(resultSet.getInt("Id"), resultSet.getInt("EntitySubtypeId"), resultSet.getString("TextKey"), resultSet.getString("LocalizedName"), resultSet.getString("LocalizedInformation"), resultSet.getString("LocalizedPlaceholder"), resultSet.getBoolean("IsLocalizable"), resultSet.getInt("GeneralizedDataTypeEntitySubtypeId"), resultSet.getInt("DataSizeOrMaximumLengthInBytesOrCharacters"), resultSet.getInt("DataPrecision"), resultSet.getInt("DataScale"), resultSet.getInt("KeyTypeEntitySubtypeId"), resultSet.getInt("RelatedEntityTypeId"), resultSet.getInt("RelatedEntityTypeAttributeId"), resultSet.getInt("RelatedEntityTypeCardinalityEntitySubtypeId"), resultSet.getString("EntitySubtypeGroupKey"), resultSet.getInt("EntityTypeAttributeValueEntitySubtypeId"), resultSet.getString("DefaultValue"), resultSet.getString("MinimumValue"), resultSet.getString("MaximumValue"), resultSet.getString("RegExValidationPattern"), resultSet.getFloat("StepIncrementValue"), resultSet.getString("RemoteValidationMethodAsAjaxUri"), resultSet.getInt("IndexEntitySubtypeId"), resultSet.getInt("UniquenessEntitySubtypeId"), resultSet.getInt("SensitivityEntitySubtypeId"), resultSet.getTimestamp("PublishedAtDateTimeUtc"), resultSet.getInt("PublishedByInformationSystemUserId"), resultSet.getInt("Ordinal"), resultSet.getBoolean("IsActive"), resultSet.getTimestamp("CreatedAtDateTimeUtc"), resultSet.getInt("CreatedByInformationSystemUserId"), resultSet.getTimestamp("UpdatedAtDateTimeUtc"), resultSet.getInt("UpdatedByInformationSystemUserId"), resultSet.getTimestamp("DeletedAtDateTimeUtc"), resultSet.getInt("DeletedByInformationSystemUserId")));
+                entityTypeAttributes.add(new EntityTypeAttribute(resultSet.getInt("Id"), resultSet.getInt("EntitySubtypeId"), resultSet.getString("TextKey"), resultSet.getString("LocalizedName"), resultSet.getString("LocalizedDescription"), resultSet.getString("LocalizedAbbreviation"), resultSet.getString("LocalizedInformation"), resultSet.getString("LocalizedPlaceholder"), resultSet.getBoolean("IsLocalizable"), resultSet.getInt("GeneralizedDataTypeEntitySubtypeId"), resultSet.getInt("DataSizeOrMaximumLengthInBytesOrCharacters"), resultSet.getInt("DataPrecision"), resultSet.getInt("DataScale"), resultSet.getInt("KeyTypeEntitySubtypeId"), resultSet.getInt("RelatedEntityTypeId"), resultSet.getInt("RelatedEntityTypeAttributeId"), resultSet.getInt("RelatedEntityTypeCardinalityEntitySubtypeId"), resultSet.getString("EntitySubtypeGroupKey"), resultSet.getInt("EntityTypeAttributeValueEntitySubtypeId"), resultSet.getString("DefaultValue"), resultSet.getString("MinimumValue"), resultSet.getString("MaximumValue"), resultSet.getString("RegExValidationPattern"), resultSet.getFloat("StepIncrementValue"), resultSet.getString("RemoteValidationMethodAsAjaxUri"), resultSet.getInt("IndexEntitySubtypeId"), resultSet.getInt("UniquenessEntitySubtypeId"), resultSet.getInt("SensitivityEntitySubtypeId"), resultSet.getTimestamp("PublishedAtDateTimeUtc"), resultSet.getInt("PublishedByInformationSystemUserId"), resultSet.getInt("Ordinal"), resultSet.getBoolean("IsActive"), resultSet.getTimestamp("CreatedAtDateTimeUtc"), resultSet.getInt("CreatedByInformationSystemUserId"), resultSet.getTimestamp("UpdatedAtDateTimeUtc"), resultSet.getInt("UpdatedByInformationSystemUserId"), resultSet.getTimestamp("DeletedAtDateTimeUtc"), resultSet.getInt("DeletedByInformationSystemUserId")));
             }
 
             logger.info(entityTypeAttributes.size() + " EntityTypeAttributes cached locally");
@@ -229,8 +230,9 @@ public class BusinessEntityController {
     {
         ServerHttpRequest request = null;
 
-//        int entityTypeId = -1;
-//        ArrayList<Integer> entityTypeAssociations = null;
+//        long entityTypeId = -1;
+        ArrayList<EntityTypeDefinition> unpublishedEntityTypeDefinitions = null;
+        ArrayList<EntityTypeDefinitionEntityTypeAttributeAssociation> unpublishedEntityTypeAssociations = null;
 
         String[] sqlBlacklistValues = null;
         String errorValues = "";
@@ -374,6 +376,7 @@ public class BusinessEntityController {
             //NOTE: Add publishing columns to EntityTypeAttribute table
             //NOTE: Add publishing columns to EntityTypeDefinitionEntityTypeAttributeAssociation table
             //NOTE: Add publishing columns to EntitySubtype table???
+            //TODO: Add publishing columns to EntityTypeAttribute data
             //TODO: How to handle modeling and publishing scripted data???
             //TODO: Publish inactive entities???
 
@@ -389,69 +392,111 @@ public class BusinessEntityController {
             //TODO: Update as published
             //TODO: Re-cache SDS and EDM data
 
-            //TODO: Refactor int to long, etc and other SDS changes in EDM
+            //TODO: Refactor int, ArrayLists, etc to long, etc and other SDS changes in EDM
 
             //TODO: Remove publisher role from EDM and SDS README files
             //TODO: Consider converting this to a BPMN process when possible
+            //TODO: When to publish EntityTypeAttributes???
 
             if (errorValues.length() == 0)
             {
+                //NOTE: Create schemas, based on unpublished EntityTypeDefinitions
                 unpublishedEntityData = GetUnpublishedEntityData(1, asOfDateTimeUtc);
 
-                if (unpublishedEntityData != null) {
+                //TODO: Better/more meaningful test here???
+                if (unpublishedEntityData != null)
+                {
+                    unpublishedEntityTypeDefinitions = new ArrayList<EntityTypeDefinition>();
+
                     for (int i = 0; i < unpublishedEntityData.get("EntityData").size(); i++) {
                         //preparedStatement = connection.prepareStatement("insert into Emp values(?,?)");
                         //stmt.setInt(1,101);//1 specifies the first parameter in the query
                         //stmt.setString(2,"Ratan");
+
+                        unpublishedEntityTypeDefinitions.add(new EntityTypeDefinition(unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("Id").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("EntitySubtypeId").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("TextKey").asText(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("LocalizedName").asText(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("LocalizedDescription").asText(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("LocalizedAbbreviation").asText(), Timestamp.valueOf(unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("PublishedAtDateTimeUtc").asText()), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("PublishedByInformationSystemUserId").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("Ordinal").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("IsActive").asBoolean(), Timestamp.valueOf(unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("CreatedAtDateTimeUtc").asText()), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("CreatedByInformationSystemUserId").asLong(), Timestamp.valueOf(unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("UpdatedAtDateTimeUtc").asText()), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("UpdatedByInformationSystemUserId").asLong(), Timestamp.valueOf(unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("DeletedAtDateTimeUtc").asText()), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("DeletedByInformationSystemUserId").asLong()));
 
                         preparedStatementSql = "CREATE SCHEMA " + unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("LocalizedName") + "\n" +
                                 "    AUTHORIZATION \"AafCoreModeler\";\n" +
                                 "GRANT USAGE ON SCHEMA " + unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("LocalizedName") + " TO \"AafCoreReadWrite\";\n" +
                                 "GRANT USAGE ON SCHEMA " + unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("LocalizedName") + " TO \"AafCoreReadOnly\";";
 
-                        preparedStatement = connection.prepareStatement(preparedStatementSql);
-                        preparedStatement.executeUpdate();
-                    }
+//                        preparedStatement = connection.prepareStatement(preparedStatementSql);
+//                        preparedStatement.executeUpdate();
 
-                    //TODO: Update as published
+                        //TODO: Update schema as published
+                    }
                 }
                 else
                 {
-                    throw new Exception("Failed to publish EntityTypeDefinition schema");
+                    //TODO: Better/more meaningful message here, or no exception necessary/appropriate???
+                    throw new Exception("Failed to publish unpublished schemas, based on EntityTypeDefinitions");
                 }
 
-                unpublishedEntityData = GetUnpublishedEntityData(2, asOfDateTimeUtc);
+                //NOTE: Publish unpublished EntityTypeAttributeAssociations
 
-                if (unpublishedEntityData != null) {
-                    preparedStatementSql = "CREATE TABLE \"EntityTypeDefinition\".\"EntityTypeDefinition\"\n";
-                    preparedStatementSql = preparedStatementSql + "(";
+                //NOTE: Create tables, based on unpublished EntityTypeDefinitionEntityTypeAttributeAssociations
+                unpublishedEntityData = GetUnpublishedEntityData(3, asOfDateTimeUtc);
 
-                    for (int i = 0; i < unpublishedEntityData.get("EntityData").size(); i++) {
-                        preparedStatementSql = preparedStatementSql + "    \"" + unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("LocalizedName") + "\" bigint NOT NULL,\n";
+                //TODO: Better/more meaningful test here???
+                if (unpublishedEntityData != null)
+                {
+                    unpublishedEntityTypeAssociations = new ArrayList<EntityTypeDefinitionEntityTypeAttributeAssociation>();
+
+                    for (int i = 0; i < unpublishedEntityData.get("EntityData").size(); i++)
+                    {
+                        if (i == 0)
+                        {
+                            preparedStatementSql = "CREATE TABLE " + unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("LocalizedName") + "." + unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("LocalizedName") + "\n";
+                            preparedStatementSql = preparedStatementSql + "(" + "\n";
+                        }
+
+                        //NOTE: Get the Ids of any associated EntityTypeAttributes
+                        for (int j = 0 ; j < entityTypeDefinitionEntityTypeAttributeAssociations.size() ; j++)
+                        {
+                            if ((entityTypeDefinitionEntityTypeAttributeAssociations.get(j).getEntityTypeDefinitionId() == unpublishedEntityTypeDefinitions.get(i).getId()) && (entityTypeDefinitionEntityTypeAttributeAssociations.get(j).getEntityTypeDefinitionId() == unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("Id").asLong()))
+                            {
+                                unpublishedEntityTypeAssociations.add(new EntityTypeDefinitionEntityTypeAttributeAssociation(unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinitionEntityTypeAttributeAssociation").get("Id").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinitionEntityTypeAttributeAssociation").get("EntitySubtypeId").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinitionEntityTypeAttributeAssociation").get("TextKey").asText(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinitionEntityTypeAttributeAssociation").get("EntityTypeDefinitionId").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinitionEntityTypeAttributeAssociation").get("EntityTypeAttributeId").asLong(), Timestamp.from(Instant.parse(unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinitionEntityTypeAttributeAssociation").get("PublishedAtDateTimeUtc").asText())), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinitionEntityTypeAttributeAssociation").get("PublishedByInformationSystemUserId").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinitionEntityTypeAttributeAssociation").get("Ordinal").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinitionEntityTypeAttributeAssociation").get("IsActive").asBoolean(), Timestamp.from(Instant.parse(unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinitionEntityTypeAttributeAssociation").get("CreatedAtDateTimeUtc").asText())), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinitionEntityTypeAttributeAssociation").get("CreatedByInformationSystemUserId").asLong(), Timestamp.from(Instant.parse(unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinitionEntityTypeAttributeAssociation").get("UpdatedAtDateTimeUtc").asText())), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinitionEntityTypeAttributeAssociation").get("UpdatedByInformationSystemUserId").asLong(), Timestamp.from(Instant.parse(unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinitionEntityTypeAttributeAssociation").get("DeletedAtDateTimeUtc").asText())), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinitionEntityTypeAttributeAssociation").get("DeletedByInformationSystemUserId").asLong()));
+
+                                for (int k = 0 ; k < entityTypeAttributes.size() ; k++)
+                                {
+                                    if (entityTypeAttributes.get(k).getId() == unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("Id").asLong())
+                                    {
+                                        preparedStatementSql = preparedStatementSql + "    \"" + entityTypeAttributes.get(k).getLocalizedName() + "\" " + entityTypeAttributes.get(k).getGeneralizedDataTypeEntitySubtypeId() + " NOT NULL,\n";
+                                    }
+                                }
+                            }
+                        }
+
+                        //CONSTRAINT
+                        //INDEX
+
+//                        preparedStatement = connection.prepareStatement(preparedStatementSql);
+//                        preparedStatement.executeUpdate();
+
+                        //TODO: Update table as published
                     }
-
-                    preparedStatement = connection.prepareStatement(preparedStatementSql);
-                    preparedStatement.executeUpdate();
-
-                    //TODO: Update as published
                 }
                 else
                 {
-                    throw new Exception("Failed to publish EntityTypeAttribute schema");
-                }          }
+                    //TODO: Better/more meaningful message here, or no exception necessary/appropriate???
+                    throw new Exception("Failed to publish unpublished tables, based on EntityTypeDefinitionEntityTypeAttributeAssociations");
+                }
 
-                entityData = "{\n" +
-                        "    \"EntityType\": \"Not Applicable (N/A)\",\n" +
-                        "    \"TotalRows\": -1,\n" +
-                        "    \"AsOfDataTimeUtc\": " + unpublishedEntityData.get("AsOfDataTimeUtc") + ",\n" +
-                        "    \"EntityData\": []\n" +
-                        "}";
+                }
+            //TODO: Else/exception here (and in EDM?) if dangerous SQL found???
 
-                //TODO: Filter or mask unauthorized or sensitive attributes for this InformationSystemUserRole (as JSON)???
+            entityData = "{\n" +
+                    "    \"EntityType\": \"Not Applicable (N/A)\",\n" +
+                    "    \"TotalRows\": -1,\n" +
+                    "    \"AsOfDataTimeUtc\": " + unpublishedEntityData.get("AsOfDataTimeUtc") + ",\n" +
+                    "    \"EntityData\": []\n" +
+                    "}";
+
+            //TODO: Filter or mask unauthorized or sensitive attributes for this InformationSystemUserRole (as JSON)???
         }
         catch (Exception e)
         {
-            logger.error("PublishBusinessEntity() failed due to: " + e);
+            logger.error("PublishBusinessEntity() for " + databaseName + " failed due to: " + e);
             //TODO: Improve this error output???
             return new ResponseEntity<String>("{[]}", HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -542,9 +587,22 @@ public class BusinessEntityController {
                         if (entityTypeDefinitions.get(i).getPublishedAtDateTimeUtc().equals(Timestamp.valueOf("9999-12-31 23:59:59.999")))
                         {
                             entityTypeDefinition.put("Id", entityTypeDefinitions.get(i).getId());
+                            entityTypeDefinition.put("EntitySubtypeId", entityTypeDefinitions.get(i).getEntitySubtypeId());
+                            entityTypeDefinition.put("TextKey", entityTypeDefinitions.get(i).getTextKey());
                             entityTypeDefinition.put("LocalizedName", entityTypeDefinitions.get(i).getLocalizedName());
                             entityTypeDefinition.put("LocalizedDescription", entityTypeDefinitions.get(i).getLocalizedDescription());
                             entityTypeDefinition.put("LocalizedAbbreviation", entityTypeDefinitions.get(i).getLocalizedAbbreviation());
+                            entityTypeDefinition.put("PublishedAtDateTimeUtc", entityTypeDefinitions.get(i).getPublishedAtDateTimeUtc().toString());
+                            entityTypeDefinition.put("PublishedByInformationSystemUserId", entityTypeDefinitions.get(i).getPublishedByInformationSystemUserId());
+                            entityTypeDefinition.put("Ordinal", entityTypeDefinitions.get(i).getOrdinal());
+                            entityTypeDefinition.put("IsActive", entityTypeDefinitions.get(i).isIsActive());    //NOTE: See https://stackoverflow.com/questions/42619986/lombok-annotation-getter-for-boolean-field
+                            entityTypeDefinition.put("CreatedAtDateTimeUtc", entityTypeDefinitions.get(i).getCreatedAtDateTimeUtc().toString());
+                            entityTypeDefinition.put("CreatedByInformationSystemUserId", entityTypeDefinitions.get(i).getCreatedByInformationSystemUserId());
+                            entityTypeDefinition.put("UpdatedAtDateTimeUtc", entityTypeDefinitions.get(i).getUpdatedAtDateTimeUtc().toString());
+                            entityTypeDefinition.put("UpdatedByInformationSystemUserId", entityTypeDefinitions.get(i).getUpdatedByInformationSystemUserId());
+                            entityTypeDefinition.put("DeletedAtDateTimeUtc", entityTypeDefinitions.get(i).getDeletedAtDateTimeUtc().toString());
+                            entityTypeDefinition.put("DeletedByInformationSystemUserId", entityTypeDefinitions.get(i).getDeletedByInformationSystemUserId());
+
                             entityTypeDefinitionData.addObject().put("EntityTypeDefinition", entityTypeDefinition);
                         }
                     }
@@ -567,10 +625,41 @@ public class BusinessEntityController {
                         {
                             entityTypeDefinition.put("Id", entityTypeAttributes.get(i).getId());
                             entityTypeDefinition.put("LocalizedName", entityTypeAttributes.get(i).getLocalizedName());
+                            entityTypeDefinition.put("LocalizedDescription", entityTypeAttributes.get(i).getLocalizedDescription());
+                            entityTypeDefinition.put("LocalizedAbbreviation", entityTypeAttributes.get(i).getLocalizedAbbreviation());
+                            entityTypeDefinition.put("LocalizedInformation", entityTypeAttributes.get(i).getLocalizedInformation());
+                            entityTypeDefinition.put("LocalizedPlaceholder", entityTypeAttributes.get(i).getLocalizedPlaceholder());
+                            entityTypeDefinition.put("IsLocalizable", entityTypeAttributes.get(i).isIsLocalizable());
                             entityTypeDefinition.put("GeneralizedDataTypeEntitySubtypeId", entityTypeAttributes.get(i).getGeneralizedDataTypeEntitySubtypeId());
                             entityTypeDefinition.put("DataSizeOrMaximumLengthInBytesOrCharacters", entityTypeAttributes.get(i).getDataSizeOrMaximumLengthInBytesOrCharacters());
                             entityTypeDefinition.put("DataPrecision", entityTypeAttributes.get(i).getDataPrecision());
                             entityTypeDefinition.put("DataScale", entityTypeAttributes.get(i).getDataScale());
+                            entityTypeDefinition.put("KeyTypeEntitySubtypeId", entityTypeAttributes.get(i).getKeyTypeEntitySubtypeId());
+                            entityTypeDefinition.put("RelatedEntityTypeId", entityTypeAttributes.get(i).getRelatedEntityTypeId());
+                            entityTypeDefinition.put("RelatedEntityTypeAttributeId", entityTypeAttributes.get(i).getRelatedEntityTypeAttributeId());
+                            entityTypeDefinition.put("RelatedEntityTypeCardinalityEntitySubtypeId", entityTypeAttributes.get(i).getRelatedEntityTypeCardinalityEntitySubtypeId());
+                            entityTypeDefinition.put("EntitySubtypeGroupKey", entityTypeAttributes.get(i).getEntitySubtypeGroupKey());
+                            entityTypeDefinition.put("EntityTypeAttributeValueEntitySubtypeId", entityTypeAttributes.get(i).getEntityTypeAttributeValueEntitySubtypeId());
+                            entityTypeDefinition.put("DefaultValue", entityTypeAttributes.get(i).getDefaultValue());
+                            entityTypeDefinition.put("MinimumValue", entityTypeAttributes.get(i).getMinimumValue());
+                            entityTypeDefinition.put("MaximumValue", entityTypeAttributes.get(i).getMaximumValue());
+                            entityTypeDefinition.put("RegExValidationPattern", entityTypeAttributes.get(i).getRegExValidationPattern());
+                            entityTypeDefinition.put("StepIncrementValue", entityTypeAttributes.get(i).getStepIncrementValue());
+                            entityTypeDefinition.put("RemoteValidationMethodAsAjaxUri", entityTypeAttributes.get(i).getRemoteValidationMethodAsAjaxUri());
+                            entityTypeDefinition.put("IndexEntitySubtypeId", entityTypeAttributes.get(i).getIndexEntitySubtypeId());
+                            entityTypeDefinition.put("UniquenessEntitySubtypeId", entityTypeAttributes.get(i).getUniquenessEntitySubtypeId());
+                            entityTypeDefinition.put("SensitivityEntitySubtypeId", entityTypeAttributes.get(i).getSensitivityEntitySubtypeId());
+                            entityTypeDefinition.put("PublishedAtDateTimeUtc", entityTypeAttributes.get(i).getPublishedAtDateTimeUtc().toString());
+                            entityTypeDefinition.put("PublishedByInformationSystemUserId", entityTypeAttributes.get(i).getPublishedByInformationSystemUserId());
+                            entityTypeDefinition.put("Ordinal", entityTypeAttributes.get(i).getOrdinal());
+                            entityTypeDefinition.put("IsActive", entityTypeAttributes.get(i).isIsActive());    //NOTE: See https://stackoverflow.com/questions/42619986/lombok-annotation-getter-for-boolean-field
+                            entityTypeDefinition.put("CreatedAtDateTimeUtc", entityTypeAttributes.get(i).getCreatedAtDateTimeUtc().toString());
+                            entityTypeDefinition.put("CreatedByInformationSystemUserId", entityTypeAttributes.get(i).getCreatedByInformationSystemUserId());
+                            entityTypeDefinition.put("UpdatedAtDateTimeUtc", entityTypeAttributes.get(i).getUpdatedAtDateTimeUtc().toString());
+                            entityTypeDefinition.put("UpdatedByInformationSystemUserId", entityTypeAttributes.get(i).getUpdatedByInformationSystemUserId());
+                            entityTypeDefinition.put("DeletedAtDateTimeUtc", entityTypeAttributes.get(i).getDeletedAtDateTimeUtc().toString());
+                            entityTypeDefinition.put("DeletedByInformationSystemUserId", entityTypeAttributes.get(i).getDeletedByInformationSystemUserId());
+
                             entityTypeDefinitionData.addObject().put("EntityTypeDefinition", entityTypeDefinition);
                         }
                     }
@@ -592,8 +681,21 @@ public class BusinessEntityController {
                         if (entityTypeDefinitionEntityTypeAttributeAssociations.get(i).getPublishedAtDateTimeUtc().equals(Timestamp.valueOf("9999-12-31 23:59:59.999")))
                         {
                             entityTypeDefinition.put("Id", entityTypeDefinitionEntityTypeAttributeAssociations.get(i).getId());
+                            entityTypeDefinition.put("EntitySubtypeId", entityTypeDefinitionEntityTypeAttributeAssociations.get(i).getEntitySubtypeId());
+                            entityTypeDefinition.put("TextKey", entityTypeDefinitionEntityTypeAttributeAssociations.get(i).getTextKey());
                             entityTypeDefinition.put("EntityTypeDefinitionId", entityTypeDefinitionEntityTypeAttributeAssociations.get(i).getEntityTypeDefinitionId());
                             entityTypeDefinition.put("EntityTypeAttributeId", entityTypeDefinitionEntityTypeAttributeAssociations.get(i).getEntityTypeAttributeId());
+                            entityTypeDefinition.put("PublishedAtDateTimeUtc", entityTypeDefinitionEntityTypeAttributeAssociations.get(i).getPublishedAtDateTimeUtc().toString());
+                            entityTypeDefinition.put("PublishedByInformationSystemUserId", entityTypeDefinitionEntityTypeAttributeAssociations.get(i).getPublishedByInformationSystemUserId());
+                            entityTypeDefinition.put("Ordinal", entityTypeDefinitionEntityTypeAttributeAssociations.get(i).getOrdinal());
+                            entityTypeDefinition.put("IsActive", entityTypeDefinitionEntityTypeAttributeAssociations.get(i).isIsActive());    //NOTE: See https://stackoverflow.com/questions/42619986/lombok-annotation-getter-for-boolean-field
+                            entityTypeDefinition.put("CreatedAtDateTimeUtc", entityTypeDefinitionEntityTypeAttributeAssociations.get(i).getCreatedAtDateTimeUtc().toString());
+                            entityTypeDefinition.put("CreatedByInformationSystemUserId", entityTypeDefinitionEntityTypeAttributeAssociations.get(i).getCreatedByInformationSystemUserId());
+                            entityTypeDefinition.put("UpdatedAtDateTimeUtc", entityTypeDefinitionEntityTypeAttributeAssociations.get(i).getUpdatedAtDateTimeUtc().toString());
+                            entityTypeDefinition.put("UpdatedByInformationSystemUserId", entityTypeDefinitionEntityTypeAttributeAssociations.get(i).getUpdatedByInformationSystemUserId());
+                            entityTypeDefinition.put("DeletedAtDateTimeUtc", entityTypeDefinitionEntityTypeAttributeAssociations.get(i).getDeletedAtDateTimeUtc().toString());
+                            entityTypeDefinition.put("DeletedByInformationSystemUserId", entityTypeDefinitionEntityTypeAttributeAssociations.get(i).getDeletedByInformationSystemUserId());
+
                             entityTypeDefinitionData.addObject().put("EntityTypeDefinition", entityTypeDefinition);
                         }
                     }
@@ -615,9 +717,22 @@ public class BusinessEntityController {
                         if (entitySubtypes.get(i).getPublishedAtDateTimeUtc().equals(Timestamp.valueOf("9999-12-31 23:59:59.999")))
                         {
                             entityTypeDefinition.put("Id", entitySubtypes.get(i).getId());
+                            entityTypeDefinition.put("EntitySubtypeId", entitySubtypes.get(i).getEntitySubtypeId());
+                            entityTypeDefinition.put("TextKey", entitySubtypes.get(i).getTextKey());
                             entityTypeDefinition.put("LocalizedName", entitySubtypes.get(i).getLocalizedName());
                             entityTypeDefinition.put("LocalizedDescription", entitySubtypes.get(i).getLocalizedDescription());
                             entityTypeDefinition.put("LocalizedAbbreviation", entitySubtypes.get(i).getLocalizedAbbreviation());
+                            entityTypeDefinition.put("PublishedAtDateTimeUtc", entitySubtypes.get(i).getPublishedAtDateTimeUtc().toString());
+                            entityTypeDefinition.put("PublishedByInformationSystemUserId", entitySubtypes.get(i).getPublishedByInformationSystemUserId());
+                            entityTypeDefinition.put("Ordinal", entitySubtypes.get(i).getOrdinal());
+                            entityTypeDefinition.put("IsActive", entitySubtypes.get(i).isIsActive());    //NOTE: See https://stackoverflow.com/questions/42619986/lombok-annotation-getter-for-boolean-field
+                            entityTypeDefinition.put("CreatedAtDateTimeUtc", entitySubtypes.get(i).getCreatedAtDateTimeUtc().toString());
+                            entityTypeDefinition.put("CreatedByInformationSystemUserId", entitySubtypes.get(i).getCreatedByInformationSystemUserId());
+                            entityTypeDefinition.put("UpdatedAtDateTimeUtc", entitySubtypes.get(i).getUpdatedAtDateTimeUtc().toString());
+                            entityTypeDefinition.put("UpdatedByInformationSystemUserId", entitySubtypes.get(i).getUpdatedByInformationSystemUserId());
+                            entityTypeDefinition.put("DeletedAtDateTimeUtc", entitySubtypes.get(i).getDeletedAtDateTimeUtc().toString());
+                            entityTypeDefinition.put("DeletedByInformationSystemUserId", entitySubtypes.get(i).getDeletedByInformationSystemUserId());
+
                             entityTypeDefinitionData.addObject().put("EntityTypeDefinition", entityTypeDefinition);
                         }
                     }

@@ -25,7 +25,7 @@ public class EntityTypeDefinition {
 
     //    String ResourceName;
     @Getter private long Ordinal;
-    @Getter private boolean IsActive;
+    @Getter boolean IsActive;
     //    UUID CorrelationUuid;
     //    String Digest;
     @Getter private Timestamp CreatedAtDateTimeUtc;
