@@ -27,7 +27,10 @@ import org.slf4j.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+//import org.springframework.context.annotation.Bean;
+//import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+import org.springframework.web.client.RestTemplate;
 
 import org.springframework.http.*;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -74,6 +77,9 @@ public class BusinessEntityController
 
     //NOTE: Spring Boot Logback default logging implemented per https://www.baeldung.com/spring-boot-logging
     Logger logger = LoggerFactory.getLogger(BusinessEntityController.class);
+
+    @Autowired
+    private RestTemplate restTemplate;
 
     @PostConstruct
     private void CacheEntityData()
@@ -216,17 +222,17 @@ public class BusinessEntityController
 //    }
 //
 
-    @Operation(summary = "Create new, unpublished business entity data in the AafCore database, following all AAF rules and conventions.", description = "Create new, unpublished business entity data in the AafCore database, following all AAF rules and conventions, by providing the valid, required data and any valid, optional data as a JSON Web Token (JWT, please see https://jwt.io/) in the HTTP request body")
-    @Parameter(in = ParameterIn.COOKIE, description = "JWT Authentication token", name = "Authentication", content = @Content(schema = @Schema(type = "string")))
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Created", content = @Content(schema = @Schema(type = "string"))),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
-    })
-    @PostMapping(value = "/databases/{databaseName}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> CreateNewBusinessEntity(@PathVariable("databaseName") String databaseName, @RequestParam(defaultValue = "#{T(java.time.Instant).now()}") Instant asOfDateTimeUtc, @RequestBody String requestBody, ServerWebExchange exchange) throws Exception
-    {
-        return new ResponseEntity<String>("{[]}", HttpStatus.CREATED);
-    }
+//    @Operation(summary = "Create new, unpublished business entity data in the AafCore database, following all AAF rules and conventions.", description = "Create new, unpublished business entity data in the AafCore database, following all AAF rules and conventions, by providing the valid, required data and any valid, optional data as a JSON Web Token (JWT, please see https://jwt.io/) in the HTTP request body")
+//    @Parameter(in = ParameterIn.COOKIE, description = "JWT Authentication token", name = "Authentication", content = @Content(schema = @Schema(type = "string")))
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "201", description = "Created", content = @Content(schema = @Schema(type = "string"))),
+//            @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
+//    })
+//    @PostMapping(value = "/databases/{databaseName}", produces = MediaType.APPLICATION_JSON_VALUE)
+//    public ResponseEntity<String> CreateNewBusinessEntity(@PathVariable("databaseName") String databaseName, @RequestParam(defaultValue = "#{T(java.time.Instant).now()}") Instant asOfDateTimeUtc, @RequestBody String requestBody, ServerWebExchange exchange) throws Exception
+//    {
+//        return new ResponseEntity<String>("{[]}", HttpStatus.CREATED);
+//    }
 
     @Operation(summary = "Clone an existing business entity as a starting point in the AafCore database, following all AAF rules and conventions.", description = "Clone existing business entity data in the AafCore database, following all AAF rules and conventions, by providing the valid, required data and any valid, optional data as a JSON Web Token (JWT, please see https://jwt.io/) in the HTTP request body")
     @Parameter(in = ParameterIn.HEADER, description = "API key", name = "ApiKey", content = @Content(schema = @Schema(type = "string")))
@@ -235,8 +241,8 @@ public class BusinessEntityController
             @ApiResponse(responseCode = "201", description = "Created", content = @Content(schema = @Schema(type = "string"))),
             @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
     })
-    @PostMapping(value = "/databases/{databaseName}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> CloneExistingBusinessEntity(@PathVariable("databaseName") String databaseName, @RequestParam long existingBusinessEntityId, @RequestParam(defaultValue = "#{T(java.time.Instant).now()}") Instant asOfDateTimeUtc, @RequestBody String requestBody, ServerWebExchange exchange) throws Exception
+    @PostMapping(value = "/entityTypeDefinitions/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> CloneExistingBusinessEntity(@PathVariable("id") Long id, @RequestParam(defaultValue = "#{T(java.time.Instant).now()}") Instant asOfDateTimeUtc, @RequestBody String requestBody, ServerWebExchange exchange) throws Exception
     {
         ServerHttpRequest request = null;
 
@@ -261,15 +267,17 @@ public class BusinessEntityController
         String textKey = "";
 
         HttpHeaders headers = null;
+        EntityTypeDefinition cachedEntityTypeDefinition = null;
         String cloneActionRequestBody = "";
-        RestTemplateBuilder restTemplateBuilder = null;
+//        RestTemplateBuilder restTemplateBuilder = null;
+//        RestTemplate restTemplate = null;
 
         String entityData = "";
 
         try
         {
             //NOTE: Essentially validate existingBusinessEntityId in local cache
-            logger.info("Attempting to CloneExistingBusinessEntity() for " + existingBusinessEntityId + " (" + GetCachedEntityTypeDefinitionById(existingBusinessEntityId).getLocalizedName() + ")");
+            logger.info("Attempting to CloneExistingBusinessEntity() for " + id + " (" + GetCachedEntityTypeDefinitionById(id).getLocalizedName() + ")");
 
             request = exchange.getRequest();
 
@@ -355,9 +363,9 @@ public class BusinessEntityController
                 throw new Exception("Missing or invalid request body");
             }
 
-            sqlBlacklistValues = environment.getProperty("sqlNotToAllow").toLowerCase().split(",");
+//            sqlBlacklistValues = environment.getProperty("sqlNotToAllow").toLowerCase().split(",");
             //TODO: *** Only check request body for SQL injection
-            errorValues = GuardAgainstSqlIssues(bodyJwtPayload.toString(), sqlBlacklistValues);
+//            errorValues = GuardAgainstSqlIssues(bodyJwtPayload.toString(), sqlBlacklistValues);
 
             if (errorValues.length() == 0) {
                 //NOTE: Validate newBusinessEntityName in request body
@@ -368,14 +376,14 @@ public class BusinessEntityController
 
                 //NOTE: Optimistically (and consistently) not checking maximum length of newBusinessEntityDescription or newBusinessEntityAbbreviation LocalizedName because the database constraints will catch it
 
-                //TODO: Validate that cached EntitySubtypeId matches the one in the request body
+                cachedEntityTypeDefinition = GetCachedEntityTypeDefinitionById(id);
 
                 //NOTE: Validate optional newBusinessEntityTextKey in request body or generate TextKey
                 if (bodyJwtPayload.get("body").get("TextKey").asText().length() > 0)
                 {
                     if (!IsValidTextKey(bodyJwtPayload.get("body").get("TextKey").asText()))
                     {
-                        throw new Exception("Invalid TextKey name '" + bodyJwtPayload.get("body").get("TextKey").asText() + "'");
+                        throw new Exception("Invalid TextKey value '" + bodyJwtPayload.get("body").get("TextKey").asText() + "'");
                     }
                     else
                     {
@@ -390,36 +398,38 @@ public class BusinessEntityController
                 //NOTE: Insert new, unpublished EntityTypeDefinition, and get Id value
                 headers = new HttpHeaders();
                 headers.add("ApiKey", apiKey);
-                headers.add("Cookie", authenticationJwt.getValue());
+                headers.add("Cookie", authenticationJwt.toString());
 
+                //TODO: Figure out VersionTag, DataLocationEntitySubtypeId, and DataStructureEntitySubtypeId values
                 cloneActionRequestBody = "{\n" +
-                        "    \"EntitySubtypeId\": -1,\n" +
-                        "    \"TextKey\": \"person-none-bill-baker\",\n" +
-                        "    \"LegalGivenName\": \"Bill\",\n" +
-                        "    \"LegalSurname\": \"Baker\",\n" +
-                        "    \"BornAtDateTimeUtc\": \"2002-02-03 11:12:13.123\",\n" +
-                        "    \"LegalCitizenOfCountryGeographicUnitId\": 1,\n" +
-                        "    \"LocaleId\": 1,\n" +
-                        "    \"Ordinal\": -1,\n" +
-                        "    \"IsActive\": true\n" +
+                        "    \"EntitySubtypeId\": " + cachedEntityTypeDefinition.getEntitySubtypeId() + ",\n" +
+                        "    \"TextKey\": \"" + textKey + "\",\n" +
+                        "    \"LocalizedName\": \"" + bodyJwtPayload.get("body").get("LocalizedName").asText() + "\",\n" +
+                        "    \"LocalizedDescription\": \"" + bodyJwtPayload.get("body").get("LocalizedDescription").asText() + "\",\n" +
+                        "    \"LocalizedAbbreviation\": \"" + bodyJwtPayload.get("body").get("LocalizedAbbreviation").asText() + "\",\n" +
+                        "    \"VersionTag\": \"" + "000.000.000" + "\",\n" +
+                        "    \"DataLocationEntitySubtypeId\": " + "4" + ",\n" +
+                        "    \"DataStructureEntitySubtypeId\": " + "1" + ",\n" +
+                        "    \"PublishedAtDateTimeUtc\": \"9999-12-31 23:59:59.999Z\",\n" +
+                        "    \"PublishedByInformationSystemUserId\": " + "-1" + ",\n" +
+                        "    \"Ordinal\": " + cachedEntityTypeDefinition.getOrdinal() + ",\n" +
+                        "    \"IsActive\": " + cachedEntityTypeDefinition.isIsActive() + "\n" +
                         "  }";
 
-                HttpEntity<String> entity = new HttpEntity<>(requestBody, headers);
+                HttpEntity<String> entity = new HttpEntity<String>(cloneActionRequestBody, headers);
 
-                restTemplateBuilder = new RestTemplateBuilder();
-                restTemplateBuilder.
+//                restTemplateBuilder = new RestTemplateBuilder();
+//                restTemplate = restTemplate;
+                ResponseEntity<String> response = restTemplate.postForEntity("http://localhost:8080/entityTypes/EntityTypeDefinition", entity, String.class);
 
-                restTemplate = new TestRestTemplate();
-                ResponseEntity<String> response = restTemplate.postForEntity("http://localhost:8080/entityTypes/Person", entity, String.class);
-
-                entityIdStart = response.getBody().indexOf("\"Id\":") + 5;
-                System.out.println("entityIdStart: " + entityIdStart);
-
-                entityIdEnd = response.getBody().indexOf(",", entityIdStart);
-                System.out.println("entityIdEnd: " + entityIdEnd);
-
-                entityId = Integer.parseInt(response.getBody().substring(entityIdStart, entityIdEnd));
-                System.out.println("entityId: " + entityId);
+//                entityIdStart = response.getBody().indexOf("\"Id\":") + 5;
+//                System.out.println("entityIdStart: " + entityIdStart);
+//
+//                entityIdEnd = response.getBody().indexOf(",", entityIdStart);
+//                System.out.println("entityIdEnd: " + entityIdEnd);
+//
+//                entityId = Integer.parseInt(response.getBody().substring(entityIdStart, entityIdEnd));
+//                System.out.println("entityId: " + entityId);
 
                 //TODO: Get existing entity EntityTypeDefinitionEntityTypeAttributeAssociations
                 //TODO: Insert new, unpublished EntityTypeDefinitionEntityTypeAttributeAssociations
@@ -821,6 +831,7 @@ public class BusinessEntityController
                 throw new Exception("'asOfDateTimeUtc' query parameter must be greater than or equal to '1900-01-01'.");
             }
 
+            //TODO: Create "end of time" constant and replace all "9999-12-31" values
             if (asOfDateTimeUtc.isAfter(Instant.parse("9999-12-31T23:59:59.999Z")))
             {
                 throw new Exception("'asOfDateTimeUtc' query parameter must be less than or equal to '9999-12-31'.");
