@@ -112,6 +112,7 @@ public class BusinessEntityController
 
             entityTypeDefinitions = new ArrayList<EntityTypeDefinition>();
 
+            //TODO: Only cache "origin" entities and published EntityTypeDefinitions
             while (resultSet.next()) {
                 entityTypeDefinitions.add(new EntityTypeDefinition(resultSet.getInt("Id"), resultSet.getInt("EntitySubtypeId"), resultSet.getString("TextKey"), resultSet.getString("LocalizedName"), resultSet.getInt("Ordinal"), resultSet.getBoolean("IsActive"), resultSet.getTimestamp("DeletedAtDateTimeUtc")));
             }
@@ -365,6 +366,11 @@ public class BusinessEntityController
             //TODO: *** Only check request body for SQL injection
             errorValues = GuardAgainstSqlIssues(bodyJwtPayload.toString(), sqlBlacklistValues);
 
+            //TODO: Rework SQL validation in GuardAgainstSqlIssues()
+//            if (errorValues.length() > 0)
+//            {
+//                throw new Exception("Request body contains invalid value(s): " + errorValues);
+//            }
 
             //NOTE: Get the Id of the requested entityTypeName
             for (int i = 0 ; i < entityTypeDefinitions.size() ; i++)
@@ -527,31 +533,28 @@ public class BusinessEntityController
 
             //TODO: Since EntityDataCreate() is in public, ensure that is locked down to correct role(s) only
             //TODO: Refactor the statements below to be reusable for validation, local caching, etc
-            if (errorValues.length() == 0)
+            statement = connection.prepareCall("{call \"EntityDataCreate\"(?,?,?,?,?,?,?)}");
+            statement.setString(1, entityTypeName);
+            statement.setString(2, insertClause);
+            statement.setString(3, insertValues);
+            statement.setString(4, selectClause);
+            statement.setObject(5, bodyJwtPayload.get("jti").asText(), Types.OTHER);
+            statement.setLong(6, userId);
+
+            //NOTE: Register the data OUT parameter before calling the stored procedure
+            statement.registerOutParameter(7, Types.LONGVARCHAR);
+            statement.executeUpdate();
+
+            //NOTE: Read the OUT parameter now
+            entityData = statement.getString(7);
+
+            if (entityData == null)
             {
-                statement = connection.prepareCall("{call \"EntityDataCreate\"(?,?,?,?,?,?,?)}");
-                statement.setString(1, entityTypeName);
-                statement.setString(2, insertClause);
-                statement.setString(3, insertValues);
-                statement.setString(4, selectClause);
-                statement.setObject(5, bodyJwtPayload.get("jti").asText(), Types.OTHER);
-                statement.setLong(6, userId);
-
-                //NOTE: Register the data OUT parameter before calling the stored procedure
-                statement.registerOutParameter(7, Types.LONGVARCHAR);
-                statement.executeUpdate();
-
-                //NOTE: Read the OUT parameter now
-                entityData = statement.getString(7);
-
-                if (entityData == null)
-                {
-                    //TODO: Improve this error output???
-                    entityData = "{[]}";
-                }
-
-                //TODO: Filter or mask unauthorized or sensitive attributes for this InformationSystemUserRole (as JSON)???
+                //TODO: Improve this error output???
+                entityData = "{[]}";
             }
+
+            //TODO: Filter or mask unauthorized or sensitive attributes for this InformationSystemUserRole (as JSON)???
         }
         catch (Exception e)
         {
@@ -1564,7 +1567,7 @@ public class BusinessEntityController
             return issueValues;
         }
 
-        logger.info("GuardAgainstSqlIssues succeeded when '" + sqlFragment + "' did not contain '" + Arrays.toString(sqlBlacklistValues) + "'");
+        logger.info("GuardAgainstSqlIssues succeeded");
         return issueValues;
     }
 }

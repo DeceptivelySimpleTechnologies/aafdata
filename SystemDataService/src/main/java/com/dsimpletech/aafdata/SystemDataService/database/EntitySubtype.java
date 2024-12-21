@@ -17,8 +17,6 @@ public class EntitySubtype {
     @Getter private String LocalizedName;
     @Getter String LocalizedDescription;
     @Getter String LocalizedAbbreviation;
-    @Getter private Timestamp PublishedAtDateTimeUtc;
-    @Getter private long PublishedByInformationSystemUserId;
 
     //    String ResourceName;
     @Getter private long Ordinal;
@@ -32,15 +30,13 @@ public class EntitySubtype {
     @Getter private Timestamp DeletedAtDateTimeUtc;
     @Getter long DeletedByInformationSystemUserId;
 
-    public EntitySubtype(long id, long entitySubtypeId, String textKey, String localizedName, String localizedDescription, String localizedAbbreviation, Timestamp publishedAtDateTimeUtc, long publishedByInformationSystemUserId, long ordinal, boolean isActive, Timestamp createdAtDateTimeUtc, long createdByInformationSystemUserId, Timestamp updatedAtDateTimeUtc, long updatedByInformationSystemUserId, Timestamp deletedAtDateTimeUtc, long deletedByInformationSystemUserId) {
+    public EntitySubtype(long id, long entitySubtypeId, String textKey, String localizedName, String localizedDescription, String localizedAbbreviation, long ordinal, boolean isActive, Timestamp createdAtDateTimeUtc, long createdByInformationSystemUserId, Timestamp updatedAtDateTimeUtc, long updatedByInformationSystemUserId, Timestamp deletedAtDateTimeUtc, long deletedByInformationSystemUserId) {
         Id = id;
         EntitySubtypeId = entitySubtypeId;
         TextKey = textKey;
         LocalizedName = localizedName;
         LocalizedDescription = localizedDescription;
         LocalizedAbbreviation = localizedAbbreviation;
-        PublishedAtDateTimeUtc = publishedAtDateTimeUtc;
-        PublishedByInformationSystemUserId = publishedByInformationSystemUserId;
         Ordinal = ordinal;
         IsActive = isActive;
         CreatedAtDateTimeUtc = createdAtDateTimeUtc;

@@ -163,7 +163,7 @@ public class BusinessEntityController
             entitySubtypes = new ArrayList<EntitySubtype>();
 
             while (resultSet.next()) {
-                entitySubtypes.add(new EntitySubtype(resultSet.getInt("Id"), resultSet.getInt("EntitySubtypeId"), resultSet.getString("TextKey"), resultSet.getString("LocalizedName"), resultSet.getString("LocalizedDescription"), resultSet.getString("LocalizedAbbreviation"), resultSet.getTimestamp("PublishedAtDateTimeUtc"), resultSet.getInt("PublishedByInformationSystemUserId"), resultSet.getInt("Ordinal"), resultSet.getBoolean("IsActive"), resultSet.getTimestamp("CreatedAtDateTimeUtc"), resultSet.getInt("CreatedByInformationSystemUserId"), resultSet.getTimestamp("UpdatedAtDateTimeUtc"), resultSet.getInt("UpdatedByInformationSystemUserId"), resultSet.getTimestamp("DeletedAtDateTimeUtc"), resultSet.getInt("DeletedByInformationSystemUserId")));
+                entitySubtypes.add(new EntitySubtype(resultSet.getInt("Id"), resultSet.getInt("EntitySubtypeId"), resultSet.getString("TextKey"), resultSet.getString("LocalizedName"), resultSet.getString("LocalizedDescription"), resultSet.getString("LocalizedAbbreviation"), resultSet.getInt("Ordinal"), resultSet.getBoolean("IsActive"), resultSet.getTimestamp("CreatedAtDateTimeUtc"), resultSet.getInt("CreatedByInformationSystemUserId"), resultSet.getTimestamp("UpdatedAtDateTimeUtc"), resultSet.getInt("UpdatedByInformationSystemUserId"), resultSet.getTimestamp("DeletedAtDateTimeUtc"), resultSet.getInt("DeletedByInformationSystemUserId")));
             }
 
             logger.info(entitySubtypes.size() + " EntitySubtypes cached locally");
@@ -271,6 +271,12 @@ public class BusinessEntityController
         String cloneActionRequestBody = "";
 //        RestTemplateBuilder restTemplateBuilder = null;
 //        RestTemplate restTemplate = null;
+        HttpEntity<String> entity = null;
+        ResponseEntity<String> response = null;
+
+        int entityIdStart = -1;
+        int entityIdEnd = -1;
+        int entityId = -1;
 
         String entityData = "";
 
@@ -400,7 +406,7 @@ public class BusinessEntityController
                 headers.add("ApiKey", apiKey);
                 headers.add("Cookie", authenticationJwt.toString());
 
-                //TODO: Figure out VersionTag, DataLocationEntitySubtypeId, and DataStructureEntitySubtypeId values
+                //TODO: Figure out appropriate VersionTag, DataLocationEntitySubtypeId, and DataStructureEntitySubtypeId values
                 cloneActionRequestBody = "{\n" +
                         "    \"EntitySubtypeId\": " + cachedEntityTypeDefinition.getEntitySubtypeId() + ",\n" +
                         "    \"TextKey\": \"" + textKey + "\",\n" +
@@ -410,35 +416,26 @@ public class BusinessEntityController
                         "    \"VersionTag\": \"" + "000.000.000" + "\",\n" +
                         "    \"DataLocationEntitySubtypeId\": " + "4" + ",\n" +
                         "    \"DataStructureEntitySubtypeId\": " + "1" + ",\n" +
-                        "    \"PublishedAtDateTimeUtc\": \"9999-12-31 23:59:59.999Z\",\n" +
+                        "    \"PublishedAtDateTimeUtc\": \"9999-12-31 23:59:59.999\",\n" +
                         "    \"PublishedByInformationSystemUserId\": " + "-1" + ",\n" +
                         "    \"Ordinal\": " + cachedEntityTypeDefinition.getOrdinal() + ",\n" +
                         "    \"IsActive\": " + cachedEntityTypeDefinition.isIsActive() + "\n" +
                         "  }";
 
-                HttpEntity<String> entity = new HttpEntity<String>(cloneActionRequestBody, headers);
+                entity = new HttpEntity<String>(cloneActionRequestBody, headers);
 
 //                restTemplateBuilder = new RestTemplateBuilder();
 //                restTemplate = restTemplate;
-                ResponseEntity<String> response = restTemplate.postForEntity("http://localhost:8080/entityTypes/EntityTypeDefinition", entity, String.class);
+                response = restTemplate.postForEntity("http://localhost:8080/entityTypes/EntityTypeDefinition", entity, String.class);
 
-//                entityIdStart = response.getBody().indexOf("\"Id\":") + 5;
-//                System.out.println("entityIdStart: " + entityIdStart);
-//
-//                entityIdEnd = response.getBody().indexOf(",", entityIdStart);
-//                System.out.println("entityIdEnd: " + entityIdEnd);
-//
-//                entityId = Integer.parseInt(response.getBody().substring(entityIdStart, entityIdEnd));
-//                System.out.println("entityId: " + entityId);
+                entityIdStart = response.getBody().indexOf("\"Id\":") + 5;
+                System.out.println("entityIdStart: " + entityIdStart);
 
-                //TODO: Get existing entity EntityTypeDefinitionEntityTypeAttributeAssociations
-                //TODO: Insert new, unpublished EntityTypeDefinitionEntityTypeAttributeAssociations
+                entityIdEnd = response.getBody().indexOf(",", entityIdStart);
+                System.out.println("entityIdEnd: " + entityIdEnd);
 
-                //TODO: Confirm all required EntityTypeAttributes are associated with the new EntityTypeDefinition
-                //TODO: Refresh local data cache, i.e. should unpublished entity data be cached???
-                //TODO: Return new, unpublished entity data
-
-                //TODO: Consider converting this to a BPMN process when possible
+                entityId = Integer.parseInt(response.getBody().substring(entityIdStart, entityIdEnd));
+                System.out.println("entityId: " + entityId);
 
                 entityData = "{\n" +
                         "    \"EntityType\": \"Not Applicable (N/A)\",\n" +
@@ -446,6 +443,32 @@ public class BusinessEntityController
 //                        "    \"AsOfDataTimeUtc\": " + unpublishedEntityData.get("AsOfDataTimeUtc") + ",\n" +
                         "    \"EntityData\": []\n" +
                         "}";
+
+                //TODO: Insert new, unpublished EntityTypeDefinitionEntityTypeAttributeAssociations that match the specified EntityTypeDefinition's EntityTypeDefinitionEntityTypeAttributeAssociations
+                for (int i = 0 ; i < entityTypeDefinitionEntityTypeAttributeAssociations.size() ; i++)
+                {
+                    if (entityTypeDefinitionEntityTypeAttributeAssociations.get(i).getEntityTypeDefinitionId() == cachedEntityTypeDefinition.getId())
+                    {
+                        cloneActionRequestBody = "{\n" +
+                                "    \"EntitySubtypeId\": 0,\n" +
+                                "    \"TextKey\": \"entitytypedefinitionentitytypeattributeassociation-" + bodyJwtPayload.get("body").get("LocalizedName").asText().toLowerCase() + "-" + GetCachedEntityTypeAttributeById(entityTypeDefinitionEntityTypeAttributeAssociations.get(i).getEntityTypeAttributeId()).getLocalizedName().toLowerCase() + "\",\n" +
+                                "    \"EntityTypeDefinitionId\": " + entityId + ",\n" +
+                                "    \"EntityTypeAttributeId\": " + entityTypeDefinitionEntityTypeAttributeAssociations.get(i).getEntityTypeAttributeId() + ",\n" +
+                                "    \"PublishedAtDateTimeUtc\": \"9999-12-31 23:59:59.999\",\n" +
+                                "    \"PublishedByInformationSystemUserId\": " + "-1" + "\n" +
+                                "  }";
+
+                        entity = new HttpEntity<String>(cloneActionRequestBody, headers);
+
+                        response = restTemplate.postForEntity("http://localhost:8080/entityTypes/EntityTypeDefinitionEntityTypeAttributeAssociation", entity, String.class);
+                    }
+                }
+
+                //TODO: Confirm all required EntityTypeAttributes are associated with the new EntityTypeDefinition
+                //TODO: Refresh local data cache, i.e. should unpublished entity data be cached???
+                //TODO: Return new, unpublished entity data
+
+                //TODO: Consider converting this to a BPMN process when possible
             }
             //TODO: Else/exception here (and in EDM?) if dangerous SQL found???
         }
@@ -985,27 +1008,27 @@ public class BusinessEntityController
                         //TODO: May want to do this with live, not cached data???
                         //TODO: Capture and check cached data timestamp???
                         //TODO: Also check if updated since asOfDateTimeUtc???
-                        if (entitySubtypes.get(i).getPublishedAtDateTimeUtc().equals(Timestamp.valueOf("9999-12-31 23:59:59.999")))
-                        {
-                            entityTypeDefinition.put("Id", entitySubtypes.get(i).getId());
-                            entityTypeDefinition.put("EntitySubtypeId", entitySubtypes.get(i).getEntitySubtypeId());
-                            entityTypeDefinition.put("TextKey", entitySubtypes.get(i).getTextKey());
-                            entityTypeDefinition.put("LocalizedName", entitySubtypes.get(i).getLocalizedName());
-                            entityTypeDefinition.put("LocalizedDescription", entitySubtypes.get(i).getLocalizedDescription());
-                            entityTypeDefinition.put("LocalizedAbbreviation", entitySubtypes.get(i).getLocalizedAbbreviation());
-                            entityTypeDefinition.put("PublishedAtDateTimeUtc", entitySubtypes.get(i).getPublishedAtDateTimeUtc().toString());
-                            entityTypeDefinition.put("PublishedByInformationSystemUserId", entitySubtypes.get(i).getPublishedByInformationSystemUserId());
-                            entityTypeDefinition.put("Ordinal", entitySubtypes.get(i).getOrdinal());
-                            entityTypeDefinition.put("IsActive", entitySubtypes.get(i).isIsActive());    //NOTE: See https://stackoverflow.com/questions/42619986/lombok-annotation-getter-for-boolean-field
-                            entityTypeDefinition.put("CreatedAtDateTimeUtc", entitySubtypes.get(i).getCreatedAtDateTimeUtc().toString());
-                            entityTypeDefinition.put("CreatedByInformationSystemUserId", entitySubtypes.get(i).getCreatedByInformationSystemUserId());
-                            entityTypeDefinition.put("UpdatedAtDateTimeUtc", entitySubtypes.get(i).getUpdatedAtDateTimeUtc().toString());
-                            entityTypeDefinition.put("UpdatedByInformationSystemUserId", entitySubtypes.get(i).getUpdatedByInformationSystemUserId());
-                            entityTypeDefinition.put("DeletedAtDateTimeUtc", entitySubtypes.get(i).getDeletedAtDateTimeUtc().toString());
-                            entityTypeDefinition.put("DeletedByInformationSystemUserId", entitySubtypes.get(i).getDeletedByInformationSystemUserId());
-
-                            entityTypeDefinitionData.addObject().put("EntityTypeDefinition", entityTypeDefinition);
-                        }
+//                        if (entitySubtypes.get(i).getPublishedAtDateTimeUtc().equals(Timestamp.valueOf("9999-12-31 23:59:59.999")))
+//                        {
+//                            entityTypeDefinition.put("Id", entitySubtypes.get(i).getId());
+//                            entityTypeDefinition.put("EntitySubtypeId", entitySubtypes.get(i).getEntitySubtypeId());
+//                            entityTypeDefinition.put("TextKey", entitySubtypes.get(i).getTextKey());
+//                            entityTypeDefinition.put("LocalizedName", entitySubtypes.get(i).getLocalizedName());
+//                            entityTypeDefinition.put("LocalizedDescription", entitySubtypes.get(i).getLocalizedDescription());
+//                            entityTypeDefinition.put("LocalizedAbbreviation", entitySubtypes.get(i).getLocalizedAbbreviation());
+//                            entityTypeDefinition.put("PublishedAtDateTimeUtc", entitySubtypes.get(i).getPublishedAtDateTimeUtc().toString());
+//                            entityTypeDefinition.put("PublishedByInformationSystemUserId", entitySubtypes.get(i).getPublishedByInformationSystemUserId());
+//                            entityTypeDefinition.put("Ordinal", entitySubtypes.get(i).getOrdinal());
+//                            entityTypeDefinition.put("IsActive", entitySubtypes.get(i).isIsActive());    //NOTE: See https://stackoverflow.com/questions/42619986/lombok-annotation-getter-for-boolean-field
+//                            entityTypeDefinition.put("CreatedAtDateTimeUtc", entitySubtypes.get(i).getCreatedAtDateTimeUtc().toString());
+//                            entityTypeDefinition.put("CreatedByInformationSystemUserId", entitySubtypes.get(i).getCreatedByInformationSystemUserId());
+//                            entityTypeDefinition.put("UpdatedAtDateTimeUtc", entitySubtypes.get(i).getUpdatedAtDateTimeUtc().toString());
+//                            entityTypeDefinition.put("UpdatedByInformationSystemUserId", entitySubtypes.get(i).getUpdatedByInformationSystemUserId());
+//                            entityTypeDefinition.put("DeletedAtDateTimeUtc", entitySubtypes.get(i).getDeletedAtDateTimeUtc().toString());
+//                            entityTypeDefinition.put("DeletedByInformationSystemUserId", entitySubtypes.get(i).getDeletedByInformationSystemUserId());
+//
+//                            entityTypeDefinitionData.addObject().put("EntityTypeDefinition", entityTypeDefinition);
+//                        }
                     }
 
                     unpublishedEntityData.put("TotalRows", entityTypeDefinitionData.size());
@@ -1051,7 +1074,7 @@ public class BusinessEntityController
             return issueValues;
         }
 
-        logger.info("GuardAgainstSqlIssues succeeded for '" + sqlFragment + "'");
+        logger.info("GuardAgainstSqlIssues succeeded");
         return issueValues;
     }
 
@@ -1147,37 +1170,37 @@ public class BusinessEntityController
         return entityTypeDefinition;
     }
 
-//    private EntityTypeAttribute GetCachedEntityTypeAttributeById(long id)
-//    {
-//        EntityTypeAttribute entityTypeAttribute = null;
-//
-//        try
-//        {
-//            logger.info("Attempting to GetCachedEntityTypeAttributeById() for Id = " + id);
-//
-//            for (int i = 0 ; i < entityTypeAttributes.size() ; i++)
-//            {
-//                if (entityTypeAttributes.get(i).getId() == id)
-//                {
-//                    entityTypeAttribute = entityTypeAttributes.get(i);
-//                    break;
-//                }
-//            }
-//
-//            if (entityTypeAttribute == null)
-//            {
-//                throw new Exception("EntityTypeAttribute not found");
-//            }
-//        }
-//        catch (Exception e)
-//        {
-//            logger.error("GetCachedEntityTypeAttributeById failed due to: " + e);
-//            return entityTypeAttribute;
-//        }
-//
-//        logger.info("GetCachedEntityTypeAttributeById succeeded");
-//        return entityTypeAttribute;
-//    }
+    private EntityTypeAttribute GetCachedEntityTypeAttributeById(long id)
+    {
+        EntityTypeAttribute entityTypeAttribute = null;
+
+        try
+        {
+            logger.info("Attempting to GetCachedEntityTypeAttributeById() for Id = " + id);
+
+            for (int i = 0 ; i < entityTypeAttributes.size() ; i++)
+            {
+                if (entityTypeAttributes.get(i).getId() == id)
+                {
+                    entityTypeAttribute = entityTypeAttributes.get(i);
+                    break;
+                }
+            }
+
+            if (entityTypeAttribute == null)
+            {
+                throw new Exception("EntityTypeAttribute not found");
+            }
+        }
+        catch (Exception e)
+        {
+            logger.error("GetCachedEntityTypeAttributeById failed due to: " + e);
+            return entityTypeAttribute;
+        }
+
+        logger.info("GetCachedEntityTypeAttributeById succeeded");
+        return entityTypeAttribute;
+    }
 
     private EntitySubtype GetCachedEntitySubtypeById(long id)
     {
