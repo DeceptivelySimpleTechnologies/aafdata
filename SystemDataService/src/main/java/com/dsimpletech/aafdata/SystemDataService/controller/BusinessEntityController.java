@@ -129,7 +129,7 @@ public class BusinessEntityController
             entityTypeAttributes = new ArrayList<EntityTypeAttribute>();
 
             while (resultSet.next()) {
-                entityTypeAttributes.add(new EntityTypeAttribute(resultSet.getInt("Id"), resultSet.getInt("EntitySubtypeId"), resultSet.getString("TextKey"), resultSet.getString("LocalizedName"), resultSet.getString("LocalizedDescription"), resultSet.getString("LocalizedAbbreviation"), resultSet.getString("LocalizedInformation"), resultSet.getString("LocalizedPlaceholder"), resultSet.getBoolean("IsLocalizable"), resultSet.getInt("GeneralizedDataTypeEntitySubtypeId"), resultSet.getInt("DataSizeOrMaximumLengthInBytesOrCharacters"), resultSet.getInt("DataPrecision"), resultSet.getInt("DataScale"), resultSet.getInt("KeyTypeEntitySubtypeId"), resultSet.getInt("RelatedEntityTypeId"), resultSet.getInt("RelatedEntityTypeAttributeId"), resultSet.getInt("RelatedEntityTypeCardinalityEntitySubtypeId"), resultSet.getString("EntitySubtypeGroupKey"), resultSet.getInt("EntityTypeAttributeValueEntitySubtypeId"), resultSet.getString("DefaultValue"), resultSet.getString("MinimumValue"), resultSet.getString("MaximumValue"), resultSet.getString("RegExValidationPattern"), resultSet.getFloat("StepIncrementValue"), resultSet.getString("RemoteValidationMethodAsAjaxUri"), resultSet.getInt("IndexEntitySubtypeId"), resultSet.getInt("UniquenessEntitySubtypeId"), resultSet.getInt("SensitivityEntitySubtypeId"), resultSet.getTimestamp("PublishedAtDateTimeUtc"), resultSet.getInt("PublishedByInformationSystemUserId"), resultSet.getInt("Ordinal"), resultSet.getBoolean("IsActive"), resultSet.getTimestamp("CreatedAtDateTimeUtc"), resultSet.getInt("CreatedByInformationSystemUserId"), resultSet.getTimestamp("UpdatedAtDateTimeUtc"), resultSet.getInt("UpdatedByInformationSystemUserId"), resultSet.getTimestamp("DeletedAtDateTimeUtc"), resultSet.getInt("DeletedByInformationSystemUserId")));
+                entityTypeAttributes.add(new EntityTypeAttribute(resultSet.getInt("Id"), resultSet.getInt("EntitySubtypeId"), resultSet.getString("TextKey"), resultSet.getString("LocalizedName"), resultSet.getString("LocalizedDescription"), resultSet.getString("LocalizedAbbreviation"), resultSet.getString("LocalizedInformation"), resultSet.getString("LocalizedPlaceholder"), resultSet.getBoolean("IsLocalizable"), resultSet.getBoolean("IsToBeAssociatedWithEachEntityTypeDefinition"), resultSet.getInt("GeneralizedDataTypeEntitySubtypeId"), resultSet.getInt("DataSizeOrMaximumLengthInBytesOrCharacters"), resultSet.getInt("DataPrecision"), resultSet.getInt("DataScale"), resultSet.getInt("KeyTypeEntitySubtypeId"), resultSet.getInt("RelatedEntityTypeId"), resultSet.getInt("RelatedEntityTypeAttributeId"), resultSet.getInt("RelatedEntityTypeCardinalityEntitySubtypeId"), resultSet.getString("EntitySubtypeGroupKey"), resultSet.getInt("EntityTypeAttributeValueEntitySubtypeId"), resultSet.getString("DefaultValue"), resultSet.getString("MinimumValue"), resultSet.getString("MaximumValue"), resultSet.getString("RegExValidationPattern"), resultSet.getFloat("StepIncrementValue"), resultSet.getString("RemoteValidationMethodAsAjaxUri"), resultSet.getInt("IndexEntitySubtypeId"), resultSet.getInt("UniquenessEntitySubtypeId"), resultSet.getInt("SensitivityEntitySubtypeId"), resultSet.getTimestamp("PublishedAtDateTimeUtc"), resultSet.getInt("PublishedByInformationSystemUserId"), resultSet.getInt("Ordinal"), resultSet.getBoolean("IsActive"), resultSet.getTimestamp("CreatedAtDateTimeUtc"), resultSet.getInt("CreatedByInformationSystemUserId"), resultSet.getTimestamp("UpdatedAtDateTimeUtc"), resultSet.getInt("UpdatedByInformationSystemUserId"), resultSet.getTimestamp("DeletedAtDateTimeUtc"), resultSet.getInt("DeletedByInformationSystemUserId")));
             }
 
             logger.info(entityTypeAttributes.size() + " EntityTypeAttributes cached locally");
@@ -222,27 +222,15 @@ public class BusinessEntityController
 //    }
 //
 
-//    @Operation(summary = "Create new, unpublished business entity data in the AafCore database, following all AAF rules and conventions.", description = "Create new, unpublished business entity data in the AafCore database, following all AAF rules and conventions, by providing the valid, required data and any valid, optional data as a JSON Web Token (JWT, please see https://jwt.io/) in the HTTP request body")
-//    @Parameter(in = ParameterIn.COOKIE, description = "JWT Authentication token", name = "Authentication", content = @Content(schema = @Schema(type = "string")))
-//    @ApiResponses(value = {
-//            @ApiResponse(responseCode = "201", description = "Created", content = @Content(schema = @Schema(type = "string"))),
-//            @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
-//    })
-//    @PostMapping(value = "/databases/{databaseName}", produces = MediaType.APPLICATION_JSON_VALUE)
-//    public ResponseEntity<String> CreateNewBusinessEntity(@PathVariable("databaseName") String databaseName, @RequestParam(defaultValue = "#{T(java.time.Instant).now()}") Instant asOfDateTimeUtc, @RequestBody String requestBody, ServerWebExchange exchange) throws Exception
-//    {
-//        return new ResponseEntity<String>("{[]}", HttpStatus.CREATED);
-//    }
-
-    @Operation(summary = "Clone an existing business entity as a starting point in the AafCore database, following all AAF rules and conventions.", description = "Clone existing business entity data in the AafCore database, following all AAF rules and conventions, by providing the valid, required data and any valid, optional data as a JSON Web Token (JWT, please see https://jwt.io/) in the HTTP request body")
+    @Operation(summary = "Create new, unpublished business entity data in the AafCore database, following all AAF rules and conventions.", description = "Create new, unpublished business entity data in the AafCore database, following all AAF rules and conventions, by providing the valid, required data and any valid, optional data as a JSON Web Token (JWT, please see https://jwt.io/) in the HTTP request body")
     @Parameter(in = ParameterIn.HEADER, description = "API key", name = "ApiKey", content = @Content(schema = @Schema(type = "string")))
     @Parameter(in = ParameterIn.COOKIE, description = "JWT Authentication token", name = "Authentication", content = @Content(schema = @Schema(type = "string")))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Created", content = @Content(schema = @Schema(type = "string"))),
             @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
     })
-    @PostMapping(value = "/entityTypeDefinitions/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> CloneExistingBusinessEntity(@PathVariable("id") Long id, @RequestParam(defaultValue = "#{T(java.time.Instant).now()}") Instant asOfDateTimeUtc, @RequestBody String requestBody, ServerWebExchange exchange) throws Exception
+    @PostMapping(value = "/entityTypeDefinitions", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> CreateNewBusinessEntity(@RequestParam(defaultValue = "#{T(java.time.Instant).now()}") Instant asOfDateTimeUtc, @RequestBody String requestBody, ServerWebExchange exchange) throws Exception
     {
         ServerHttpRequest request = null;
 
@@ -258,13 +246,15 @@ public class BusinessEntityController
         String[] authenticationJwtSections = null;
         JsonNode authenticationJwtHeader = null;
         JsonNode authenticationJwtPayload = null;
-        int userId = -1;
+        Long userId = -1L;
 
         String[] bodyJwtSections = null;
         JsonNode bodyJwtHeader = null;
         JsonNode bodyJwtPayload = null;
 
         String textKey = "";
+        Long ordinal = -1L;
+        Boolean isActive = false;
 
         HttpHeaders headers = null;
         EntityTypeDefinition cachedEntityTypeDefinition = null;
@@ -272,24 +262,25 @@ public class BusinessEntityController
 //        RestTemplateBuilder restTemplateBuilder = null;
 //        RestTemplate restTemplate = null;
         HttpEntity<String> entity = null;
-        ResponseEntity<String> response = null;
+        ResponseEntity<String> cloneActionResponseBody = null;
 
         int entityIdStart = -1;
         int entityIdEnd = -1;
-        int entityId = -1;
+        Long entityId = -1L;
 
+        JsonNode jsonResponseBody = null;
         String entityData = "";
 
         try
         {
             //NOTE: Essentially validate existingBusinessEntityId in local cache
-            logger.info("Attempting to CloneExistingBusinessEntity() for " + id + " (" + GetCachedEntityTypeDefinitionById(id).getLocalizedName() + ")");
+            logger.info("Attempting to CreateNewBusinessEntity()");
 
             request = exchange.getRequest();
 
             //TODO: Add ApiKey input @Parameter to EDM methods
 
-            //NOTE: No database structure changes are necessary for this operation, so no database connection is required
+            //NOTE: No database structure changes are necessary for this operation, which calls the EDM PostBusinessEntity method, etc, so no database connection is required
 
             ENVIRONMENT_JWT_SHARED_SECRET = environment.getProperty("environmentJwtSharedSecret");
 
@@ -324,7 +315,7 @@ public class BusinessEntityController
             }
 
             //TODO: Look up InformationSystemUser.Id using the authenticated user's EmailAddress in the Authentication JWT payload, and assign it below
-            userId = -100;
+            userId = -100L;
 
             //TODO: Check user's role(s) and permissions for this operation
 
@@ -380,12 +371,12 @@ public class BusinessEntityController
                     throw new Exception("Invalid EntityTypeDefinition name '" + bodyJwtPayload.get("body").get("LocalizedName").asText() + "'");
                 }
 
-                //NOTE: Optimistically (and consistently) not checking maximum length of newBusinessEntityDescription or newBusinessEntityAbbreviation LocalizedName because the database constraints will catch it
+                //NOTE: Optimistically (and consistently) not checking maximum length of newBusinessEntityName, newBusinessEntityDescription, or newBusinessEntityAbbreviation because the database constraints will catch it
 
-                cachedEntityTypeDefinition = GetCachedEntityTypeDefinitionById(id);
+//                cachedEntityTypeDefinition = GetCachedEntityTypeDefinitionById(id);
 
                 //NOTE: Validate optional newBusinessEntityTextKey in request body or generate TextKey
-                if (bodyJwtPayload.get("body").get("TextKey").asText().length() > 0)
+                if (bodyJwtPayload.get("body").has("TextKey"))
                 {
                     if (!IsValidTextKey(bodyJwtPayload.get("body").get("TextKey").asText()))
                     {
@@ -398,7 +389,283 @@ public class BusinessEntityController
                 }
                 else
                 {
-                    textKey = bodyJwtPayload.get("body").get("LocalizedName").asText().toLowerCase() + "-" + GetCachedEntitySubtypeById(bodyJwtPayload.get("body").get("EntitySubtypeId").asLong()).getLocalizedName().toLowerCase() + "-" + GenerateRandomLowercaseAlphanumericString(5);
+                    //TODO: Add a method to generate a valid TextKey value for any EntityTypeDefinition, and call it here
+                    textKey = "entitytypedefinition-" + GetCachedEntitySubtypeById(bodyJwtPayload.get("body").get("EntitySubtypeId").asLong()).getLocalizedName().toLowerCase() + "-" + bodyJwtPayload.get("body").get("LocalizedName").asText().toLowerCase() + "-" + GenerateRandomLowercaseAlphanumericString(5);
+                }
+
+                //NOTE: Get optional Ordinal value in request body or supply default value
+                if (bodyJwtPayload.get("body").has("Ordinal"))
+                {
+                    ordinal = bodyJwtPayload.get("body").get("Ordinal").asLong();
+                }
+                else
+                {
+                    ordinal = -1L;
+                }
+
+                //NOTE: Get optional IsActive value in request body or supply default value
+                if (bodyJwtPayload.get("body").has("IsActive"))
+                {
+                    isActive = bodyJwtPayload.get("body").get("IsActive").asBoolean();
+                }
+                else
+                {
+                    isActive = true;
+                }
+
+                //NOTE: Insert new, unpublished EntityTypeDefinition, and get Id value
+                headers = new HttpHeaders();
+                headers.add("ApiKey", apiKey);
+                headers.add("Cookie", authenticationJwt.toString());
+
+                //TODO: Don't assume that optional Ordinal, IsActive, etc. are present in the request body
+                //TODO: Figure out appropriate VersionTag, DataLocationEntitySubtypeId, and DataStructureEntitySubtypeId values
+                cloneActionRequestBody = "{\n" +
+                        "    \"EntitySubtypeId\": " + bodyJwtPayload.get("body").get("EntitySubtypeId").asLong() + ",\n" +
+                        "    \"TextKey\": \"" + textKey + "\",\n" +
+                        "    \"LocalizedName\": \"" + bodyJwtPayload.get("body").get("LocalizedName").asText() + "\",\n" +
+                        "    \"LocalizedDescription\": \"" + bodyJwtPayload.get("body").get("LocalizedDescription").asText() + "\",\n" +
+                        "    \"LocalizedAbbreviation\": \"" + bodyJwtPayload.get("body").get("LocalizedAbbreviation").asText() + "\",\n" +
+                        "    \"VersionTag\": \"" + "000.000.000" + "\",\n" +
+                        "    \"DataLocationEntitySubtypeId\": " + "4" + ",\n" +
+                        "    \"DataStructureEntitySubtypeId\": " + "1" + ",\n" +
+                        "    \"PublishedAtDateTimeUtc\": \"9999-12-31 23:59:59.999\",\n" +
+                        "    \"PublishedByInformationSystemUserId\": " + "-1" + ",\n" +
+                        "    \"Ordinal\": " + ordinal + ",\n" +
+                        "    \"IsActive\": " + isActive + "\n" +
+                        "  }";
+
+                entity = new HttpEntity<String>(cloneActionRequestBody, headers);
+
+                //TODO: Implement second fix for RestTemplateBuilder
+//                restTemplateBuilder = new RestTemplateBuilder();
+//                restTemplate = restTemplate;
+                cloneActionResponseBody = restTemplate.postForEntity("http://localhost:8080/entityTypes/EntityTypeDefinition", entity, String.class);
+
+                //TODO: Check response body for success and to get Id
+
+                entityIdStart = cloneActionResponseBody.getBody().indexOf("\"Id\":") + 5;
+                System.out.println("entityIdStart: " + entityIdStart);
+
+                entityIdEnd = cloneActionResponseBody.getBody().indexOf(",", entityIdStart);
+                System.out.println("entityIdEnd: " + entityIdEnd);
+
+                entityId = Long.parseLong(cloneActionResponseBody.getBody().substring(entityIdStart, entityIdEnd));
+                System.out.println("entityId: " + entityId);
+
+                //TODO: Add AsOfDataTimeUtc and result text to standard response structure
+                //TODO: Echo input parameters in Postgres function return JSON
+                entityData = objectMapper.readTree(cloneActionResponseBody.getBody()).toString();
+
+                //TODO: Insert new, unpublished, required EntityTypeDefinitionEntityTypeAttributeAssociations
+                for (int i = 0 ; i < entityTypeAttributes.size() ; i++)
+                {
+                    if (GetCachedEntityTypeAttributeById(entityTypeAttributes.get(i).getId()).isIsToBeAssociatedWithEachEntityTypeDefinition())
+                    {
+                        cloneActionRequestBody = "{\n" +
+                                "    \"EntitySubtypeId\": 0,\n" +
+                                "    \"TextKey\": \"entitytypedefinitionentitytypeattributeassociation-" + bodyJwtPayload.get("body").get("LocalizedName").asText().toLowerCase() + "-" + GetCachedEntityTypeAttributeById(entityTypeAttributes.get(i).getId()).getLocalizedName().toLowerCase() + "\",\n" +
+                                "    \"EntityTypeDefinitionId\": " + entityId + ",\n" +
+                                "    \"EntityTypeAttributeId\": " + entityTypeAttributes.get(i).getId() + ",\n" +
+                                "    \"PublishedAtDateTimeUtc\": \"9999-12-31 23:59:59.999\",\n" +
+                                "    \"PublishedByInformationSystemUserId\": " + "-1" + "\n" +
+                                "  }";
+
+                        entity = new HttpEntity<String>(cloneActionRequestBody, headers);
+
+                        cloneActionResponseBody = restTemplate.postForEntity("http://localhost:8080/entityTypes/EntityTypeDefinitionEntityTypeAttributeAssociation", entity, String.class);
+                        //TODO: Check response body for success
+                    }
+                }
+
+                //TODO: Confirm all required EntityTypeAttributes are associated with the new EntityTypeDefinition
+                //TODO: Refresh local data cache, i.e. should unpublished entity data be cached???
+                //NOTE: Return new, unpublished entity data
+
+                //TODO: Consider converting this to a BPMN process when possible
+            }
+            //TODO: Else/exception here (and in EDM?) if dangerous SQL found???
+        }
+        catch (Exception e)
+        {
+            logger.error("CreateNewBusinessEntity() failed due to: " + e);
+            //TODO: Improve this error output???
+            return new ResponseEntity<String>("{[]}", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        logger.info("CreateNewBusinessEntity() succeeded");
+        return new ResponseEntity<String>(entityData, HttpStatus.CREATED);
+    }
+
+    @Operation(summary = "Clone an existing business entity as the starting point for new, unpublished business entity data in the AafCore database, following all AAF rules and conventions.", description = "Clone existing business entity data in the AafCore database, following all AAF rules and conventions, by providing the valid, required data and any valid, optional data as a JSON Web Token (JWT, please see https://jwt.io/) in the HTTP request body")
+    @Parameter(in = ParameterIn.HEADER, description = "API key", name = "ApiKey", content = @Content(schema = @Schema(type = "string")))
+    @Parameter(in = ParameterIn.COOKIE, description = "JWT Authentication token", name = "Authentication", content = @Content(schema = @Schema(type = "string")))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Created", content = @Content(schema = @Schema(type = "string"))),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
+    })
+    @PostMapping(value = "/entityTypeDefinitions/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> CloneExistingBusinessEntity(@PathVariable("id") Long id, @RequestParam(defaultValue = "#{T(java.time.Instant).now()}") Instant asOfDateTimeUtc, @RequestBody String requestBody, ServerWebExchange exchange) throws Exception
+    {
+        ServerHttpRequest request = null;
+
+        String[] sqlBlacklistValues = null;
+        String errorValues = "";
+
+        String apiKey = "";
+
+        ObjectMapper objectMapper = null;
+
+        HttpCookie authenticationJwt = null;
+        Base64.Decoder decoderBase64 = Base64.getUrlDecoder();
+        String[] authenticationJwtSections = null;
+        JsonNode authenticationJwtHeader = null;
+        JsonNode authenticationJwtPayload = null;
+        Long userId = -1L;
+
+        String[] bodyJwtSections = null;
+        JsonNode bodyJwtHeader = null;
+        JsonNode bodyJwtPayload = null;
+
+        String textKey = "";
+
+        HttpHeaders headers = null;
+        EntityTypeDefinition cachedEntityTypeDefinition = null;
+        String cloneActionRequestBody = "";
+//        RestTemplateBuilder restTemplateBuilder = null;
+//        RestTemplate restTemplate = null;
+        HttpEntity<String> entity = null;
+        ResponseEntity<String> cloneActionResponseBody = null;
+
+        int entityIdStart = -1;
+        int entityIdEnd = -1;
+        Long entityId = -1L;
+
+        JsonNode jsonResponseBody = null;
+        String entityData = "";
+
+        try
+        {
+            //NOTE: Essentially validate existingBusinessEntityId in local cache
+            logger.info("Attempting to CloneExistingBusinessEntity() for " + id + " (" + GetCachedEntityTypeDefinitionById(id).getLocalizedName() + ")");
+
+            request = exchange.getRequest();
+
+            //TODO: Add ApiKey input @Parameter to EDM methods
+
+            //NOTE: No database structure changes are necessary for this operation, which calls the EDM PostBusinessEntity method, etc, so no database connection is required
+
+            ENVIRONMENT_JWT_SHARED_SECRET = environment.getProperty("environmentJwtSharedSecret");
+
+            apiKey = exchange.getRequest().getHeaders().getFirst("ApiKey");
+
+            if ((apiKey == null) || (apiKey.length() < 1))
+            {
+                throw new Exception("No 'ApiKey' header included in the request");
+            }
+            else
+            {
+                //TODO: Validate API key by looking it up in the database, ensuring that it is not disabled, checking its associated permissions extent, and (later) checking that it is associated with the authenticated user's OrganizationalUnit
+                logger.info(("ApiKey header '" + apiKey + "' included in the request"));
+            }
+
+            objectMapper = new ObjectMapper();
+
+            //TODO: Validate JWT
+            authenticationJwt = request.getCookies().getFirst("Authentication");
+            authenticationJwtSections = authenticationJwt.getValue().split("\\.");
+            authenticationJwtHeader = objectMapper.readTree(decoderBase64.decode(authenticationJwtSections[0]));
+            authenticationJwtPayload = objectMapper.readTree(decoderBase64.decode(authenticationJwtSections[1]));
+            //TODO: Validate JWT signature per https://www.baeldung.com/java-jwt-token-decode
+
+            if ((authenticationJwtHeader != null) && (authenticationJwtPayload != null))
+            {
+                logger.info(("Requested by '" + authenticationJwtPayload.get("body").get("EmailAddress").asText() + "' using key '" + authenticationJwtHeader.get("kid").asText() + "'"));
+            }
+            else
+            {
+                throw new Exception("Missing or invalid 'Authentication' cookie included with the request");
+            }
+
+            //TODO: Look up InformationSystemUser.Id using the authenticated user's EmailAddress in the Authentication JWT payload, and assign it below
+            userId = -100L;
+
+            //TODO: Check user's role(s) and permissions for this operation
+
+            //NOTE: Example request http://localhost:8080/Person with "Authentication" JWT and JWT request body
+            //NOTE: https://learning.postman.com/docs/sending-requests/response-data/cookies/
+//            ApiKey: ???
+//            Authentication JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IkF1dGhlbnRpY2F0ZWQiLCJhdWQiOiJBQUZEYXRhLUVudGl0eURhdGFNaWNyb3NlcnZpY2UiLCJleHAiOjE3MjM4MTY5MjAsImlhdCI6MTcyMzgxNjgwMCwibmJmIjoxNzIzODE2Nzg5LCJqdGkiOiJlZjRhZjRlMy1lNzM2LTQyNWEtYWFmZi1lY2EwM2I3YjliMjgiLCJib2R5Ijp7IkVtYWlsQWRkcmVzcyI6ImFteS5hbmRlcnNvbkBhbXlzYWNjb3VudGluZy5jb20ifX0.Djq5LYPEK1QFgBk9aN5Vei37K6Cb8TxNH3ADWDcUaHs
+//            Request JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IlBPU1QgL0VudGl0eVR5cGUiLCJhdWQiOiJBQUZEYXRhLUVudGl0eURhdGFNaWNyb3NlcnZpY2UiLCJleHAiOjE3MjM4MTY5MjAsImlhdCI6MTcyMzgxNjgwMCwibmJmIjoxNzIzODE2Nzg5LCJqdGkiOiI4NzUyZjIzYi0xYTliLTQyMmEtOGIyNi0zNzQyNDM0ZGY0NzYiLCJib2R5Ijp7IkVudGl0eVN1YnR5cGVJZCI6LTEsIlRleHRLZXkiOiJwZXJzb24tbm9uZS1iaWxsLWJha2VyIiwiTGVnYWxHaXZlbk5hbWUiOiJCaWxsIiwiTGVnYWxTdXJuYW1lIjoiQmFrZXIiLCJCb3JuQXREYXRlVGltZVV0YyI6IjIwMDItMDItMDMgMTE6MTI6MTMuMTIzIiwiTGVnYWxDaXRpemVuT2ZDb3VudHJ5R2VvZ3JhcGhpY1VuaXRJZCI6MSwiTG9jYWxlSWQiOjEsIk9yZGluYWwiOi0xLCJJc0FjdGl2ZSI6dHJ1ZX19.rWNowmEoPkF8N0Q5KC5-W83g3hMqIf9TV8KHzLgNbio
+
+            //TODO: Validate JWT
+//            bodyJwtSections = requestBody.split("\\.");
+//            bodyJwtHeader = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[0]));
+//            bodyJwtPayload = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[1]));
+            //TODO: Validate JWT signature per https://www.baeldung.com/java-jwt-token-decode
+            bodyJwtPayload = objectMapper.readTree(requestBody);
+
+            if (bodyJwtPayload != null)
+            {
+                if (bodyJwtPayload.has("body"))
+                {
+                    //NOTE: Contains a JWT request body
+                    logger.info(("Request from '" + bodyJwtPayload.get("iss").asText() + "' for '" + bodyJwtPayload.get("aud").asText() + "' using key '" + authenticationJwtHeader.get("kid").asText() + "'"));
+                }
+                else
+                {
+                    //NOTE: Create a JWT request body from the simple JSON request body
+                    bodyJwtPayload = objectMapper.createObjectNode();
+                    ((ObjectNode) bodyJwtPayload).put("iss", "AAFData-TBD");
+                    ((ObjectNode) bodyJwtPayload).put("sub", "TBD");
+                    ((ObjectNode) bodyJwtPayload).put("aud", "AAFData-TBD");
+                    ((ObjectNode) bodyJwtPayload).put("exp", "1723816920");
+                    ((ObjectNode) bodyJwtPayload).put("iat", "1723816800");
+                    ((ObjectNode) bodyJwtPayload).put("nbf", "1723816789");
+                    ((ObjectNode) bodyJwtPayload).put("jti", UUID.randomUUID().toString());
+                    ((ObjectNode) bodyJwtPayload).put("body", objectMapper.readTree(requestBody));
+
+                    logger.info(("Request from '" + bodyJwtPayload.get("iss").asText() + "' for '" + bodyJwtPayload.get("aud").asText() + "' using key '" + authenticationJwtHeader.get("kid").asText() + "'"));
+                }
+            }
+            else
+            {
+                throw new Exception("Missing or invalid request body");
+            }
+
+//            sqlBlacklistValues = environment.getProperty("sqlNotToAllow").toLowerCase().split(",");
+            //TODO: *** Only check request body for SQL injection
+//            errorValues = GuardAgainstSqlIssues(bodyJwtPayload.toString(), sqlBlacklistValues);
+
+            if (errorValues.length() == 0) {
+                //NOTE: Validate newBusinessEntityName in request body
+                if (!IsValidEntityOrAttributeName(bodyJwtPayload.get("body").get("LocalizedName").asText()))
+                {
+                    throw new Exception("Invalid EntityTypeDefinition name '" + bodyJwtPayload.get("body").get("LocalizedName").asText() + "'");
+                }
+
+                //NOTE: Optimistically (and consistently) not checking maximum length of newBusinessEntityName, newBusinessEntityDescription, or newBusinessEntityAbbreviation because the database constraints will catch it
+
+                cachedEntityTypeDefinition = GetCachedEntityTypeDefinitionById(id);
+
+                //NOTE: Validate optional newBusinessEntityTextKey in request body or generate TextKey
+                if (bodyJwtPayload.get("body").has("TextKey"))
+                {
+                    if (!IsValidTextKey(bodyJwtPayload.get("body").get("TextKey").asText()))
+                    {
+                        throw new Exception("Invalid TextKey value '" + bodyJwtPayload.get("body").get("TextKey").asText() + "'");
+                    }
+                    else
+                    {
+                        textKey = bodyJwtPayload.get("body").get("TextKey").asText();
+                    }
+                }
+                else
+                {
+                    //TODO: Add a method to generate a valid TextKey value for any EntityTypeDefinition, and call it here
+                    //TODO: Watch out for '-businessentity' in cloned entity vs '-none' in source entity
+                    //TODO: Create Role subtype values, e.g EntityTypeId, Create, etc
+                    textKey = "entitytypedefinition-" + GetCachedEntitySubtypeById(bodyJwtPayload.get("body").get("EntitySubtypeId").asLong()).getLocalizedName().toLowerCase() + "-" + bodyJwtPayload.get("body").get("LocalizedName").asText().toLowerCase() + "-" + GenerateRandomLowercaseAlphanumericString(5);
                 }
 
                 //NOTE: Insert new, unpublished EntityTypeDefinition, and get Id value
@@ -424,25 +691,25 @@ public class BusinessEntityController
 
                 entity = new HttpEntity<String>(cloneActionRequestBody, headers);
 
+                //TODO: Implement second fix for RestTemplateBuilder
 //                restTemplateBuilder = new RestTemplateBuilder();
 //                restTemplate = restTemplate;
-                response = restTemplate.postForEntity("http://localhost:8080/entityTypes/EntityTypeDefinition", entity, String.class);
+                cloneActionResponseBody = restTemplate.postForEntity("http://localhost:8080/entityTypes/EntityTypeDefinition", entity, String.class);
 
-                entityIdStart = response.getBody().indexOf("\"Id\":") + 5;
+                //TODO: Check response body for success and to get Id
+
+                entityIdStart = cloneActionResponseBody.getBody().indexOf("\"Id\":") + 5;
                 System.out.println("entityIdStart: " + entityIdStart);
 
-                entityIdEnd = response.getBody().indexOf(",", entityIdStart);
+                entityIdEnd = cloneActionResponseBody.getBody().indexOf(",", entityIdStart);
                 System.out.println("entityIdEnd: " + entityIdEnd);
 
-                entityId = Integer.parseInt(response.getBody().substring(entityIdStart, entityIdEnd));
+                entityId = Long.parseLong(cloneActionResponseBody.getBody().substring(entityIdStart, entityIdEnd));
                 System.out.println("entityId: " + entityId);
 
-                entityData = "{\n" +
-                        "    \"EntityType\": \"Not Applicable (N/A)\",\n" +
-                        "    \"TotalRows\": -1,\n" +
-//                        "    \"AsOfDataTimeUtc\": " + unpublishedEntityData.get("AsOfDataTimeUtc") + ",\n" +
-                        "    \"EntityData\": []\n" +
-                        "}";
+                //TODO: Add AsOfDataTimeUtc and result text to standard response structure
+                //TODO: Echo input parameters in Postgres function return JSON
+                entityData = objectMapper.readTree(cloneActionResponseBody.getBody()).toString();
 
                 //TODO: Insert new, unpublished EntityTypeDefinitionEntityTypeAttributeAssociations that match the specified EntityTypeDefinition's EntityTypeDefinitionEntityTypeAttributeAssociations
                 for (int i = 0 ; i < entityTypeDefinitionEntityTypeAttributeAssociations.size() ; i++)
@@ -460,13 +727,14 @@ public class BusinessEntityController
 
                         entity = new HttpEntity<String>(cloneActionRequestBody, headers);
 
-                        response = restTemplate.postForEntity("http://localhost:8080/entityTypes/EntityTypeDefinitionEntityTypeAttributeAssociation", entity, String.class);
+                        cloneActionResponseBody = restTemplate.postForEntity("http://localhost:8080/entityTypes/EntityTypeDefinitionEntityTypeAttributeAssociation", entity, String.class);
+                        //TODO: Check response body for success
                     }
                 }
 
                 //TODO: Confirm all required EntityTypeAttributes are associated with the new EntityTypeDefinition
                 //TODO: Refresh local data cache, i.e. should unpublished entity data be cached???
-                //TODO: Return new, unpublished entity data
+                //NOTE: Return new, unpublished entity data
 
                 //TODO: Consider converting this to a BPMN process when possible
             }
@@ -480,9 +748,6 @@ public class BusinessEntityController
         }
 
         logger.info("CloneExistingBusinessEntity() succeeded");
-        //result = new JSONObject("{\"EntityData\":" + entityData + "}");
-        //return "{\"EntityData\":" + entityData + "}";
-        //TODO: Echo input parameters in Postgres function return JSON
         return new ResponseEntity<String>(entityData, HttpStatus.CREATED);
     }
 
@@ -643,7 +908,7 @@ public class BusinessEntityController
             //NOTE: Add publishing columns to EntityTypeAttribute table
             //NOTE: Add publishing columns to EntityTypeDefinitionEntityTypeAttributeAssociation table
             //NOTE: Add publishing columns to EntitySubtype table???
-            //TODO: Add publishing columns to EntityTypeAttribute data
+            //NOTE: Add publishing columns to EntityTypeAttribute data
             //TODO: How to handle modeling and publishing scripted data???
             //TODO: Publish inactive entities???
             //TODO: Add application properties and defaults for loc and min environments and for EDM port for updates
@@ -666,6 +931,7 @@ public class BusinessEntityController
             //TODO: Consider converting this to a BPMN process when possible
             //TODO: When to publish EntityTypeAttributes???
 
+            //TODO: Replace this if with if errors found and outdent all below
             if (errorValues.length() == 0)
             {
                 //NOTE: Create schemas, based on unpublished EntityTypeDefinitions
@@ -749,7 +1015,7 @@ public class BusinessEntityController
 //                                            case 16:
 //                                                preparedStatementSql = preparedStatementSql + "    \"" + entityTypeAttributes.get(k).getLocalizedName() + "\" " + entityTypeAttributes.get(k).getGeneralizedDataTypeEntitySubtypeId() + " NOT NULL,\n";
 //                                                break;
-                                            //TODO: Add UUID subtype???
+                                            //TODO: Add UUID data type subtype???
                                             //TODO: Add DataSizeOrMaximumLengthInBytesOrCharacters values for TextKey, LocalizedName, LocalizedDescription, LocalizedAbbreviation, ResourceName, Digest, etc
                                             //TODO: Add Currency type or use Decimal???
                                             //TODO: Unpublish LegalEntity attributes and associations (or add new entity type)

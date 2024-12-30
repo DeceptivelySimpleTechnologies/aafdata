@@ -21,6 +21,7 @@ public class EntityTypeAttribute {
     @Getter private String LocalizedInformation;
     @Getter private String LocalizedPlaceholder;
     @Getter private boolean IsLocalizable;
+    @Getter private boolean IsToBeAssociatedWithEachEntityTypeDefinition;
     @Getter private long GeneralizedDataTypeEntitySubtypeId;
     //    (10, 'f6818d77-64c2-487e-bcc9-989872509988', 0, 'entitysubtype-entitytypeattribute-generalizeddatatype-boolean', 2, 'GeneralizedDataType', 'Boolean', 'Indicates a boolean (0/1, true/false, etc) data type.  Note: This generalized data type, along with its size or maximum length, etc, will be translated into the corresponding implementation type in the data, service, and presentation layers, based on the implementation technologies utilized (e.g. PostgreSQL, Java, React, etc)', 'Eta Bool', '', -1, true, '00000000-0000-0000-0000-000000000000', '2f79fe7a822e7c6303edbeb4852d0cbd2bd8cd66f0737f9d70a7f9294256eaec', '2022-06-01 00:00:00.000', 0, '2022-06-01 00:00:00.000', 0, '9999-12-31 23:59:59.999', 0),
     //    (11, '1207c71d-6fbe-4baf-a5f3-d6db43576c49', 0, 'entitysubtype-entitytypeattribute-generalizeddatatype-integer', 2, 'GeneralizedDataType', 'Integer', 'Indicates an integer data type.  Note: This generalized data type, along with its size or maximum length, etc, will be translated into the corresponding implementation type in the data, service, and presentation layers, based on the implementation technologies utilized (e.g. PostgreSQL, Java, React, etc)', 'Eta Int', '', -1, true, '00000000-0000-0000-0000-000000000000', 'e137cf1aca6a7c5ec4abbca37a952e1456b4decf4b54f7055d1f696549feee1d', '2022-06-01 00:00:00.000', 0, '2022-06-01 00:00:00.000', 0, '9999-12-31 23:59:59.999', 0),
@@ -73,7 +74,7 @@ public class EntityTypeAttribute {
     @Getter private Timestamp DeletedAtDateTimeUtc;
     @Getter private long DeletedByInformationSystemUserId;
 
-    public EntityTypeAttribute(long id, long entitySubtypeId, String textKey, String localizedName, String localizedDescription, String localizedAbbreviation, String localizedInformation, String localizedPlaceholder, boolean isLocalizable, long generalizedDataTypeEntitySubtypeId, long dataSizeOrMaximumLengthInBytesOrCharacters, long dataPrecision, long dataScale, long keyTypeEntitySubtypeId, long relatedEntityTypeId, long relatedEntityTypeAttributeId, long relatedEntityTypeCardinalityEntitySubtypeId, String entitySubtypeGroupKey, long entityTypeAttributeValueEntitySubtypeId, String defaultValue, String minimumValue, String maximumValue, String regExValidationPattern, float stepIncrementValue, String remoteValidationMethodAsAjaxUri, long indexEntitySubtypeId, long uniquenessEntitySubtypeId, long sensitivityEntitySubtypeId, Timestamp publishedAtDateTimeUtc, long publishedByInformationSystemUserId, long ordinal, boolean isActive, Timestamp createdAtDateTimeUtc, long createdByInformationSystemUserId, Timestamp updatedAtDateTimeUtc, long updatedByInformationSystemUserId, Timestamp deletedAtDateTimeUtc, long deletedByInformationSystemUserId) {
+    public EntityTypeAttribute(long id, long entitySubtypeId, String textKey, String localizedName, String localizedDescription, String localizedAbbreviation, String localizedInformation, String localizedPlaceholder, boolean isLocalizable, boolean isToBeAssociatedWithEachEntityTypeDefinition, long generalizedDataTypeEntitySubtypeId, long dataSizeOrMaximumLengthInBytesOrCharacters, long dataPrecision, long dataScale, long keyTypeEntitySubtypeId, long relatedEntityTypeId, long relatedEntityTypeAttributeId, long relatedEntityTypeCardinalityEntitySubtypeId, String entitySubtypeGroupKey, long entityTypeAttributeValueEntitySubtypeId, String defaultValue, String minimumValue, String maximumValue, String regExValidationPattern, float stepIncrementValue, String remoteValidationMethodAsAjaxUri, long indexEntitySubtypeId, long uniquenessEntitySubtypeId, long sensitivityEntitySubtypeId, Timestamp publishedAtDateTimeUtc, long publishedByInformationSystemUserId, long ordinal, boolean isActive, Timestamp createdAtDateTimeUtc, long createdByInformationSystemUserId, Timestamp updatedAtDateTimeUtc, long updatedByInformationSystemUserId, Timestamp deletedAtDateTimeUtc, long deletedByInformationSystemUserId) {
         Id = id;
         EntitySubtypeId = entitySubtypeId;
         TextKey = textKey;
@@ -83,6 +84,7 @@ public class EntityTypeAttribute {
         LocalizedInformation = localizedInformation;
         LocalizedPlaceholder = localizedPlaceholder;
         IsLocalizable = isLocalizable;
+        IsToBeAssociatedWithEachEntityTypeDefinition = isToBeAssociatedWithEachEntityTypeDefinition;
         GeneralizedDataTypeEntitySubtypeId = generalizedDataTypeEntitySubtypeId;
         DataSizeOrMaximumLengthInBytesOrCharacters = dataSizeOrMaximumLengthInBytesOrCharacters;
         DataPrecision = dataPrecision;

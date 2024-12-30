@@ -16,6 +16,7 @@ CREATE TABLE "EntityTypeAttribute"."EntityTypeAttribute"
     "LocalizedInformation" character varying(100) COLLATE pg_catalog."default" NOT NULL,
     "LocalizedPlaceholder" character varying(100) COLLATE pg_catalog."default" NOT NULL,
     "IsLocalizable" boolean NOT NULL,
+    "IsToBeAssociatedWithEachEntityTypeDefinition" boolean NOT NULL,
     "GeneralizedDataTypeEntitySubtypeId" bigint NOT NULL,
     "DataSizeOrMaximumLengthInBytesOrCharacters" bigint NOT NULL,
     "DataPrecision" bigint NOT NULL,
