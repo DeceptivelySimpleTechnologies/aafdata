@@ -34,7 +34,10 @@ CREATE TABLE "EntityTypeDefinition"."EntityTypeDefinition"
     CONSTRAINT "EntityTypeDefinition_PK" PRIMARY KEY ("Id"),
 
     CONSTRAINT "EntityTypeDefinition_CHK_TextKey" CHECK ("TextKey" ~* '^[a-z0-9-]+$'),
-    CONSTRAINT "EntityTypeDefinition_CHK_LocalizedName" CHECK ("LocalizedName" ~* '^[A-Za-z]+$')
+    CONSTRAINT "EntityTypeDefinition_CHK_LocalizedName" CHECK ("LocalizedName" ~* '^[A-Za-z]+$'),
+
+    CONSTRAINT "EntityTypeDefinition_UQ1_TextKey_DeletedAtDateTimeUtc" UNIQUE ("TextKey", "DeletedAtDateTimeUtc"),
+    CONSTRAINT "EntityTypeDefinition_UQ1_LocalizedName_DeletedAtDateTimeUtc" UNIQUE ("LocalizedName", "DeletedAtDateTimeUtc")
 )
 
     TABLESPACE pg_default;

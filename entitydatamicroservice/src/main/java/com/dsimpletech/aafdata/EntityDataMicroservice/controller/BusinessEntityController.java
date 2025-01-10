@@ -366,7 +366,7 @@ public class BusinessEntityController
             //TODO: *** Only check request body for SQL injection
             errorValues = GuardAgainstSqlIssues(bodyJwtPayload.toString(), sqlBlacklistValues);
 
-            //TODO: Rework SQL validation in GuardAgainstSqlIssues()
+            //TODO: Rework SQL validation in GuardAgainstSqlIssues() here and in other methods
 //            if (errorValues.length() > 0)
 //            {
 //                throw new Exception("Request body contains invalid value(s): " + errorValues);

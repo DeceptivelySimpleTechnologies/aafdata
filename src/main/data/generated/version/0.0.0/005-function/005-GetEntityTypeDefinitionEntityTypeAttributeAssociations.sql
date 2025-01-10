@@ -16,7 +16,7 @@ CREATE FUNCTION public."GetEntityTypeDefinitionEntityTypeAttributeAssociations"(
 AS $BODY$
   BEGIN
 	OPEN ref FOR
-		SELECT * FROM "EntityTypeDefinitionEntityTypeAttributeAssociation"."EntityTypeDefinitionEntityTypeAttributeAssociation" WHERE "IsActive" = true AND "DeletedAtDateTimeUtc" = '9999-12-31T23:59:59.999' ORDER BY "Ordinal" ASC;
+		SELECT * FROM "EntityTypeDefinitionEntityTypeAttributeAssociation"."EntityTypeDefinitionEntityTypeAttributeAssociation" WHERE "IsActive" = true AND "DeletedAtDateTimeUtc" = '9999-12-31T23:59:59.999' ORDER BY "Id" ASC, "Ordinal" ASC;
 
   END;
 $BODY$;
