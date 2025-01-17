@@ -133,7 +133,7 @@ public class BusinessEntityController
             entityTypeAttributes = new ArrayList<EntityTypeAttribute>();
 
             while (resultSet.next()) {
-                entityTypeAttributes.add(new EntityTypeAttribute(resultSet.getInt("Id"), resultSet.getInt("EntitySubtypeId"), resultSet.getString("TextKey"), resultSet.getString("LocalizedName"), resultSet.getString("LocalizedDescription"), resultSet.getString("LocalizedAbbreviation"), resultSet.getString("LocalizedInformation"), resultSet.getString("LocalizedPlaceholder"), resultSet.getBoolean("IsLocalizable"), resultSet.getBoolean("IsToBeAssociatedWithEachEntityTypeDefinition"), resultSet.getInt("GeneralizedDataTypeEntitySubtypeId"), resultSet.getInt("DataSizeOrMaximumLengthInBytesOrCharacters"), resultSet.getInt("DataPrecision"), resultSet.getInt("DataScale"), resultSet.getInt("KeyTypeEntitySubtypeId"), resultSet.getInt("RelatedEntityTypeId"), resultSet.getInt("RelatedEntityTypeAttributeId"), resultSet.getInt("RelatedEntityTypeCardinalityEntitySubtypeId"), resultSet.getString("EntitySubtypeGroupKey"), resultSet.getInt("EntityTypeAttributeValueEntitySubtypeId"), resultSet.getString("DefaultValue"), resultSet.getString("MinimumValue"), resultSet.getString("MaximumValue"), resultSet.getString("RegExValidationPattern"), resultSet.getFloat("StepIncrementValue"), resultSet.getString("RemoteValidationMethodAsAjaxUri"), resultSet.getInt("IndexEntitySubtypeId"), resultSet.getInt("UniquenessEntitySubtypeId"), resultSet.getInt("SensitivityEntitySubtypeId"), resultSet.getTimestamp("PublishedAtDateTimeUtc"), resultSet.getInt("PublishedByInformationSystemUserId"), resultSet.getInt("Ordinal"), resultSet.getBoolean("IsActive"), resultSet.getTimestamp("CreatedAtDateTimeUtc"), resultSet.getInt("CreatedByInformationSystemUserId"), resultSet.getTimestamp("UpdatedAtDateTimeUtc"), resultSet.getInt("UpdatedByInformationSystemUserId"), resultSet.getTimestamp("DeletedAtDateTimeUtc"), resultSet.getInt("DeletedByInformationSystemUserId")));
+                entityTypeAttributes.add(new EntityTypeAttribute(resultSet.getInt("Id"), resultSet.getInt("EntitySubtypeId"), resultSet.getString("TextKey"), resultSet.getString("LocalizedName"), resultSet.getString("LocalizedDescription"), resultSet.getString("LocalizedAbbreviation"), resultSet.getString("LocalizedInformation"), resultSet.getString("LocalizedPlaceholder"), resultSet.getBoolean("IsLocalizable"), resultSet.getBoolean("IsToBeAssociatedWithEachEntityTypeDefinition"), resultSet.getInt("GeneralizedDataTypeEntitySubtypeId"), resultSet.getInt("DataSizeOrMaximumLengthInBytesOrCharacters"), resultSet.getInt("DataPrecision"), resultSet.getInt("DataScale"), resultSet.getInt("KeyTypeEntitySubtypeId"), resultSet.getInt("RelatedEntityTypeId"), resultSet.getInt("RelatedEntityTypeAttributeId"), resultSet.getInt("RelatedEntityTypeCardinalityEntitySubtypeId"), resultSet.getString("EntitySubtypeGroupKey"), resultSet.getInt("ValueEntitySubtypeId"), resultSet.getString("DefaultValue"), resultSet.getString("MinimumValue"), resultSet.getString("MaximumValue"), resultSet.getString("RegExValidationPattern"), resultSet.getFloat("StepIncrementValue"), resultSet.getString("RemoteValidationMethodAsAjaxUri"), resultSet.getInt("IndexEntitySubtypeId"), resultSet.getInt("UniquenessEntitySubtypeId"), resultSet.getInt("SensitivityEntitySubtypeId"), resultSet.getTimestamp("PublishedAtDateTimeUtc"), resultSet.getInt("PublishedByInformationSystemUserId"), resultSet.getInt("Ordinal"), resultSet.getBoolean("IsActive"), resultSet.getTimestamp("CreatedAtDateTimeUtc"), resultSet.getInt("CreatedByInformationSystemUserId"), resultSet.getTimestamp("UpdatedAtDateTimeUtc"), resultSet.getInt("UpdatedByInformationSystemUserId"), resultSet.getTimestamp("DeletedAtDateTimeUtc"), resultSet.getInt("DeletedByInformationSystemUserId")));
             }
 
             logger.info(entityTypeAttributes.size() + " EntityTypeAttributes cached locally");
@@ -282,8 +282,6 @@ public class BusinessEntityController
 
             request = exchange.getRequest();
 
-            //TODO: *** Add ApiKey input @Parameter to EDM methods
-
             //NOTE: No database structure changes are necessary for this operation, which calls the EDM PostBusinessEntity method, etc, so no database connection is required
 
             ENVIRONMENT_JWT_SHARED_SECRET = environment.getProperty("environmentJwtSharedSecret");
@@ -296,13 +294,13 @@ public class BusinessEntityController
             }
             else
             {
-                //TODO: Validate API key by looking it up in the database, ensuring that it is not disabled, checking its associated permissions extent, and (later) checking that it is associated with the authenticated user's OrganizationalUnit
+                //TODO: AAF-66 Validate API key by looking it up in the database, ensuring that it is not disabled, checking its associated permissions extent, and (later) checking that it is associated with the authenticated user's OrganizationalUnit
                 logger.info(("ApiKey header '" + apiKey + "' included in the request"));
             }
 
             objectMapper = new ObjectMapper();
 
-            //TODO: Validate JWT
+            //TODO: AAF-67 Validate JWT
             authenticationJwt = request.getCookies().getFirst("Authentication");
             authenticationJwtSections = authenticationJwt.getValue().split("\\.");
             authenticationJwtHeader = objectMapper.readTree(decoderBase64.decode(authenticationJwtSections[0]));
@@ -318,10 +316,10 @@ public class BusinessEntityController
                 throw new Exception("Missing or invalid 'Authentication' cookie included with the request");
             }
 
-            //TODO: Look up InformationSystemUser.Id using the authenticated user's EmailAddress in the Authentication JWT payload, and assign it below
+            //TODO: AAF-68 Look up InformationSystemUser.Id using the authenticated user's EmailAddress in the Authentication JWT payload, and assign it below
             userId = -100L;
 
-            //TODO: Check user's role(s) and permissions for this operation
+            //TODO: AAF-69 Check user's role(s) and permissions for this operation
 
             //NOTE: Example request http://localhost:8080/Person with "Authentication" JWT and JWT request body
             //NOTE: https://learning.postman.com/docs/sending-requests/response-data/cookies/
@@ -329,7 +327,7 @@ public class BusinessEntityController
 //            Authentication JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IkF1dGhlbnRpY2F0ZWQiLCJhdWQiOiJBQUZEYXRhLUVudGl0eURhdGFNaWNyb3NlcnZpY2UiLCJleHAiOjE3MjM4MTY5MjAsImlhdCI6MTcyMzgxNjgwMCwibmJmIjoxNzIzODE2Nzg5LCJqdGkiOiJlZjRhZjRlMy1lNzM2LTQyNWEtYWFmZi1lY2EwM2I3YjliMjgiLCJib2R5Ijp7IkVtYWlsQWRkcmVzcyI6ImFteS5hbmRlcnNvbkBhbXlzYWNjb3VudGluZy5jb20ifX0.Djq5LYPEK1QFgBk9aN5Vei37K6Cb8TxNH3ADWDcUaHs
 //            Request JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IlBPU1QgL0VudGl0eVR5cGUiLCJhdWQiOiJBQUZEYXRhLUVudGl0eURhdGFNaWNyb3NlcnZpY2UiLCJleHAiOjE3MjM4MTY5MjAsImlhdCI6MTcyMzgxNjgwMCwibmJmIjoxNzIzODE2Nzg5LCJqdGkiOiI4NzUyZjIzYi0xYTliLTQyMmEtOGIyNi0zNzQyNDM0ZGY0NzYiLCJib2R5Ijp7IkVudGl0eVN1YnR5cGVJZCI6LTEsIlRleHRLZXkiOiJwZXJzb24tbm9uZS1iaWxsLWJha2VyIiwiTGVnYWxHaXZlbk5hbWUiOiJCaWxsIiwiTGVnYWxTdXJuYW1lIjoiQmFrZXIiLCJCb3JuQXREYXRlVGltZVV0YyI6IjIwMDItMDItMDMgMTE6MTI6MTMuMTIzIiwiTGVnYWxDaXRpemVuT2ZDb3VudHJ5R2VvZ3JhcGhpY1VuaXRJZCI6MSwiTG9jYWxlSWQiOjEsIk9yZGluYWwiOi0xLCJJc0FjdGl2ZSI6dHJ1ZX19.rWNowmEoPkF8N0Q5KC5-W83g3hMqIf9TV8KHzLgNbio
 
-            //TODO: Validate JWT
+            //TODO: AAF-67 Validate JWT
 //            bodyJwtSections = requestBody.split("\\.");
 //            bodyJwtHeader = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[0]));
 //            bodyJwtPayload = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[1]));
@@ -365,7 +363,7 @@ public class BusinessEntityController
             }
 
 //            sqlBlacklistValues = environment.getProperty("sqlNotToAllow").toLowerCase().split(",");
-            //TODO: Only check request body for SQL injection
+            //TODO: AAF-84 Only check request body for SQL injection
 //            errorValues = GuardAgainstSqlIssues(bodyJwtPayload.toString(), sqlBlacklistValues);
 
             if (errorValues.length() == 0) {
@@ -393,7 +391,7 @@ public class BusinessEntityController
                 }
                 else
                 {
-                    //TODO: ** Add a method to generate a valid TextKey value for any EntityTypeDefinition, and call it here
+                    //TODO: AAF-78 Add a method to generate a valid TextKey value for any EntityTypeDefinition, and call it here
                     textKey = "entitytypedefinition-" + GetCachedEntitySubtypeById(bodyJwtPayload.get("body").get("EntitySubtypeId").asLong()).getLocalizedName().toLowerCase() + "-" + bodyJwtPayload.get("body").get("LocalizedName").asText().toLowerCase() + "-" + GenerateRandomLowercaseAlphanumericString(5);
                 }
 
@@ -422,7 +420,7 @@ public class BusinessEntityController
                 headers.add("ApiKey", apiKey);
                 headers.add("Cookie", authenticationJwt.toString());
 
-                //TODO: ** Figure out appropriate VersionTag, DataLocationEntitySubtypeId, and DataStructureEntitySubtypeId values
+                //TODO: AAF-86 Figure out appropriate VersionTag, DataLocationEntitySubtypeId, and DataStructureEntitySubtypeId values
                 cloneActionRequestBody = "{\n" +
                         "    \"EntitySubtypeId\": " + bodyJwtPayload.get("body").get("EntitySubtypeId").asLong() + ",\n" +
                         "    \"TextKey\": \"" + textKey + "\",\n" +
@@ -440,12 +438,12 @@ public class BusinessEntityController
 
                 entity = new HttpEntity<String>(cloneActionRequestBody, headers);
 
-                //TODO: Implement second fix for RestTemplateBuilder
+                //TODO: AAF-87 Implement second fix for RestTemplateBuilder
 //                restTemplateBuilder = new RestTemplateBuilder();
 //                restTemplate = restTemplate;
                 createActionResponseBody = restTemplate.postForEntity("http://localhost:8080/entityTypes/EntityTypeDefinition", entity, String.class);
 
-                //TODO: * Check response body for success and to get Id instead of all the parsing below
+                //TODO: AAF-88 Check response body for success and to get Id instead of all the parsing below
 
                 entityIdStart = createActionResponseBody.getBody().indexOf("\"Id\":") + 5;
                 System.out.println("entityIdStart: " + entityIdStart);
@@ -456,8 +454,8 @@ public class BusinessEntityController
                 entityId = Long.parseLong(createActionResponseBody.getBody().substring(entityIdStart, entityIdEnd));
                 System.out.println("entityId: " + entityId);
 
-                //TODO: ** Add AsOfDataTimeUtc and result text to standard response structure here and in EDM
-                //TODO: ** Echo input parameters in Postgres function return JSON
+                //TODO: AAF-89 Add AsOfDataTimeUtc and result text to standard response structure here and in EDM
+                //TODO: AAF-82 Echo input parameters in Postgres function return JSON
                 entityData = objectMapper.readTree(createActionResponseBody.getBody()).toString();
 
                 for (int i = 0 ; i < entityTypeAttributes.size() ; i++)
@@ -476,23 +474,23 @@ public class BusinessEntityController
                         entity = new HttpEntity<String>(cloneActionRequestBody, headers);
 
                         createActionResponseBody = restTemplate.postForEntity("http://localhost:8080/entityTypes/EntityTypeDefinitionEntityTypeAttributeAssociation", entity, String.class);
-                        //TODO: * Check response body for success
+                        //TODO: AAF-90 Check response body for success
                     }
                 }
 
-                //TODO: Confirm all required EntityTypeAttributes are associated with the new EntityTypeDefinition
+                //TODO: AAF-91 Confirm all required EntityTypeAttributes are associated with the new EntityTypeDefinition
                 UncacheEntityData();
                 CacheEntityData();
-                //TODO: *** Re-cache EDM data
+                //TODO: AAF-92 Re-cache EDM data
 
-                //TODO: Consider converting this to a BPMN process when possible
+                //TODO: AAF-93 Consider converting this to a BPMN process when possible
             }
             //TODO: Else/exception here (and in EDM?) if dangerous SQL found???
         }
         catch (Exception e)
         {
             logger.error("CreateNewBusinessEntity() failed due to: " + e);
-            //TODO: * Improve this error output???
+            //TODO: AAF-81 Improve this error output???
             return new ResponseEntity<String>("{[]}", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
@@ -554,8 +552,6 @@ public class BusinessEntityController
 
             request = exchange.getRequest();
 
-            //TODO: *** Add ApiKey input @Parameter to EDM methods
-
             //NOTE: No database structure changes are necessary for this operation, which calls the EDM PostBusinessEntity method, etc, so no database connection is required
 
             ENVIRONMENT_JWT_SHARED_SECRET = environment.getProperty("environmentJwtSharedSecret");
@@ -568,13 +564,13 @@ public class BusinessEntityController
             }
             else
             {
-                //TODO: Validate API key by looking it up in the database, ensuring that it is not disabled, checking its associated permissions extent, and (later) checking that it is associated with the authenticated user's OrganizationalUnit
+                //TODO: AAF-66 Validate API key by looking it up in the database, ensuring that it is not disabled, checking its associated permissions extent, and (later) checking that it is associated with the authenticated user's OrganizationalUnit
                 logger.info(("ApiKey header '" + apiKey + "' included in the request"));
             }
 
             objectMapper = new ObjectMapper();
 
-            //TODO: Validate JWT
+            //TODO: AAF-67 Validate JWT
             authenticationJwt = request.getCookies().getFirst("Authentication");
             authenticationJwtSections = authenticationJwt.getValue().split("\\.");
             authenticationJwtHeader = objectMapper.readTree(decoderBase64.decode(authenticationJwtSections[0]));
@@ -590,10 +586,10 @@ public class BusinessEntityController
                 throw new Exception("Missing or invalid 'Authentication' cookie included with the request");
             }
 
-            //TODO: Look up InformationSystemUser.Id using the authenticated user's EmailAddress in the Authentication JWT payload, and assign it below
+            //TODO: AAF-68 Look up InformationSystemUser.Id using the authenticated user's EmailAddress in the Authentication JWT payload, and assign it below
             userId = -100L;
 
-            //TODO: Check user's role(s) and permissions for this operation
+            //TODO: AAF-69 Check user's role(s) and permissions for this operation
 
             //NOTE: Example request http://localhost:8080/Person with "Authentication" JWT and JWT request body
             //NOTE: https://learning.postman.com/docs/sending-requests/response-data/cookies/
@@ -601,7 +597,7 @@ public class BusinessEntityController
 //            Authentication JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IkF1dGhlbnRpY2F0ZWQiLCJhdWQiOiJBQUZEYXRhLUVudGl0eURhdGFNaWNyb3NlcnZpY2UiLCJleHAiOjE3MjM4MTY5MjAsImlhdCI6MTcyMzgxNjgwMCwibmJmIjoxNzIzODE2Nzg5LCJqdGkiOiJlZjRhZjRlMy1lNzM2LTQyNWEtYWFmZi1lY2EwM2I3YjliMjgiLCJib2R5Ijp7IkVtYWlsQWRkcmVzcyI6ImFteS5hbmRlcnNvbkBhbXlzYWNjb3VudGluZy5jb20ifX0.Djq5LYPEK1QFgBk9aN5Vei37K6Cb8TxNH3ADWDcUaHs
 //            Request JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IlBPU1QgL0VudGl0eVR5cGUiLCJhdWQiOiJBQUZEYXRhLUVudGl0eURhdGFNaWNyb3NlcnZpY2UiLCJleHAiOjE3MjM4MTY5MjAsImlhdCI6MTcyMzgxNjgwMCwibmJmIjoxNzIzODE2Nzg5LCJqdGkiOiI4NzUyZjIzYi0xYTliLTQyMmEtOGIyNi0zNzQyNDM0ZGY0NzYiLCJib2R5Ijp7IkVudGl0eVN1YnR5cGVJZCI6LTEsIlRleHRLZXkiOiJwZXJzb24tbm9uZS1iaWxsLWJha2VyIiwiTGVnYWxHaXZlbk5hbWUiOiJCaWxsIiwiTGVnYWxTdXJuYW1lIjoiQmFrZXIiLCJCb3JuQXREYXRlVGltZVV0YyI6IjIwMDItMDItMDMgMTE6MTI6MTMuMTIzIiwiTGVnYWxDaXRpemVuT2ZDb3VudHJ5R2VvZ3JhcGhpY1VuaXRJZCI6MSwiTG9jYWxlSWQiOjEsIk9yZGluYWwiOi0xLCJJc0FjdGl2ZSI6dHJ1ZX19.rWNowmEoPkF8N0Q5KC5-W83g3hMqIf9TV8KHzLgNbio
 
-            //TODO: Validate JWT
+            //TODO: AAF-67 Validate JWT
 //            bodyJwtSections = requestBody.split("\\.");
 //            bodyJwtHeader = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[0]));
 //            bodyJwtPayload = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[1]));
@@ -637,7 +633,7 @@ public class BusinessEntityController
             }
 
 //            sqlBlacklistValues = environment.getProperty("sqlNotToAllow").toLowerCase().split(",");
-            //TODO: Only check request body for SQL injection
+            //TODO: AAF-84 Only check request body for SQL injection
 //            errorValues = GuardAgainstSqlIssues(bodyJwtPayload.toString(), sqlBlacklistValues);
 
             if (errorValues.length() == 0) {
@@ -665,9 +661,7 @@ public class BusinessEntityController
                 }
                 else
                 {
-                    //TODO: ** Add a method to generate a valid TextKey value for any EntityTypeDefinition, and call it here
-                    //TODO: ** Watch out for '-businessentity' in cloned entity vs '-none' in source entity
-                    //TODO: ** Create Role subtype values, e.g EntityTypeId, Create, etc
+                    //TODO: AAF-78 Add a method to generate a valid TextKey value for any EntityTypeDefinition, and call it here
                     textKey = "entitytypedefinition-" + GetCachedEntitySubtypeById(bodyJwtPayload.get("body").get("EntitySubtypeId").asLong()).getLocalizedName().toLowerCase() + "-" + bodyJwtPayload.get("body").get("LocalizedName").asText().toLowerCase() + "-" + GenerateRandomLowercaseAlphanumericString(5);
                 }
 
@@ -676,7 +670,7 @@ public class BusinessEntityController
                 headers.add("ApiKey", apiKey);
                 headers.add("Cookie", authenticationJwt.toString());
 
-                //TODO: ** Figure out appropriate VersionTag, DataLocationEntitySubtypeId, and DataStructureEntitySubtypeId values
+                //TODO: AAF-86  VersionTag, DataLocationEntitySubtypeId, and DataStructureEntitySubtypeId values
                 cloneActionRequestBody = "{\n" +
                         "    \"EntitySubtypeId\": " + cachedEntityTypeDefinition.getEntitySubtypeId() + ",\n" +
                         "    \"TextKey\": \"" + textKey + "\",\n" +
@@ -695,12 +689,12 @@ public class BusinessEntityController
 
                 entity = new HttpEntity<String>(cloneActionRequestBody, headers);
 
-                //TODO: Implement second fix for RestTemplateBuilder
+                //TODO: AAF-87 Implement second fix for RestTemplateBuilder
 //                restTemplateBuilder = new RestTemplateBuilder();
 //                restTemplate = restTemplate;
                 cloneActionResponseBody = restTemplate.postForEntity("http://localhost:8080/entityTypes/EntityTypeDefinition", entity, String.class);
 
-                //TODO: * Check response body for success and to get Id instead of all the parsing below
+                //TODO: AAF-88 Check response body for success and to get Id instead of all the parsing below
 
                 entityIdStart = cloneActionResponseBody.getBody().indexOf("\"Id\":") + 5;
                 System.out.println("entityIdStart: " + entityIdStart);
@@ -711,8 +705,8 @@ public class BusinessEntityController
                 entityId = Long.parseLong(cloneActionResponseBody.getBody().substring(entityIdStart, entityIdEnd));
                 System.out.println("entityId: " + entityId);
 
-                //TODO: ** Add AsOfDataTimeUtc and result text to standard response structure here and in EDM
-                //TODO: ** Echo input parameters in Postgres function return JSON
+                //TODO: AAF-89 Add AsOfDataTimeUtc and result text to standard response structure here and in EDM
+                //TODO: AAF-82 Echo input parameters in Postgres function return JSON
                 entityData = objectMapper.readTree(cloneActionResponseBody.getBody()).toString();
 
                 //NOTE: Insert new, unpublished EntityTypeDefinitionEntityTypeAttributeAssociations that match the specified EntityTypeDefinition's EntityTypeDefinitionEntityTypeAttributeAssociations
@@ -732,23 +726,23 @@ public class BusinessEntityController
                         entity = new HttpEntity<String>(cloneActionRequestBody, headers);
 
                         cloneActionResponseBody = restTemplate.postForEntity("http://localhost:8080/entityTypes/EntityTypeDefinitionEntityTypeAttributeAssociation", entity, String.class);
-                        //TODO: * Check response body for success
+                        //TODO: * AAF-90 Check response body for success
                     }
                 }
 
-                //TODO: Confirm all required EntityTypeAttributes are associated with the new EntityTypeDefinition
+                //TODO: AAF-91 Confirm all required EntityTypeAttributes are associated with the new EntityTypeDefinition
                 UncacheEntityData();
                 CacheEntityData();
-                //TODO: ** Re-cache EDM data
+                //TODO: AAF-92 Re-cache EDM data
 
-                //TODO: Consider converting this to a BPMN process when possible
+                //TODO: AAF-93 Consider converting this to a BPMN process when possible
             }
             //TODO: Else/exception here (and in EDM?) if dangerous SQL found???
         }
         catch (Exception e)
         {
             logger.error("CloneExistingBusinessEntity() failed due to: " + e);
-            //TODO: * Improve this error output???
+            //TODO: *AAF-81 output???
             return new ResponseEntity<String>("{[]}", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
@@ -769,10 +763,13 @@ public class BusinessEntityController
 
 //        long entityTypeId = -1;
         ArrayList<EntityTypeDefinition> unpublishedEntityTypeDefinitions = null;
+        ArrayList<EntityTypeAttribute> unpublishedEntityTypeAttributes = null;
         ArrayList<EntityTypeDefinitionEntityTypeAttributeAssociation> unpublishedEntityTypeAssociations = null;
 
         String[] sqlBlacklistValues = null;
         String errorValues = "";
+
+        HttpHeaders headers = null;
 
         String apiKey = "";
 
@@ -793,15 +790,16 @@ public class BusinessEntityController
 
 //        String[] entityTypeAttributesNeverToReturn = null;
 
-//        String insertClause = "";
-//        String insertValues = "";
-
-//        String selectClause = "";
-
         String preparedStatementSql = "";
 
         EntityTypeDefinitionEntityTypeAttributeAssociation cachedEntityAssociation = null;
         EntityTypeAttribute cachedEntityTypeAttribute = null;
+
+        String publishActionRequestBody = "";
+//        RestTemplateBuilder restTemplateBuilder = null;
+//        RestTemplate restTemplate = null;
+        HttpEntity<String> entity = null;
+        ResponseEntity<String> publishActionResponseBody = null;
 
         String entityData = "";
 
@@ -837,13 +835,13 @@ public class BusinessEntityController
             }
             else
             {
-                //TODO: Validate API key by looking it up in the database, ensuring that it is not disabled, checking its associated permissions extent, and (later) checking that it is associated with the authenticated user's OrganizationalUnit
+                //TODO: AAF-66 Validate API key by looking it up in the database, ensuring that it is not disabled, checking its associated permissions extent, and (later) checking that it is associated with the authenticated user's OrganizationalUnit
                 logger.info(("ApiKey header '" + apiKey + "' included in the request"));
             }
 
             objectMapper = new ObjectMapper();
 
-            //TODO: Validate JWT
+            //TODO: AAF-67 Validate JWT
             authenticationJwt = request.getCookies().getFirst("Authentication");
             authenticationJwtSections = authenticationJwt.getValue().split("\\.");
             authenticationJwtHeader = objectMapper.readTree(decoderBase64.decode(authenticationJwtSections[0]));
@@ -859,17 +857,17 @@ public class BusinessEntityController
                 throw new Exception("Missing or invalid 'Authentication' cookie included with the request");
             }
 
-            //TODO: Look up InformationSystemUser.Id using the authenticated user's EmailAddress in the Authentication JWT payload, and assign it below
+            //TODO: AAF-68 Look up InformationSystemUser.Id using the authenticated user's EmailAddress in the Authentication JWT payload, and assign it below
             userId = -100;
 
-            //TODO: Check user's role(s) and permissions for this operation
+            //TODO: AAF-69 Check user's role(s) and permissions for this operation
 
             //NOTE: Example request http://localhost:8080/Person with "Authentication" JWT and JWT request body
             //NOTE: https://learning.postman.com/docs/sending-requests/response-data/cookies/
 //            Authentication JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IkF1dGhlbnRpY2F0ZWQiLCJhdWQiOiJBQUZEYXRhLUVudGl0eURhdGFNaWNyb3NlcnZpY2UiLCJleHAiOjE3MjM4MTY5MjAsImlhdCI6MTcyMzgxNjgwMCwibmJmIjoxNzIzODE2Nzg5LCJqdGkiOiJlZjRhZjRlMy1lNzM2LTQyNWEtYWFmZi1lY2EwM2I3YjliMjgiLCJib2R5Ijp7IkVtYWlsQWRkcmVzcyI6ImFteS5hbmRlcnNvbkBhbXlzYWNjb3VudGluZy5jb20ifX0.Djq5LYPEK1QFgBk9aN5Vei37K6Cb8TxNH3ADWDcUaHs
 //            Request JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IlBPU1QgL0VudGl0eVR5cGUiLCJhdWQiOiJBQUZEYXRhLUVudGl0eURhdGFNaWNyb3NlcnZpY2UiLCJleHAiOjE3MjM4MTY5MjAsImlhdCI6MTcyMzgxNjgwMCwibmJmIjoxNzIzODE2Nzg5LCJqdGkiOiI4NzUyZjIzYi0xYTliLTQyMmEtOGIyNi0zNzQyNDM0ZGY0NzYiLCJib2R5Ijp7IkVudGl0eVN1YnR5cGVJZCI6LTEsIlRleHRLZXkiOiJwZXJzb24tbm9uZS1iaWxsLWJha2VyIiwiTGVnYWxHaXZlbk5hbWUiOiJCaWxsIiwiTGVnYWxTdXJuYW1lIjoiQmFrZXIiLCJCb3JuQXREYXRlVGltZVV0YyI6IjIwMDItMDItMDMgMTE6MTI6MTMuMTIzIiwiTGVnYWxDaXRpemVuT2ZDb3VudHJ5R2VvZ3JhcGhpY1VuaXRJZCI6MSwiTG9jYWxlSWQiOjEsIk9yZGluYWwiOi0xLCJJc0FjdGl2ZSI6dHJ1ZX19.rWNowmEoPkF8N0Q5KC5-W83g3hMqIf9TV8KHzLgNbio
 
-            //TODO: Validate JWT
+            //TODO: AAF-67 Validate JWT
 //            bodyJwtSections = requestBody.split("\\.");
 //            bodyJwtHeader = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[0]));
 //            bodyJwtPayload = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[1]));
@@ -905,12 +903,10 @@ public class BusinessEntityController
             }
 
             sqlBlacklistValues = environment.getProperty("sqlNotToAllow").toLowerCase().split(",");
-            //TODO: Only check request body for SQL injection???
+            //TODO: AAF-84 Only check request body for SQL injection???
             errorValues = GuardAgainstSqlIssues(bodyJwtPayload.toString(), sqlBlacklistValues);
 
-            //TODO: Client Communication Service (CCS) to validate request, etc
-
-            //TODO: Validate structure method
+            //TODO: AAF-95 Validate entity structure method
             //NOTE: Remove the Publisher role, i.e. publish becomes a privilege???
             //NOTE: Add publishing columns to EntityTypeDefinition table
             //NOTE: Add publishing columns to EntityTypeAttribute table
@@ -918,29 +914,29 @@ public class BusinessEntityController
             //NOTE: Add publishing columns to EntitySubtype table???
             //NOTE: Add publishing columns to EntityTypeAttribute data
             //NOTE: How to handle modeling and publishing scripted data???
-            //TODO: Publish inactive entities???
-            //TODO: *** Add application properties and defaults for loc and min environments and for EDM port for updates
+            //TODO: AAF-120 Publish inactive entities???
+            //TODO: AAF-96 Add application properties and defaults for loc and min environments and for EDM port for updates
 
             //NOTE: Get unpublished EntityTypeDefinitions
             //NOTE: Get unpublished EntityTypeAttributes
             //NOTE: Get unpublished EntityTypeDefinitionEntityTypeAttributeAssociations
-            //TODO: Get unpublished EntitySubtypes/scripted data
-            //TODO: Generate pending (new but unpublished as of) change list for approval, and pass it to PublishBusinessEntitys() as approval
+            //TODO: AAF-97 Get unpublished EntitySubtypes/scripted data
+            //TODO: AAF-98 Generate pending (new but unpublished as of) change list for approval, and pass it to PublishBusinessEntitys() as approval
 
             //NOTE: Create new entity schema
             //NOTE: Create new entity table
-            //TODO: Create new entity scripted data
+            //TODO: AAF-97 Create new entity scripted data
             //NOTE: Update as published
             //NOTE: Re-cache SDS and EDM data
 
-            //TODO: ** Refactor int, ArrayLists, etc to long, etc and other SDS changes in EDM
+            //TODO: AAF-99 Refactor int, ArrayLists, etc to long, etc and other SDS changes in EDM
 
-            //TODO: ** Remove publisher role from EDM and SDS README files
-            //TODO: Consider converting this to a BPMN process when possible
+            //TODO: AAF-100 Remove publisher role from EDM and SDS README files
+            //TODO: AAF-93 Consider converting this to a BPMN process when possible
 
-            //TODO: ** Add JSON event data publishing URL to EDM and SDS for notifications that should result in re-caching
+            //TODO: AAF-101 Add JSON event data publishing URL to EDM and SDS for notifications that should result in re-caching
 
-            //TODO: Add third uniqueness factor (subtype group name?) to EntitySubtype to account for the difference between conflicting "Value" and "GeneralDataType" Uuid LocalizedNames???
+            //TODO: AAF-102 Add third uniqueness factor (subtype group name?) to EntitySubtype to account for the difference between conflicting "Value" and "GeneralDataType" Uuid LocalizedNames???
 
 //            if (errorValues.length() > 0)
 //            {
@@ -956,9 +952,7 @@ public class BusinessEntityController
 
                 for (int i = 0; i < unpublishedEntityData.get("EntityData").size(); i++)
                 {
-                    //preparedStatement = connection.prepareStatement("insert into Emp values(?,?)");
-                    //stmt.setInt(1,101);//1 specifies the first parameter in the query
-                    //stmt.setString(2,"Ratan");
+                    //TODO: Check for future publish date
 
                     unpublishedEntityTypeDefinitions.add(new EntityTypeDefinition(unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("Id").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("EntitySubtypeId").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("TextKey").asText(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("LocalizedName").asText(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("LocalizedDescription").asText(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("LocalizedAbbreviation").asText(), Timestamp.valueOf(unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("PublishedAtDateTimeUtc").asText()), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("PublishedByInformationSystemUserId").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("Ordinal").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("IsActive").asBoolean(), Timestamp.valueOf(unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("CreatedAtDateTimeUtc").asText()), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("CreatedByInformationSystemUserId").asLong(), Timestamp.valueOf(unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("UpdatedAtDateTimeUtc").asText()), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("UpdatedByInformationSystemUserId").asLong(), Timestamp.valueOf(unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("DeletedAtDateTimeUtc").asText()), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("DeletedByInformationSystemUserId").asLong()));
 
@@ -969,6 +963,8 @@ public class BusinessEntityController
 
                     preparedStatement = connection.prepareStatement(preparedStatementSql);
                     preparedStatement.executeUpdate();
+
+                    //TODO: Update published status
 
                     logger.info("New schema " + unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("LocalizedName") + " created in " + databaseName);
                 }
@@ -987,26 +983,35 @@ public class BusinessEntityController
 
             if ((unpublishedEntityData != null) && (unpublishedEntityData.get("EntityData").size() > 0))
             {
-//                EntityTypeAttributes = new ArrayList<EntityTypeAttribute>();
-//
-//                for (int i = 0; i < unpublishedEntityData.get("EntityData").size(); i++)
-//                {
-//                    unpublishedEntityTypeDefinitions.add(new EntityTypeDefinition(unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("Id").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("EntitySubtypeId").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("TextKey").asText(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("LocalizedName").asText(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("LocalizedDescription").asText(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("LocalizedAbbreviation").asText(), Timestamp.valueOf(unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("PublishedAtDateTimeUtc").asText()), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("PublishedByInformationSystemUserId").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("Ordinal").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("IsActive").asBoolean(), Timestamp.valueOf(unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("CreatedAtDateTimeUtc").asText()), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("CreatedByInformationSystemUserId").asLong(), Timestamp.valueOf(unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("UpdatedAtDateTimeUtc").asText()), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("UpdatedByInformationSystemUserId").asLong(), Timestamp.valueOf(unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("DeletedAtDateTimeUtc").asText()), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("DeletedByInformationSystemUserId").asLong()));
-//
-//                    preparedStatementSql = "CREATE SCHEMA " + unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("LocalizedName") + "\n" +
-//                            "    AUTHORIZATION \"AafCoreModeler\";\n" +
-//                            "GRANT USAGE ON SCHEMA " + unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("LocalizedName") + " TO \"AafCoreReadWrite\";\n" +
-//                            "GRANT USAGE ON SCHEMA " + unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("LocalizedName") + " TO \"AafCoreReadOnly\";";
-//
-//                    preparedStatement = connection.prepareStatement(preparedStatementSql);
-//                    preparedStatement.executeUpdate();
-//
-//                    //TODO: *** Update attribute as published
-//
-//                    logger.info("New attribute " + unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("LocalizedName") + " created in " + databaseName);
-//                }
+                unpublishedEntityTypeAttributes = new ArrayList<EntityTypeAttribute>();
 
-//                logger.info(EntityTypeAttributes.size() + " EntityTypeAttributes published in " + databaseName);
+                headers = new HttpHeaders();
+                headers.add("ApiKey", apiKey);
+                headers.add("Cookie", authenticationJwt.toString());
+
+                for (int i = 0; i < unpublishedEntityData.get("EntityData").size(); i++)
+                {
+                    //TODO: Check for future publish date
+
+                    unpublishedEntityTypeAttributes.add(new EntityTypeAttribute(unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("Id").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("EntitySubtypeId").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("TextKey").asText(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("LocalizedName").asText(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("LocalizedDescription").asText(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("LocalizedAbbreviation").asText(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("LocalizedInformation").asText(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("LocalizedPlaceholder").asText(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("IsLocalizable").asBoolean(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("IsToBeAssociatedWithEachEntityTypeDefinition").asBoolean(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("GeneralizedDataTypeEntitySubtypeId").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("DataSizeOrMaximumLengthInBytesOrCharacters").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("DataPrecision").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("DataScale").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("KeyTypeEntitySubtypeId").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("RelatedEntityTypeId").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("RelatedEntityTypeAttributeId").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("RelatedEntityTypeCardinalityEntitySubtypeId").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("EntitySubtypeGroupKey").asText(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("ValueEntitySubtypeId").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("DefaultValue").asText(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("MinimumValue").asText(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("MaximumValue").asText(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("RegExValidationPattern").asText(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("StepIncrementValue").floatValue(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("RemoteValidationMethodAsAjaxUri").asText(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("IndexEntitySubtypeId").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("UniquenessEntitySubtypeId").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("SensitivityEntitySubtypeId").asLong(), Timestamp.valueOf(unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("PublishedAtDateTimeUtc").asText()), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("PublishedByInformationSystemUserId").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("Ordinal").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("IsActive").asBoolean(), Timestamp.valueOf(unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("CreatedAtDateTimeUtc").asText()), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("CreatedByInformationSystemUserId").asLong(), Timestamp.valueOf(unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("UpdatedAtDateTimeUtc").asText()), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("UpdatedByInformationSystemUserId").asLong(), Timestamp.valueOf(unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("DeletedAtDateTimeUtc").asText()), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("DeletedByInformationSystemUserId").asLong()));
+
+                    publishActionRequestBody = "{\n" +
+                            "    \"PublishedAtDateTimeUtc\": \"" + asOfDateTimeUtc + "\",\n" +
+                            "    \"PublishedByInformationSystemUserId\": " + userId + "\n" +
+                            "  }";
+
+                    entity = new HttpEntity<String>(publishActionRequestBody, headers);
+
+                    //TODO: Create and use EDM URL here
+                    publishActionResponseBody = restTemplate.exchange("http://localhost:8080/entityTypes/EntityTypeDefinitionEntityTypeAttributeAssociation", HttpMethod.PATCH, entity, String.class);
+                    //TODO: * AAF-90 Check response body for success
+
+                    //TODO: Update published status
+
+                    logger.info("New attribute " + unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("LocalizedName") + " published in " + databaseName);
+                }
+
+                logger.info(unpublishedEntityTypeAttributes.size() + " EntityTypeAttributes published in " + databaseName);
             }
             else
             {
@@ -1032,6 +1037,8 @@ public class BusinessEntityController
                     {
                         if (unpublishedEntityData.get("EntityData").get(j).get("EntityTypeDefinitionEntityTypeAttributeAssociation").get("EntityTypeDefinitionId").asLong() == unpublishedEntityTypeDefinitions.get(i).getId())
                         {
+                            //TODO: Check for future publish date
+
                             cachedEntityAssociation = new EntityTypeDefinitionEntityTypeAttributeAssociation(unpublishedEntityData.get("EntityData").get(j).get("EntityTypeDefinitionEntityTypeAttributeAssociation").get("Id").asLong(), unpublishedEntityData.get("EntityData").get(j).get("EntityTypeDefinitionEntityTypeAttributeAssociation").get("EntitySubtypeId").asLong(), unpublishedEntityData.get("EntityData").get(j).get("EntityTypeDefinitionEntityTypeAttributeAssociation").get("TextKey").asText(), unpublishedEntityData.get("EntityData").get(j).get("EntityTypeDefinitionEntityTypeAttributeAssociation").get("EntityTypeDefinitionId").asLong(), unpublishedEntityData.get("EntityData").get(j).get("EntityTypeDefinitionEntityTypeAttributeAssociation").get("EntityTypeAttributeId").asLong(), Timestamp.valueOf(unpublishedEntityData.get("EntityData").get(j).get("EntityTypeDefinitionEntityTypeAttributeAssociation").get("PublishedAtDateTimeUtc").asText()), unpublishedEntityData.get("EntityData").get(j).get("EntityTypeDefinitionEntityTypeAttributeAssociation").get("PublishedByInformationSystemUserId").asLong(), unpublishedEntityData.get("EntityData").get(j).get("EntityTypeDefinitionEntityTypeAttributeAssociation").get("Ordinal").asLong(), unpublishedEntityData.get("EntityData").get(j).get("EntityTypeDefinitionEntityTypeAttributeAssociation").get("IsActive").asBoolean(), Timestamp.valueOf(unpublishedEntityData.get("EntityData").get(j).get("EntityTypeDefinitionEntityTypeAttributeAssociation").get("CreatedAtDateTimeUtc").asText()), unpublishedEntityData.get("EntityData").get(j).get("EntityTypeDefinitionEntityTypeAttributeAssociation").get("CreatedByInformationSystemUserId").asLong(), Timestamp.valueOf(unpublishedEntityData.get("EntityData").get(j).get("EntityTypeDefinitionEntityTypeAttributeAssociation").get("UpdatedAtDateTimeUtc").asText()), unpublishedEntityData.get("EntityData").get(j).get("EntityTypeDefinitionEntityTypeAttributeAssociation").get("UpdatedByInformationSystemUserId").asLong(), Timestamp.valueOf(unpublishedEntityData.get("EntityData").get(j).get("EntityTypeDefinitionEntityTypeAttributeAssociation").get("DeletedAtDateTimeUtc").asText()), unpublishedEntityData.get("EntityData").get(j).get("EntityTypeDefinitionEntityTypeAttributeAssociation").get("DeletedByInformationSystemUserId").asLong());
                             unpublishedEntityTypeAssociations.add(cachedEntityAssociation);
 
@@ -1039,12 +1046,12 @@ public class BusinessEntityController
 
                             //NOTE: EntitySubtypeId = 67 (SystemSupplied), 8 (Required in/with the request), 9 (Optional, will take on the database- or service-defined value, e.g. Ordinal or TextKey, respectively)
                             //NOTE: GeneralizedDataTypeEntitySubtypeId = 10 (Boolean), 11 (Integer), 12 (UnicodeCharacter), 13 (UnicodeString), 14 (DateTime), 16 (Decimal), 68 (UUID)
-                            //NOTE: EntityTypeAttributeValueEntitySubtypeId 25 (DefaultTextKey), 26 (UseDefaultValue) -- Note that the EntityTypeAttributeValueEntitySubtypeId attribute indicates a formula-based rather than the statically-defined DefaultValue and may be relevant/related here
+                            //NOTE: ValueEntitySubtypeId 25 (DefaultTextKey), 26 (UseDefaultValue) -- Note that the ValueEntitySubtypeId attribute (formerly named EntityTypeAttributeValueEntitySubtypeId) may indicate a formula-based rather than the statically-defined DefaultValue and may be relevant/related here
                             switch ((int) cachedEntityTypeAttribute.getGeneralizedDataTypeEntitySubtypeId())
                             {
                                 //NOTE: Boolean
                                 case 10:
-                                    if ((cachedEntityTypeAttribute.getEntitySubtypeId() == 9) && (cachedEntityTypeAttribute.getEntityTypeAttributeValueEntitySubtypeId() == 26))
+                                    if ((cachedEntityTypeAttribute.getEntitySubtypeId() == 9) && (cachedEntityTypeAttribute.getValueEntitySubtypeId() == 26))
                                     {
                                         preparedStatementSql = preparedStatementSql + "    \"" + cachedEntityTypeAttribute.getLocalizedName() + "\" boolean DEFAULT " + cachedEntityTypeAttribute.getDefaultValue();
                                     }
@@ -1055,7 +1062,7 @@ public class BusinessEntityController
                                     break;
                                 //NOTE: Integer
                                 case 11:
-                                    if ((cachedEntityTypeAttribute.getEntitySubtypeId() == 9) && (cachedEntityTypeAttribute.getEntityTypeAttributeValueEntitySubtypeId() == 26))
+                                    if ((cachedEntityTypeAttribute.getEntitySubtypeId() == 9) && (cachedEntityTypeAttribute.getValueEntitySubtypeId() == 26))
                                     {
                                         preparedStatementSql = preparedStatementSql + "    \"" + cachedEntityTypeAttribute.getLocalizedName() + "\" bigint DEFAULT " + cachedEntityTypeAttribute.getDefaultValue();
                                     }
@@ -1066,7 +1073,7 @@ public class BusinessEntityController
                                     break;
                                 //NOTE: UnicodeCharacter
                                 case 12:
-                                    if ((cachedEntityTypeAttribute.getEntitySubtypeId() == 9) && (cachedEntityTypeAttribute.getEntityTypeAttributeValueEntitySubtypeId() == 26))
+                                    if ((cachedEntityTypeAttribute.getEntitySubtypeId() == 9) && (cachedEntityTypeAttribute.getValueEntitySubtypeId() == 26))
                                     {
                                         preparedStatementSql = preparedStatementSql + "    \"" + cachedEntityTypeAttribute.getLocalizedName() + "\" character DEFAULT '" + cachedEntityTypeAttribute.getDefaultValue() + "'";
                                     }
@@ -1077,7 +1084,7 @@ public class BusinessEntityController
                                     break;
                                 //NOTE: UnicodeString
                                 case 13:
-                                    if ((cachedEntityTypeAttribute.getEntitySubtypeId() == 9) && (cachedEntityTypeAttribute.getEntityTypeAttributeValueEntitySubtypeId() == 26))
+                                    if ((cachedEntityTypeAttribute.getEntitySubtypeId() == 9) && (cachedEntityTypeAttribute.getValueEntitySubtypeId() == 26))
                                     {
                                         preparedStatementSql = preparedStatementSql + "    \"" + cachedEntityTypeAttribute.getLocalizedName() + "\" character varying(" + cachedEntityTypeAttribute.getDataSizeOrMaximumLengthInBytesOrCharacters() + ") COLLATE pg_catalog.\"default\" DEFAULT '" + cachedEntityTypeAttribute.getDefaultValue() + "'";
                                     }
@@ -1088,7 +1095,7 @@ public class BusinessEntityController
                                     break;
                                 //NOTE: DateTime
                                 case 14:
-                                    if ((cachedEntityTypeAttribute.getEntitySubtypeId() == 9) && (cachedEntityTypeAttribute.getEntityTypeAttributeValueEntitySubtypeId() == 26))
+                                    if ((cachedEntityTypeAttribute.getEntitySubtypeId() == 9) && (cachedEntityTypeAttribute.getValueEntitySubtypeId() == 26))
                                     {
                                         preparedStatementSql = preparedStatementSql + "    \"" + cachedEntityTypeAttribute.getLocalizedName() + "\" timestamp without time zone DEFAULT '" + cachedEntityTypeAttribute.getDefaultValue() + "'";
                                     }
@@ -1099,7 +1106,7 @@ public class BusinessEntityController
                                     break;
                                 //NOTE: Decimal (including currency values)
                                 case 16:
-                                    if ((cachedEntityTypeAttribute.getEntitySubtypeId() == 9) && (cachedEntityTypeAttribute.getEntityTypeAttributeValueEntitySubtypeId() == 26))
+                                    if ((cachedEntityTypeAttribute.getEntitySubtypeId() == 9) && (cachedEntityTypeAttribute.getValueEntitySubtypeId() == 26))
                                     {
                                         preparedStatementSql = preparedStatementSql + "    \"" + cachedEntityTypeAttribute.getLocalizedName() + "\" decimal(" + cachedEntityTypeAttribute.getDataPrecision() + "," + cachedEntityTypeAttribute.getDataScale() + ") DEFAULT " + cachedEntityTypeAttribute.getDefaultValue();
                                     }
@@ -1110,7 +1117,7 @@ public class BusinessEntityController
                                     break;
                                 //NOTE: UUID
                                 case 68:
-                                    if ((cachedEntityTypeAttribute.getEntitySubtypeId() == 9) && (cachedEntityTypeAttribute.getEntityTypeAttributeValueEntitySubtypeId() == 26))
+                                    if ((cachedEntityTypeAttribute.getEntitySubtypeId() == 9) && (cachedEntityTypeAttribute.getValueEntitySubtypeId() == 26))
                                     {
                                         preparedStatementSql = preparedStatementSql + "    \"" + cachedEntityTypeAttribute.getLocalizedName() + "\" uuid DEFAULT '" + cachedEntityTypeAttribute.getDefaultValue() + "'";
                                     }
@@ -1119,18 +1126,18 @@ public class BusinessEntityController
                                         preparedStatementSql = preparedStatementSql + "    \"" + cachedEntityTypeAttribute.getLocalizedName() + "\" uuid";
                                     }
                                     break;
-                                //TODO: Add floating point (real/double) data type here for approximate values???
+                                //TODO: AAF-103 Add floating point (real/double) data type here for approximate values???
 
-                                //TODO: Set attribute's RelatedEntityTypeId on publish???
-                                //TODO: Is attribute's RelatedEntityTypeAttributeId meaningful/necessary???
-                                //TODO: How should an attributes RelatedEntityTypeCardinalityEntitySubtypeId be used during publish???
-                                //TODO: Rename attribute's EntityTypeAttributeValueEntitySubtypeId to indicate that it comes from a formula???
-                                //TODO: How should an attribute's EntityTypeAttributeIndexEntitySubtypeId (Primary or Secondary) be used during publish???
-                                //TODO: How should an attribute's EntityTypeAttributeUniquenessEntitySubtypeId (SingleColumn or Composite) be used during publish???
-                                //TODO: How does an attribute's RelatedEntityTypeId differ from its EntityTypeId???
-                                //TODO: Does attribute's EntitySubtypeGroupKey (33) duplicate its GroupKey (45)???  Yes, it seems to.  EntitySubtypeGroupKey (33) is used in the EntityTypeAttribute data script file and once in an association (the association entity's reflexive self definition).  45 is used once in the EntitySubtype association, making changing it a breaking change with potentially wide-ranging effects, including EDM.  The EntitySubtypeGroupKey is more specific and descriptive than GroupKey, especially in the attribute context.  Postponing this decision until after publish is working.
-                                //NOTE: Does an attribute's DataStructureEntitySubtypeId (Id = 66) duplicate its DataStructureEntitySubtypeId (Id = 20)???  Yes, it seems to.  66 is used once in an association (the association entity's reflexive self definition).  20 is never used.  Commented out 20 in data script file to prevent future use because 66 (data structure) is logically related to 65 (data location).
-                                //NOTE: Added unique constraint on LocalizedName and DeletedAtDateTimeUtc for EntityTypeDefinition and EntityTypeAttribute models
+                                //TODO: AAF-104 Set attribute's RelatedEntityTypeId on publish???
+                                //TODO: AAF-105 Is attribute's RelatedEntityTypeAttributeId meaningful/necessary???
+                                //TODO: AAF-106 How should an attributes RelatedEntityTypeCardinalityEntitySubtypeId be used during publish???
+                                //TODO: AAF-107 Rename attribute's ValueEntitySubtypeId to indicate that it comes from a formula???
+                                //TODO: AAF-108 How should an attribute's EntityTypeAttributeIndexEntitySubtypeId (NOTE: Not used or named instead as IndexEntitySubtypeId???) (Primary or Secondary) be used during publish???
+                                //TODO: AAF-109 How should an attribute's EntityTypeAttributeUniquenessEntitySubtypeId (SingleColumn or Composite) be used during publish???
+                                //TODO: AAF-110 How does an attribute's RelatedEntityTypeId differ from its EntityTypeId???  Is this for mapping external InformationSystem attributes???
+                                //TODO: AAF-111 Does attribute's EntitySubtypeGroupKey (33) duplicate its GroupKey (45)???  Yes, it seems to.  EntitySubtypeGroupKey (33) is used in the EntityTypeAttribute data script file and once in an association (the association entity's reflexive self definition).  45 is used once in the EntitySubtype association, making changing it a breaking change with potentially wide-ranging effects, including EDM.  The EntitySubtypeGroupKey is more specific and descriptive than GroupKey, especially in the attribute context.  Postponing this decision until after publish is working.
+                                //NOTE: AAF-112 Does an attribute's DataStructureEntitySubtypeId (Id = 66) duplicate its DataStructureEntitySubtypeId (Id = 20)???  Yes, it seems to.  66 is used once in an association (the association entity's reflexive self definition).  20 is never used.  Commented out 20 in data script file to prevent future use because 66 (data structure) is logically related to 65 (data location).
+                                //NOTE: AAF-113 Added unique constraint on LocalizedName and DeletedAtDateTimeUtc for EntityTypeDefinition and EntityTypeAttribute models
                             }
 
                             preparedStatementSql = preparedStatementSql + " NOT NULL,\n";
@@ -1141,14 +1148,14 @@ public class BusinessEntityController
                     preparedStatementSql = preparedStatementSql + "    CONSTRAINT " + unpublishedEntityTypeDefinitions.get(i).getLocalizedName() + "_PK PRIMARY KEY (\"Id\"),\n" +
                     "    CONSTRAINT " + unpublishedEntityTypeDefinitions.get(i).getLocalizedName() + "_CHK_TextKey CHECK (\"TextKey\" ~* '^[a-z0-9-]+$'),\n" +
                     "    CONSTRAINT " + unpublishedEntityTypeDefinitions.get(i).getLocalizedName() + "_UQ1_TextKey_DeletedAtDateTimeUtc UNIQUE (\"TextKey\", \"DeletedAtDateTimeUtc\"),\n" +
-                    //TODO: ** Implement entity-specific constraints, e.g. does it have a LocalizedName or other attributes that must be unique???
+                    //TODO: AAF-114 Implement entity-specific constraints, e.g. does it have a LocalizedName or other attributes that must be unique???
 //                        "    CONSTRAINT " + unpublishedEntityTypeDefinitions.get(i).getLocalizedName() + "_UQ1_LocalizedName_DeletedAtDateTimeUtc UNIQUE (\"LocalizedName\", \"DeletedAtDateTimeUtc\"),\n" +
                     "    CONSTRAINT " + unpublishedEntityTypeDefinitions.get(i).getLocalizedName() + "_FK_EntitySubtypeId FOREIGN KEY (\"EntitySubtypeId\") REFERENCES \"EntitySubtype\".\"EntitySubtype\"(\"Id\")\n" +
                     ")\n" +
                     "TABLESPACE pg_default;\n\n";
 
                     //INDEX
-                    //TODO: * Implement entity-specific indexes, e.g. does it have a LocalizedName or other attributes that will be searched, etc???
+                    //TODO: AAF-115 Implement entity-specific indexes, e.g. does it have a LocalizedName or other attributes that will be searched, etc???
 //                        preparedStatementSql = preparedStatementSql + "CREATE INDEX " + unpublishedEntityTypeDefinitions.get(i).getLocalizedName() + "_IDX_LocalizedName ON \"" + unpublishedEntityTypeDefinitions.get(i).getLocalizedName() + "\".\"" + unpublishedEntityTypeDefinitions.get(i).getLocalizedName() + "\" (\"LocalizedName\");";
 
                     preparedStatement = connection.prepareStatement(preparedStatementSql);
@@ -1157,6 +1164,8 @@ public class BusinessEntityController
                     //TODO: *** Update Entity data with newly published entity type, name, description, abbreviation, etc
                     //TODO: *** Update EntityTypeDefinition as published
                     //TODO: *** Update EntityTypeDefinitionEntityTypeAttributeAssociation as published
+
+                    //TODO: Update published status
 
                     logger.info("New table " + unpublishedEntityTypeDefinitions.get(i).getLocalizedName() + " created in " + databaseName);
                 }
@@ -1178,6 +1187,8 @@ public class BusinessEntityController
 //
 //                for (int i = 0; i < unpublishedEntityData.get("EntityData").size(); i++)
 //                {
+//                    //TODO: Check for future publish date
+//
 //                    unpublishedEntityTypeDefinitions.add(new EntityTypeDefinition(unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("Id").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("EntitySubtypeId").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("TextKey").asText(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("LocalizedName").asText(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("LocalizedDescription").asText(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("LocalizedAbbreviation").asText(), Timestamp.valueOf(unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("PublishedAtDateTimeUtc").asText()), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("PublishedByInformationSystemUserId").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("Ordinal").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("IsActive").asBoolean(), Timestamp.valueOf(unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("CreatedAtDateTimeUtc").asText()), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("CreatedByInformationSystemUserId").asLong(), Timestamp.valueOf(unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("UpdatedAtDateTimeUtc").asText()), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("UpdatedByInformationSystemUserId").asLong(), Timestamp.valueOf(unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("DeletedAtDateTimeUtc").asText()), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("DeletedByInformationSystemUserId").asLong()));
 //
 //                    preparedStatementSql = "CREATE SCHEMA " + unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("LocalizedName") + "\n" +
@@ -1188,7 +1199,9 @@ public class BusinessEntityController
 //                    preparedStatement = connection.prepareStatement(preparedStatementSql);
 //                    preparedStatement.executeUpdate();
 //
-//                    //TODO: ** Update scripted data as published
+//                    //TODO: Update published status
+//
+//                    logger.info("New table " + unpublishedEntityTypeDefinitions.get(i).getLocalizedName() + " created in " + databaseName);
 //                }
 //
 //                logger.info(unpublishedEntityTypeData.size() + " EntityTypeData records published in " + databaseName);
@@ -1206,16 +1219,16 @@ public class BusinessEntityController
                     "    \"EntityData\": []\n" +
                     "}";
 
-            //TODO: Filter or mask unauthorized or sensitive attributes for this InformationSystemUserRole (as JSON)???
+            //TODO: AAF-116 Filter or mask unauthorized or sensitive attributes for this InformationSystemUserRole (as JSON)???
 
             UncacheEntityData();
             CacheEntityData();
-            //TODO: *** Re-cache EDM data
+            //TODO: AAF-92 Enqueue standardized event data to re-cache EDM data
         }
         catch (Exception e)
         {
             logger.error("PublishBusinessEntitys() for " + databaseName + " failed due to: " + e);
-            //TODO: * Improve this error output???
+            //TODO: AAF-81 Improve this error output???
             return new ResponseEntity<String>("{[]}", HttpStatus.INTERNAL_SERVER_ERROR);
         }
         finally
@@ -1251,7 +1264,7 @@ public class BusinessEntityController
         logger.info("PublishBusinessEntitys() succeeded for " + databaseName);
         //result = new JSONObject("{\"EntityData\":" + entityData + "}");
         //return "{\"EntityData\":" + entityData + "}";
-        //TODO: ** Echo input parameters in Postgres function return JSON
+        //TODO: AAF-82 Echo input parameters in Postgres function return JSON
         return new ResponseEntity<String>(entityData, HttpStatus.CREATED);
     }
 
@@ -1298,9 +1311,9 @@ public class BusinessEntityController
 
                     for (int i = 0 ; i < entityTypeDefinitions.size() ; i++)
                     {
-                        //TODO: May want to do this with live, not cached data???
-                        //TODO: Capture and check cached data timestamp???
-                        //TODO: Also check if updated since asOfDateTimeUtc???
+                        //TODO: AAF-117 GetUnpublishedEntityData with live, not cached data???
+                        //TODO: AAF-118 Capture and check cached data timestamp???
+                        //TODO: AAF-119 Also check if updated since asOfDateTimeUtc???
                         if (entityTypeDefinitions.get(i).getPublishedAtDateTimeUtc().equals(Timestamp.valueOf("9999-12-31 23:59:59.999")))
                         {
                             entity= objectMapper.createObjectNode();
@@ -1337,20 +1350,23 @@ public class BusinessEntityController
 
                     for (int i = 0 ; i < entityTypeAttributes.size() ; i++)
                     {
-                        //TODO: May want to do this with live, not cached data???
-                        //TODO: Capture and check cached data timestamp???
-                        //TODO: Also check if updated since asOfDateTimeUtc???
+                        //TODO: AAF-117 GetUnpublishedEntityData with live, not cached data???
+                        //TODO: AAF-118 Capture and check cached data timestamp???
+                        //TODO: AAF-119 Also check if updated since asOfDateTimeUtc???
                         if (entityTypeAttributes.get(i).getPublishedAtDateTimeUtc().equals(Timestamp.valueOf("9999-12-31 23:59:59.999")))
                         {
                             entity= objectMapper.createObjectNode();
 
                             entity.put("Id", entityTypeAttributes.get(i).getId());
+                            entity.put("EntitySubtypeId", entityTypeAttributes.get(i).getEntitySubtypeId());
+                            entity.put("TextKey", entityTypeAttributes.get(i).getTextKey());
                             entity.put("LocalizedName", entityTypeAttributes.get(i).getLocalizedName());
                             entity.put("LocalizedDescription", entityTypeAttributes.get(i).getLocalizedDescription());
                             entity.put("LocalizedAbbreviation", entityTypeAttributes.get(i).getLocalizedAbbreviation());
                             entity.put("LocalizedInformation", entityTypeAttributes.get(i).getLocalizedInformation());
                             entity.put("LocalizedPlaceholder", entityTypeAttributes.get(i).getLocalizedPlaceholder());
                             entity.put("IsLocalizable", entityTypeAttributes.get(i).isIsLocalizable());
+                            entity.put("IsToBeAssociatedWithEachEntityTypeDefinition", entityTypeAttributes.get(i).isIsLocalizable());
                             entity.put("GeneralizedDataTypeEntitySubtypeId", entityTypeAttributes.get(i).getGeneralizedDataTypeEntitySubtypeId());
                             entity.put("DataSizeOrMaximumLengthInBytesOrCharacters", entityTypeAttributes.get(i).getDataSizeOrMaximumLengthInBytesOrCharacters());
                             entity.put("DataPrecision", entityTypeAttributes.get(i).getDataPrecision());
@@ -1360,7 +1376,7 @@ public class BusinessEntityController
                             entity.put("RelatedEntityTypeAttributeId", entityTypeAttributes.get(i).getRelatedEntityTypeAttributeId());
                             entity.put("RelatedEntityTypeCardinalityEntitySubtypeId", entityTypeAttributes.get(i).getRelatedEntityTypeCardinalityEntitySubtypeId());
                             entity.put("EntitySubtypeGroupKey", entityTypeAttributes.get(i).getEntitySubtypeGroupKey());
-                            entity.put("EntityTypeAttributeValueEntitySubtypeId", entityTypeAttributes.get(i).getEntityTypeAttributeValueEntitySubtypeId());
+                            entity.put("ValueEntitySubtypeId", entityTypeAttributes.get(i).getValueEntitySubtypeId());
                             entity.put("DefaultValue", entityTypeAttributes.get(i).getDefaultValue());
                             entity.put("MinimumValue", entityTypeAttributes.get(i).getMinimumValue());
                             entity.put("MaximumValue", entityTypeAttributes.get(i).getMaximumValue());
@@ -1396,9 +1412,9 @@ public class BusinessEntityController
 
                     for (int i = 0 ; i < entityTypeDefinitionEntityTypeAttributeAssociations.size() ; i++)
                     {
-                        //TODO: May want to do this with live, not cached data???
-                        //TODO: Capture and check cached data timestamp???
-                        //TODO: Also check if updated since asOfDateTimeUtc???
+                        //TODO: AAF-117 GetUnpublishedEntityData with live, not cached data???
+                        //TODO: AAF-118 Capture and check cached data timestamp???
+                        //TODO: AAF-119 Also check if updated since asOfDateTimeUtc???
                         if (entityTypeDefinitionEntityTypeAttributeAssociations.get(i).getPublishedAtDateTimeUtc().equals(Timestamp.valueOf("9999-12-31 23:59:59.999")))
                         {
                             entity= objectMapper.createObjectNode();
@@ -1434,9 +1450,9 @@ public class BusinessEntityController
 
                     for (int i = 0 ; i < entitySubtypes.size() ; i++)
                     {
-                        //TODO: May want to do this with live, not cached data???
-                        //TODO: Capture and check cached data timestamp???
-                        //TODO: Also check if updated since asOfDateTimeUtc???
+                        //TODO: AAF-117 GetUnpublishedEntityData with live, not cached data???
+                        //TODO: AAF-118 Capture and check cached data timestamp???
+                        //TODO: AAF-119 Also check if updated since asOfDateTimeUtc???
 //                        if (entitySubtypes.get(i).getPublishedAtDateTimeUtc().equals(Timestamp.valueOf("9999-12-31 23:59:59.999")))
 //                        {
 //                            entity= objectMapper.createObjectNode();

@@ -26,7 +26,7 @@ CREATE TABLE "EntityTypeAttribute"."EntityTypeAttribute"
     "RelatedEntityTypeAttributeId" bigint NOT NULL,
     "RelatedEntityTypeCardinalityEntitySubtypeId" bigint NOT NULL,
     "EntitySubtypeGroupKey" character varying(100) COLLATE pg_catalog."default" NOT NULL,
-    "EntityTypeAttributeValueEntitySubtypeId" bigint NOT NULL,
+    "ValueEntitySubtypeId" bigint NOT NULL,
     "DefaultValue" character varying(100) COLLATE pg_catalog."default" NOT NULL,
     "MinimumValue" character varying(100) COLLATE pg_catalog."default" NOT NULL,
     "MaximumValue" character varying(100) COLLATE pg_catalog."default" NOT NULL,

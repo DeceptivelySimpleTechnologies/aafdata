@@ -112,7 +112,6 @@ public class BusinessEntityController
 
             entityTypeDefinitions = new ArrayList<EntityTypeDefinition>();
 
-            //TODO: Only cache "origin" entities and published EntityTypeDefinitions
             while (resultSet.next()) {
                 entityTypeDefinitions.add(new EntityTypeDefinition(resultSet.getInt("Id"), resultSet.getInt("EntitySubtypeId"), resultSet.getString("TextKey"), resultSet.getString("LocalizedName"), resultSet.getInt("Ordinal"), resultSet.getBoolean("IsActive"), resultSet.getTimestamp("DeletedAtDateTimeUtc")));
             }
@@ -131,7 +130,7 @@ public class BusinessEntityController
             entityTypeAttributes = new ArrayList<EntityTypeAttribute>();
 
             while (resultSet.next()) {
-                entityTypeAttributes.add(new EntityTypeAttribute(resultSet.getInt("Id"), resultSet.getInt("EntitySubtypeId"), resultSet.getString("TextKey"), resultSet.getString("LocalizedName"), resultSet.getInt("GeneralizedDataTypeEntitySubtypeId"), resultSet.getInt("EntityTypeAttributeValueEntitySubtypeId"), resultSet.getString("DefaultValue"), resultSet.getInt("Ordinal"), resultSet.getBoolean("IsActive"), resultSet.getTimestamp("DeletedAtDateTimeUtc")));
+                entityTypeAttributes.add(new EntityTypeAttribute(resultSet.getInt("Id"), resultSet.getInt("EntitySubtypeId"), resultSet.getString("TextKey"), resultSet.getString("LocalizedName"), resultSet.getInt("GeneralizedDataTypeEntitySubtypeId"), resultSet.getInt("ValueEntitySubtypeId"), resultSet.getString("DefaultValue"), resultSet.getInt("Ordinal"), resultSet.getBoolean("IsActive"), resultSet.getTimestamp("DeletedAtDateTimeUtc")));
             }
 
             logger.info(entityTypeAttributes.size() + " EntityTypeAttributes cached locally");
@@ -295,13 +294,13 @@ public class BusinessEntityController
             }
             else
             {
-                //TODO: Validate API key by looking it up in the database, ensuring that it is not disabled, checking its associated permissions extent, and (later) checking that it is associated with the authenticated user's OrganizationalUnit
+                //TODO: AAF-66 Validate API key by looking it up in the database, ensuring that it is not disabled, checking its associated permissions extent, and (later) checking that it is associated with the authenticated user's OrganizationalUnit
                 logger.info(("ApiKey header '" + apiKey + "' included in the request"));
             }
 
             objectMapper = new ObjectMapper();
 
-            //TODO: Validate JWT
+            //TODO: AAF-67 Validate JWT
             authenticationJwt = request.getCookies().getFirst("Authentication");
             authenticationJwtSections = authenticationJwt.getValue().split("\\.");
             authenticationJwtHeader = objectMapper.readTree(decoderBase64.decode(authenticationJwtSections[0]));
@@ -317,17 +316,17 @@ public class BusinessEntityController
                 throw new Exception("Missing or invalid 'Authentication' cookie included with the request");
             }
 
-            //TODO: Look up InformationSystemUser.Id using the authenticated user's EmailAddress in the Authentication JWT payload, and assign it below
+            //TODO: AAF-68 Look up InformationSystemUser.Id using the authenticated user's EmailAddress in the Authentication JWT payload, and assign it below
             userId = -100;
 
-            //TODO: Check user's role(s) and permissions for this operation
+            //TODO: AAF-69 Check user's role(s) and permissions for this operation
 
             //NOTE: Example request http://localhost:8080/Person with "Authentication" JWT and JWT request body
             //NOTE: https://learning.postman.com/docs/sending-requests/response-data/cookies/
 //            Authentication JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IkF1dGhlbnRpY2F0ZWQiLCJhdWQiOiJBQUZEYXRhLUVudGl0eURhdGFNaWNyb3NlcnZpY2UiLCJleHAiOjE3MjM4MTY5MjAsImlhdCI6MTcyMzgxNjgwMCwibmJmIjoxNzIzODE2Nzg5LCJqdGkiOiJlZjRhZjRlMy1lNzM2LTQyNWEtYWFmZi1lY2EwM2I3YjliMjgiLCJib2R5Ijp7IkVtYWlsQWRkcmVzcyI6ImFteS5hbmRlcnNvbkBhbXlzYWNjb3VudGluZy5jb20ifX0.Djq5LYPEK1QFgBk9aN5Vei37K6Cb8TxNH3ADWDcUaHs
 //            Request JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IlBPU1QgL0VudGl0eVR5cGUiLCJhdWQiOiJBQUZEYXRhLUVudGl0eURhdGFNaWNyb3NlcnZpY2UiLCJleHAiOjE3MjM4MTY5MjAsImlhdCI6MTcyMzgxNjgwMCwibmJmIjoxNzIzODE2Nzg5LCJqdGkiOiI4NzUyZjIzYi0xYTliLTQyMmEtOGIyNi0zNzQyNDM0ZGY0NzYiLCJib2R5Ijp7IkVudGl0eVN1YnR5cGVJZCI6LTEsIlRleHRLZXkiOiJwZXJzb24tbm9uZS1iaWxsLWJha2VyIiwiTGVnYWxHaXZlbk5hbWUiOiJCaWxsIiwiTGVnYWxTdXJuYW1lIjoiQmFrZXIiLCJCb3JuQXREYXRlVGltZVV0YyI6IjIwMDItMDItMDMgMTE6MTI6MTMuMTIzIiwiTGVnYWxDaXRpemVuT2ZDb3VudHJ5R2VvZ3JhcGhpY1VuaXRJZCI6MSwiTG9jYWxlSWQiOjEsIk9yZGluYWwiOi0xLCJJc0FjdGl2ZSI6dHJ1ZX19.rWNowmEoPkF8N0Q5KC5-W83g3hMqIf9TV8KHzLgNbio
 
-            //TODO: Validate JWT
+            //TODO: AAF-67 Validate JWT
 //            bodyJwtSections = requestBody.split("\\.");
 //            bodyJwtHeader = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[0]));
 //            bodyJwtPayload = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[1]));
@@ -363,10 +362,10 @@ public class BusinessEntityController
             }
 
             sqlBlacklistValues = environment.getProperty("sqlNotToAllow").toLowerCase().split(",");
-            //TODO: *** Only check request body for SQL injection
+            //TODO: AAF-84 Only check request body for SQL injection
             errorValues = GuardAgainstSqlIssues(bodyJwtPayload.toString(), sqlBlacklistValues);
 
-            //TODO: Rework SQL validation in GuardAgainstSqlIssues() here and in other methods
+            //TODO: AAF-77 Rework SQL validation in GuardAgainstSqlIssues() here and in other methods
 //            if (errorValues.length() > 0)
 //            {
 //                throw new Exception("Request body contains invalid value(s): " + errorValues);
@@ -412,7 +411,7 @@ public class BusinessEntityController
                 if (entityTypeAssociations.contains(entityTypeAttributes.get(i).getId())) {
                     insertClause = insertClause + "\"" + entityTypeAttributes.get(i).getLocalizedName() + "\",";
 
-                    switch (entityTypeAttributes.get(i).getEntityTypeAttributeValueEntitySubtypeId()) {
+                    switch (entityTypeAttributes.get(i).getValueEntitySubtypeId()) {
                         //NOTE: PrimaryKey, Uuid, CreatedDateTime, CreatedByUserId, UpdatedDateTime, UpdatedByUserId, DeletedDateTime, DeletedByUserId, CorrelationUuid, Digest
                         case 23, 24, 27, 28, 29, 30, 31, 32, 33, 34:
                             if (bodyJwtPayload.get("body").has(entityTypeAttributes.get(i).getLocalizedName())) {
@@ -422,7 +421,7 @@ public class BusinessEntityController
                             break;
 
                         //NOTE: DefaultTextKey
-                        //TODO: Log non-pattern matching provided TextKey values
+                        //TODO: AAF-78 Log non-pattern matching provided TextKey values
                         case 25:
                             //NOTE: Optional value
                             if (bodyJwtPayload.get("body").has("TextKey"))
@@ -430,7 +429,7 @@ public class BusinessEntityController
                                 switch (entityTypeAttributes.get(i).getGeneralizedDataTypeEntitySubtypeId()) {
                                     //NOTE: Boolean, Integer, Decimal
                                     case 10, 11, 16:
-                                        //TODO: ** Find and replace "magic", hard-coded values, e.g. "TextKey"
+                                        //TODO: AAF-79 Find and replace "magic", hard-coded values, e.g. "TextKey"???
                                         insertValues = insertValues + bodyJwtPayload.get("body").get("TextKey").asText() + ",";
                                         break;
                                     //NOTE: UnicodeCharacter, UnicodeString, DateTime
@@ -531,8 +530,8 @@ public class BusinessEntityController
                 selectClause = selectClause.substring(0, selectClause.length() - 1);
             }
 
-            //TODO: Since EntityDataCreate() is in public, ensure that is locked down to correct role(s) only
-            //TODO: Refactor the statements below to be reusable for validation, local caching, etc
+            //TODO: AAF-69 Since EntityDataCreate() is in public, ensure that is locked down to correct role(s) only
+            //TODO: AAF-71 Refactor the statements below to be reusable for validation, local caching, etc
             statement = connection.prepareCall("{call \"EntityDataCreate\"(?,?,?,?,?,?,?)}");
             statement.setString(1, entityTypeName);
             statement.setString(2, insertClause);
@@ -550,16 +549,21 @@ public class BusinessEntityController
 
             if (entityData == null)
             {
-                //TODO: Improve this error output???
+                //TODO: AAF-81 Improve this error output???
                 entityData = "{[]}";
             }
 
-            //TODO: Filter or mask unauthorized or sensitive attributes for this InformationSystemUserRole (as JSON)???
+            //TODO: If "origin" entity
+//            UncacheEntityData();
+//            CacheEntityData();
+            //TODO: AAF-121 Re-cache SDS data
+
+            //TODO: AAF-70 Filter or mask unauthorized or sensitive attributes for this InformationSystemUserRole (as JSON)???
         }
         catch (Exception e)
         {
             logger.error("PostBusinessEntity() failed due to: " + e);
-            //TODO: Improve this error output???
+            //TODO: AAF-81 Improve this error output???
             return new ResponseEntity<String>("{[]}", HttpStatus.INTERNAL_SERVER_ERROR);
         }
         finally
@@ -590,7 +594,7 @@ public class BusinessEntityController
         logger.info("PostBusinessEntity() succeeded for " + entityTypeName);
         //result = new JSONObject("{\"EntityData\":" + entityData + "}");
         //return "{\"EntityData\":" + entityData + "}";
-        //TODO: Echo input parameters in Postgres function return JSON
+        //TODO: AAF-82 Echo input parameters in Postgres function return JSON???
         return new ResponseEntity<String>(entityData, HttpStatus.CREATED);
     }
 
@@ -630,30 +634,6 @@ public class BusinessEntityController
 
         String entityData = "";
 
-        //TODO: Add Unknown and None to EntityTypeDefinition data???
-
-        //TODO: ** JWT sign and encode response bodies if environmentJwtSharedSecret property is set
-        //TODO: ** Set up Terraform Remote Backend With AWS Using A Bash Script
-        //TODO: ** Enhance Swagger/OpenAPI documentation with cached EntityType, etc data
-        //TODO: ** Unit tests for UPDATE and DELETE (no mocks and should be starting Netty)
-        //TODO: ** Security testing (database table direct access, etc)
-        //TODO: ** Document that intended environments (loc, min, dev, stg, or prd) and profile setup in the README file
-        //TODO: ** Add preconfigured AWS Docker image with CloudFront logging driver, etc to DockerHub (https://docs.docker.com/engine/logging/drivers/awslogs/)
-
-        //TODO: * Test performance and possibly add indexes to Uuid, EntitySubtypeId, and TextKey columns in table/model scripts
-        //TODO: * Extend health check per https://reflectoring.io/spring-boot-health-check/
-
-        //TODO: Validate API key upstream in Client Communication Service (CCS)
-        //TODO: Validate JWT upstream in Client Communication Service (CCS)
-        //TODO: Validate authenticated user and API key OrganizationalUnit association if Employee upstream in Client Communication Service (CCS)
-        //TODO: Validate entity data authorization, i.e. appropriate permissions for requested entity and operation? upstream in Client Communication Service (CCS)
-        //TODO: Add Organization/OrganizationalUnit filtering to authorization/permissioning (what about non-Employees??? only *my* stuff???)
-        //TODO: Implement a pipeline/plugin architecture to replace system behavior like JWT communication, etc
-
-        //TODO: Implement a global error handler for all exceptions with JSON return, per:
-        //  https://bootcamptoprod.com/spring-boot-no-explicit-mapping-error-handling/#:~:text=them%20in%20detail.-,Solution%2D1%3A%20Request%20Mapping%20and%20Controller,in%20one%20of%20your%20controllers.
-        //  https://skryvets.com/blog/2018/12/27/enhance-exception-handling-when-building-restful-api-with-spring-boot/
-
         //NOTE: Rather than validating the EntityTypeDefinition name, we're going to optimistically pass it through to the database if it returns attributes
         //NOTE: We don't request versions our business entity data structure explicitly in the base URL; instead our explicit (v1.2.3) versioning is maintained internally, based on/derived from the AsOfUtcDateTime query parameter
         //NOTE: Since we're not automatically parsing the resulting JSON into an object, we're returning a JSON String rather than a JSONObject
@@ -687,13 +667,13 @@ public class BusinessEntityController
             }
             else
             {
-                //TODO: Validate API key by looking it up in the database, ensuring that it is not disabled, checking its associated permissions extent, and (later) checking that it is associated with the authenticated user's OrganizationalUnit
+                //TODO: AAF-66 Validate API key by looking it up in the database, ensuring that it is not disabled, checking its associated permissions extent, and (later) checking that it is associated with the authenticated user's OrganizationalUnit
                 logger.info(("ApiKey header '" + apiKey + "' included in the request"));
             }
 
             objectMapper = new ObjectMapper();
 
-            //TODO: Validate JWT
+            //TODO: AAF-67 Validate JWT
             authenticationJwt = request.getCookies().getFirst("Authentication");
             authenticationJwtSections = authenticationJwt.getValue().split("\\.");
             authenticationJwtHeader = objectMapper.readTree(decoderBase64.decode(authenticationJwtSections[0]));
@@ -709,10 +689,10 @@ public class BusinessEntityController
                 throw new Exception("Missing or invalid 'Authentication' cookie included with the request");
             }
 
-            //TODO: Look up InformationSystemUser.Id using the authenticated user's EmailAddress in the Authentication JWT payload, and assign it below
+            //TODO: AAF-68 Look up InformationSystemUser.Id using the authenticated user's EmailAddress in the Authentication JWT payload, and assign it below
             userId = -100;
 
-            //TODO: Check user's role(s) and permissions for this operation
+            //TODO: AAF-69 Check user's role(s) and permissions for this operation
 
             //NOTE: Example request http://localhost:8080/EntityType?whereClause=%22Id%22%20%3E%20-2&sortClause=%22Ordinal%22%252C%22Id%22&asOfDateTimeUtc=2023-01-01T00:00:00.000Z&graphDepthLimit=1&pageNumber=1&pageSize=20
 
@@ -868,7 +848,7 @@ public class BusinessEntityController
             }
 
             //TODO: Since EntityDataRead() is in public, ensure that is locked down to correct role(s) only
-            //TODO: Refactor the statements below to be reusable for validation, local caching, etc
+            //TODO: AAF-71 Refactor the statements below to be reusable for validation, local caching, etc
             if (errorValues.length() == 0)
             {
                 statement = connection.prepareCall("{call \"EntityDataRead\"(?,?,?,?,?,?,?,?,?)}");
@@ -890,19 +870,19 @@ public class BusinessEntityController
 
                 if (entityData == null)
                 {
-                    //TODO: Improve this error output???
+                    //TODO: AAF-81 Improve this error output???
                     entityData = "{[]}";
                 }
                 //TODO: ENVIRONMENT_JWT_SHARED_SECRET
 
-                //TODO: Filter or mask unauthorized or sensitive attributes for this InformationSystemUserRole (as JSON)???
+                //TODO: AAF-70 Filter or mask unauthorized or sensitive attributes for this InformationSystemUserRole (as JSON)???
             }
         }
         //TODO: Create and throw a custom exception for "No associated EntityTypeAttributes for ... " (or associate some attributes)???
         catch (Exception e)
         {
             logger.error("GetBusinessEntities() failed due to: " + e);
-            //TODO: Improve this error output???
+            //TODO: AAF-81 Improve this error output???
             return new ResponseEntity<String>("{[]}", HttpStatus.INTERNAL_SERVER_ERROR);
         }
         finally
@@ -933,7 +913,7 @@ public class BusinessEntityController
         logger.info("GetBusinessEntities() succeeded for " + entityTypeName);
         //result = new JSONObject("{\"EntityData\":" + entityData + "}");
         //return "{\"EntityData\":" + entityData + "}";
-        //TODO: Echo input parameters in Postgres function return JSON???
+        //TODO: AAF-82 Echo input parameters in Postgres function return JSON???
         return new ResponseEntity<String>(entityData, HttpStatus.OK);
     }
 
@@ -1026,7 +1006,7 @@ public class BusinessEntityController
             }
             else
             {
-                //TODO: Validate API key by looking it up in the database, ensuring that it is not disabled, checking its associated permissions extent, and (later) checking that it is associated with the authenticated user's OrganizationalUnit
+                //TODO: AAF-66 Validate API key by looking it up in the database, ensuring that it is not disabled, checking its associated permissions extent, and (later) checking that it is associated with the authenticated user's OrganizationalUnit
                 logger.info(("ApiKey header '" + apiKey + "' included in the request"));
             }
 
@@ -1037,7 +1017,7 @@ public class BusinessEntityController
 
             objectMapper = new ObjectMapper();
 
-            //TODO: Validate JWT
+            //TODO: AAF-67 Validate JWT
             authenticationJwt = request.getCookies().getFirst("Authentication");
             authenticationJwtSections = authenticationJwt.getValue().split("\\.");
             authenticationJwtHeader = objectMapper.readTree(decoderBase64.decode(authenticationJwtSections[0]));
@@ -1053,12 +1033,12 @@ public class BusinessEntityController
                 throw new Exception("Missing or invalid 'Authentication' cookie included with the request");
             }
 
-            //TODO: Look up InformationSystemUser.Id using the authenticated user's EmailAddress in the Authentication JWT payload, and assign it below
+            //TODO: AAF-68 Look up InformationSystemUser.Id using the authenticated user's EmailAddress in the Authentication JWT payload, and assign it below
             userId = -100;
 
-            //TODO: Check user's role(s) and permissions for this operation
+            //TODO: AAF-69 Check user's role(s) and permissions for this operation
 
-            //TODO: Validate JWT
+            //TODO: AAF-67 Validate JWT
 //            bodyJwtSections = requestBody.split("\\.");
 //            bodyJwtHeader = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[0]));
 //            bodyJwtPayload = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[1]));
@@ -1095,7 +1075,7 @@ public class BusinessEntityController
 
             sqlBlacklistValues = environment.getProperty("sqlNotToAllow").toLowerCase().split(",");
 
-            //TODO: *** Only check request body for SQL injection
+            //TODO: AAF-84 Only check request body for SQL injection
             errorValues = GuardAgainstSqlIssues(queryParams.toString(), sqlBlacklistValues);
 
 
@@ -1137,7 +1117,7 @@ public class BusinessEntityController
             for (int i = 0 ; i < entityTypeAttributes.size() ; i++)
             {
                 if (entityTypeAssociations.contains(entityTypeAttributes.get(i).getId())) {
-                    switch (entityTypeAttributes.get(i).getEntityTypeAttributeValueEntitySubtypeId()) {
+                    switch (entityTypeAttributes.get(i).getValueEntitySubtypeId()) {
                         //NOTE: PrimaryKey, Uuid, CreatedDateTime, CreatedByUserId, UpdatedDateTime, UpdatedByUserId, DeletedDateTime, DeletedByUserId, CorrelationUuid, Digest
                         case 23, 24, 27, 28, 29, 30, 31, 32, 33, 34:
                             if (bodyJwtPayload.get("body").has(entityTypeAttributes.get(i).getLocalizedName())) {
@@ -1147,7 +1127,7 @@ public class BusinessEntityController
                             break;
 
                         //NOTE: DefaultTextKey
-                        //TODO: Log non-pattern matching provided TextKey values
+                        //TODO: AAF-78 Log non-pattern matching provided TextKey values
 //                        case 25:
 //
                         //NOTE: Required and optional values
@@ -1182,10 +1162,10 @@ public class BusinessEntityController
                 selectClause = selectClause.substring(0, selectClause.length() - 1);
             }
 
-            //TODO: *** Get UTC time in Postgres function (currently getting local) for Create, Update, and Delete operations
+            //TODO: *** Check this: Get UTC time in Postgres function (currently ??? getting local) for Create, Update, and Delete operations
 
-            //TODO: Since EntityDataCreate() is in public, ensure that is locked down to correct role(s) only
-            //TODO: Refactor the statements below to be reusable for validation, local caching, etc
+            //TODO: AAF-69 Since EntityDataCreate() is in public, ensure that is locked down to correct role(s) only
+            //TODO: AAF-71 Refactor the statements below to be reusable for validation, local caching, etc
             if (errorValues.length() == 0)
             {
                 statement = connection.prepareCall("{call \"EntityDataUpdate\"(?,?,?,?,?,?,?)}");
@@ -1205,7 +1185,7 @@ public class BusinessEntityController
 
                 if (entityData == null)
                 {
-                    //TODO: Improve this error output???
+                    //TODO: AAF-81 Improve this error output???
                     entityData = "{[]}";
                 }
                 else
@@ -1225,13 +1205,18 @@ public class BusinessEntityController
                     entityDataNodeCombined.set("EntityDataPrevious", entityDataNodePrevious);
                 }
 
-                //TODO: Filter or mask unauthorized or sensitive attributes for this InformationSystemUserRole (as JSON)???
+                //TODO: If "origin" entity
+//                UncacheEntityData();
+//                CacheEntityData();
+                //TODO: AAF-121 Re-cache SDS data
+
+                //TODO: AAF-70 Filter or mask unauthorized or sensitive attributes for this InformationSystemUserRole (as JSON)???
             }
         }
         catch (Exception e)
         {
             logger.error("UpdateBusinessEntity() failed due to: " + e);
-            //TODO: Improve this error output???
+            //TODO: AAF-81 Improve this error output???
             return new ResponseEntity<String>("{[]}", HttpStatus.INTERNAL_SERVER_ERROR);
         }
         finally
@@ -1262,7 +1247,7 @@ public class BusinessEntityController
         logger.info("UpdateBusinessEntity() succeeded for " + entityTypeName);
         //result = new JSONObject("{\"EntityData\":" + entityData + "}");
         //return "{\"EntityData\":" + entityData + "}";
-        //TODO: Echo input parameters in Postgres function return JSON???
+        //TODO: AAF-82 Echo input parameters in Postgres function return JSON???
         return new ResponseEntity<String>(entityDataNodeCombined.toString(), HttpStatus.OK);
     }
 
@@ -1341,13 +1326,13 @@ public class BusinessEntityController
             }
             else
             {
-                //TODO: Validate API key by looking it up in the database, ensuring that it is not disabled, checking its associated permissions extent, and (later) checking that it is associated with the authenticated user's OrganizationalUnit
+                //TODO: AAF-66 Validate API key by looking it up in the database, ensuring that it is not disabled, checking its associated permissions extent, and (later) checking that it is associated with the authenticated user's OrganizationalUnit
                 logger.info(("ApiKey header '" + apiKey + "' included in the request"));
             }
 
             objectMapper = new ObjectMapper();
 
-            //TODO: Validate JWT
+            //TODO: AAF-67 Validate JWT
             authenticationJwt = request.getCookies().getFirst("Authentication");
             authenticationJwtSections = authenticationJwt.getValue().split("\\.");
             authenticationJwtHeader = objectMapper.readTree(decoderBase64.decode(authenticationJwtSections[0]));
@@ -1363,17 +1348,17 @@ public class BusinessEntityController
                 throw new Exception("Missing or invalid 'Authentication' cookie included with the request");
             }
 
-            //TODO: Look up InformationSystemUser.Id using the authenticated user's EmailAddress in the Authentication JWT payload, and assign it below
+            //TODO: AAF-68 Look up InformationSystemUser.Id using the authenticated user's EmailAddress in the Authentication JWT payload, and assign it below
             userId = -100;
 
-            //TODO: Check user's role(s) and permissions for this operation
+            //TODO: AAF-69 Check user's role(s) and permissions for this operation
 
             //NOTE: Example request http://localhost:8080/Person with "Authentication" JWT and JWT request body
             //NOTE: https://learning.postman.com/docs/sending-requests/response-data/cookies/
 //            Authentication JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IkF1dGhlbnRpY2F0ZWQiLCJhdWQiOiJBQUZEYXRhLUVudGl0eURhdGFNaWNyb3NlcnZpY2UiLCJleHAiOjE3MjM4MTY5MjAsImlhdCI6MTcyMzgxNjgwMCwibmJmIjoxNzIzODE2Nzg5LCJqdGkiOiJlZjRhZjRlMy1lNzM2LTQyNWEtYWFmZi1lY2EwM2I3YjliMjgiLCJib2R5Ijp7IkVtYWlsQWRkcmVzcyI6ImFteS5hbmRlcnNvbkBhbXlzYWNjb3VudGluZy5jb20ifX0.Djq5LYPEK1QFgBk9aN5Vei37K6Cb8TxNH3ADWDcUaHs
 //            Request JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IkRFTEVURSAvRW50aXR5VHlwZSIsImF1ZCI6IkFBRkRhdGEtRW50aXR5RGF0YU1pY3Jvc2VydmljZSIsImV4cCI6MTcyMzgxNjkyMCwiaWF0IjoxNzIzODE2ODAwLCJuYmYiOjE3MjM4MTY3ODksImp0aSI6Ijg3NTJmMjNiLTFhOWItNDIyYS04YjI2LTM3NDI0MzRkZjQ3NiIsImJvZHkiOnt9fQ.EXVVn6GyQc7IWnEGLlxZcLrb-Jn6P9s11xq0_W-il4I
 
-            //TODO: Validate JWT
+            //TODO: AAF-67 Validate JWT
 //            bodyJwtSections = requestBody.split("\\.");
 //            bodyJwtHeader = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[0]));
 //            bodyJwtPayload = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[1]));
@@ -1410,7 +1395,7 @@ public class BusinessEntityController
 
             sqlBlacklistValues = environment.getProperty("sqlNotToAllow").toLowerCase().split(",");
 
-            //TODO: *** Only check request body for SQL injection
+            //TODO: AAF-84 Only check request body for SQL injection
             errorValues = GuardAgainstSqlIssues(queryParams.toString(), sqlBlacklistValues);
 
 
@@ -1452,7 +1437,7 @@ public class BusinessEntityController
             for (int i = 0 ; i < entityTypeAttributes.size() ; i++)
             {
                 if (entityTypeAssociations.contains(entityTypeAttributes.get(i).getId())) {
-                    switch (entityTypeAttributes.get(i).getEntityTypeAttributeValueEntitySubtypeId()) {
+                    switch (entityTypeAttributes.get(i).getValueEntitySubtypeId()) {
                         //NOTE: PrimaryKey, Uuid, CreatedDateTime, CreatedByUserId, UpdatedDateTime, UpdatedByUserId, DeletedDateTime, DeletedByUserId, CorrelationUuid, Digest
                         case 23, 24, 27, 28, 29, 30, 31, 32, 33, 34:
                             if (bodyJwtPayload.get("body").has(entityTypeAttributes.get(i).getLocalizedName())) {
@@ -1477,10 +1462,10 @@ public class BusinessEntityController
                 selectClause = selectClause.substring(0, selectClause.length() - 1);
             }
 
-            //TODO: *** Get UTC time in Postgres function (currently getting local) for Create, Update, and Delete operations
+            //TODO: *** Check this: Get UTC time in Postgres function (currently ??? getting local) for Create, Update, and Delete operations
 
-            //TODO: Since EntityDataCreate() is in public, ensure that is locked down to correct role(s) only
-            //TODO: Refactor the statements below to be reusable for validation, local caching, etc
+            //TODO: AAF-69 Since EntityDataCreate() is in public, ensure that is locked down to correct role(s) only
+            //TODO: AAF-71 Refactor the statements below to be reusable for validation, local caching, etc
             if (errorValues.length() == 0)
             {
                 statement = connection.prepareCall("{call \"EntityDataDelete\"(?,?,?,?,?,?)}");
@@ -1499,17 +1484,22 @@ public class BusinessEntityController
 
                 if (entityData == null)
                 {
-                    //TODO: Improve this error output???
+                    //TODO: AAF-81 Improve this error output???
                     entityData = "{[]}";
                 }
 
-                //TODO: Filter or mask unauthorized or sensitive attributes for this InformationSystemUserRole (as JSON)???
+                //TODO: If "origin" entity
+//                UncacheEntityData();
+//                CacheEntityData();
+                //TODO: AAF-121 Re-cache SDS data
+
+                //TODO: AAF-70 Filter or mask unauthorized or sensitive attributes for this InformationSystemUserRole (as JSON)???
             }
         }
         catch (Exception e)
         {
             logger.error("DeleteBusinessEntity() failed due to: " + e);
-            //TODO: Improve this error output???
+            //TODO: AAF-81 Improve this error output???
             return new ResponseEntity<String>("{[]}", HttpStatus.INTERNAL_SERVER_ERROR);
         }
         finally
@@ -1540,7 +1530,7 @@ public class BusinessEntityController
         logger.info("DeleteBusinessEntity() succeeded for " + entityTypeName);
         //result = new JSONObject("{\"EntityData\":" + entityData + "}");
         //return "{\"EntityData\":" + entityData + "}";
-        //TODO: Echo input parameters in Postgres function return JSON???
+        //TODO: AAF-82 Echo input parameters in Postgres function return JSON???
         return new ResponseEntity<String>(entityData, HttpStatus.OK);
     }
 

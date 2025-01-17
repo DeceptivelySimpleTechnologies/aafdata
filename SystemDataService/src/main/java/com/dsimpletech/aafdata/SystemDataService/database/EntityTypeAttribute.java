@@ -31,7 +31,7 @@ public class EntityTypeAttribute {
     @Getter private long RelatedEntityTypeAttributeId;
     @Getter private long RelatedEntityTypeCardinalityEntitySubtypeId;
     @Getter private String EntitySubtypeGroupKey;
-    @Getter private long EntityTypeAttributeValueEntitySubtypeId;
+    @Getter private long ValueEntitySubtypeId;
     @Getter private String DefaultValue;
     @Getter private String MinimumValue;
     @Getter private String MaximumValue;
@@ -56,7 +56,7 @@ public class EntityTypeAttribute {
     @Getter private Timestamp DeletedAtDateTimeUtc;
     @Getter private long DeletedByInformationSystemUserId;
 
-    public EntityTypeAttribute(long id, long entitySubtypeId, String textKey, String localizedName, String localizedDescription, String localizedAbbreviation, String localizedInformation, String localizedPlaceholder, boolean isLocalizable, boolean isToBeAssociatedWithEachEntityTypeDefinition, long generalizedDataTypeEntitySubtypeId, long dataSizeOrMaximumLengthInBytesOrCharacters, long dataPrecision, long dataScale, long keyTypeEntitySubtypeId, long relatedEntityTypeId, long relatedEntityTypeAttributeId, long relatedEntityTypeCardinalityEntitySubtypeId, String entitySubtypeGroupKey, long entityTypeAttributeValueEntitySubtypeId, String defaultValue, String minimumValue, String maximumValue, String regExValidationPattern, float stepIncrementValue, String remoteValidationMethodAsAjaxUri, long indexEntitySubtypeId, long uniquenessEntitySubtypeId, long sensitivityEntitySubtypeId, Timestamp publishedAtDateTimeUtc, long publishedByInformationSystemUserId, long ordinal, boolean isActive, Timestamp createdAtDateTimeUtc, long createdByInformationSystemUserId, Timestamp updatedAtDateTimeUtc, long updatedByInformationSystemUserId, Timestamp deletedAtDateTimeUtc, long deletedByInformationSystemUserId) {
+    public EntityTypeAttribute(long id, long entitySubtypeId, String textKey, String localizedName, String localizedDescription, String localizedAbbreviation, String localizedInformation, String localizedPlaceholder, boolean isLocalizable, boolean isToBeAssociatedWithEachEntityTypeDefinition, long generalizedDataTypeEntitySubtypeId, long dataSizeOrMaximumLengthInBytesOrCharacters, long dataPrecision, long dataScale, long keyTypeEntitySubtypeId, long relatedEntityTypeId, long relatedEntityTypeAttributeId, long relatedEntityTypeCardinalityEntitySubtypeId, String entitySubtypeGroupKey, long valueEntitySubtypeId, String defaultValue, String minimumValue, String maximumValue, String regExValidationPattern, float stepIncrementValue, String remoteValidationMethodAsAjaxUri, long indexEntitySubtypeId, long uniquenessEntitySubtypeId, long sensitivityEntitySubtypeId, Timestamp publishedAtDateTimeUtc, long publishedByInformationSystemUserId, long ordinal, boolean isActive, Timestamp createdAtDateTimeUtc, long createdByInformationSystemUserId, Timestamp updatedAtDateTimeUtc, long updatedByInformationSystemUserId, Timestamp deletedAtDateTimeUtc, long deletedByInformationSystemUserId) {
         Id = id;
         EntitySubtypeId = entitySubtypeId;
         TextKey = textKey;
@@ -76,7 +76,7 @@ public class EntityTypeAttribute {
         RelatedEntityTypeAttributeId = relatedEntityTypeAttributeId;
         RelatedEntityTypeCardinalityEntitySubtypeId = relatedEntityTypeCardinalityEntitySubtypeId;
         EntitySubtypeGroupKey = entitySubtypeGroupKey;
-        EntityTypeAttributeValueEntitySubtypeId = entityTypeAttributeValueEntitySubtypeId;
+        ValueEntitySubtypeId = valueEntitySubtypeId;
         DefaultValue = defaultValue;
         MinimumValue = minimumValue;
         MaximumValue = maximumValue;
