@@ -31,6 +31,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 //import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 
 import org.springframework.http.*;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -41,6 +42,7 @@ import org.springframework.web.server.ServerWebExchange;
 
 import java.lang.Exception;
 
+import java.rmi.ConnectException;
 import java.sql.*;
 import java.time.Instant;
 import java.util.*;
@@ -82,8 +84,8 @@ public class BusinessEntityController
     //NOTE: Spring Boot Logback default logging implemented per https://www.baeldung.com/spring-boot-logging
     Logger logger = LoggerFactory.getLogger(BusinessEntityController.class);
 
-    @Autowired
-    private RestTemplate restTemplate;
+//    @Autowired
+//    private RestTemplate restTemplate;
 
     @PostConstruct
     private void CacheEntityData()
@@ -263,8 +265,9 @@ public class BusinessEntityController
         HttpHeaders headers = null;
         EntityTypeDefinition cachedEntityTypeDefinition = null;
         String cloneActionRequestBody = "";
+        HttpComponentsClientHttpRequestFactory requestFactory = null;
 //        RestTemplateBuilder restTemplateBuilder = null;
-//        RestTemplate restTemplate = null;
+        RestTemplate restTemplate = null;
         HttpEntity<String> entity = null;
         ResponseEntity<String> createActionResponseBody = null;
 
@@ -441,6 +444,13 @@ public class BusinessEntityController
                 //TODO: AAF-87 Implement second fix for RestTemplateBuilder
 //                restTemplateBuilder = new RestTemplateBuilder();
 //                restTemplate = restTemplate;
+
+                restTemplate = new RestTemplate();
+                requestFactory = new HttpComponentsClientHttpRequestFactory();
+//                requestFactory.setConnectTimeout(TIMEOUT);
+//                requestFactory.setReadTimeout(TIMEOUT);
+                restTemplate.setRequestFactory(requestFactory);
+
                 createActionResponseBody = restTemplate.postForEntity("http://localhost:8080/entityTypes/EntityTypeDefinition", entity, String.class);
 
                 //TODO: AAF-88 Check response body for success and to get Id instead of all the parsing below
@@ -533,8 +543,9 @@ public class BusinessEntityController
         HttpHeaders headers = null;
         EntityTypeDefinition cachedEntityTypeDefinition = null;
         String cloneActionRequestBody = "";
+        HttpComponentsClientHttpRequestFactory requestFactory = null;
 //        RestTemplateBuilder restTemplateBuilder = null;
-//        RestTemplate restTemplate = null;
+        RestTemplate restTemplate = null;
         HttpEntity<String> entity = null;
         ResponseEntity<String> cloneActionResponseBody = null;
 
@@ -692,6 +703,13 @@ public class BusinessEntityController
                 //TODO: AAF-87 Implement second fix for RestTemplateBuilder
 //                restTemplateBuilder = new RestTemplateBuilder();
 //                restTemplate = restTemplate;
+
+                restTemplate = new RestTemplate();
+                requestFactory = new HttpComponentsClientHttpRequestFactory();
+//                requestFactory.setConnectTimeout(TIMEOUT);
+//                requestFactory.setReadTimeout(TIMEOUT);
+                restTemplate.setRequestFactory(requestFactory);
+
                 cloneActionResponseBody = restTemplate.postForEntity("http://localhost:8080/entityTypes/EntityTypeDefinition", entity, String.class);
 
                 //TODO: AAF-88 Check response body for success and to get Id instead of all the parsing below
@@ -751,6 +769,7 @@ public class BusinessEntityController
     }
 
     @Operation(summary = "Create or alter the internal structure of the AafCore database, including its schemas, entity models (tables), functions, and system/lookup data, e.g. EntityTypeDefinition, EntityTypeAttribute, EntityType, EntitySubtype, etc, that has been defined/scripted by the AafCoreModeler role.", description = "Create or alter the internal structure of the database by providing the valid, required data and any valid, optional data as a JSON Web Token (JWT, please see https://jwt.io/) in the HTTP request body")
+    @Parameter(in = ParameterIn.HEADER, description = "API key", name = "ApiKey", content = @Content(schema = @Schema(type = "string")))
     @Parameter(in = ParameterIn.COOKIE, description = "JWT Authentication token", name = "Authentication", content = @Content(schema = @Schema(type = "string")))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Created", content = @Content(schema = @Schema(type = "string"))),
@@ -780,7 +799,7 @@ public class BusinessEntityController
         String[] authenticationJwtSections = null;
         JsonNode authenticationJwtHeader = null;
         JsonNode authenticationJwtPayload = null;
-        int userId = -1;
+        Long userId = -1L;
 
         String[] bodyJwtSections = null;
         JsonNode bodyJwtHeader = null;
@@ -796,8 +815,10 @@ public class BusinessEntityController
         EntityTypeAttribute cachedEntityTypeAttribute = null;
 
         String publishActionRequestBody = "";
+        HttpComponentsClientHttpRequestFactory requestFactory = null;
 //        RestTemplateBuilder restTemplateBuilder = null;
-//        RestTemplate restTemplate = null;
+        RestTemplate restTemplate = null;
+        HttpComponentsClientHttpRequestFactory clientHttpRequestFactory = null;
         HttpEntity<String> entity = null;
         ResponseEntity<String> publishActionResponseBody = null;
 
@@ -858,7 +879,7 @@ public class BusinessEntityController
             }
 
             //TODO: AAF-68 Look up InformationSystemUser.Id using the authenticated user's EmailAddress in the Authentication JWT payload, and assign it below
-            userId = -100;
+            userId = -100L;
 
             //TODO: AAF-69 Check user's role(s) and permissions for this operation
 
@@ -944,6 +965,7 @@ public class BusinessEntityController
 //            }
 
             //NOTE: Create new schemas, based on any unpublished EntityTypeDefinitions
+            //NOTE: Creating a schema alone does not complete the process of publishing an EntityTypeDefinition. The corresponding table must also be created (below) before the EntityTypeDefinition is updated as published.
             unpublishedEntityData = GetUnpublishedEntityData(1, asOfDateTimeUtc);
 
             if ((unpublishedEntityData != null) && (unpublishedEntityData.get("EntityData").size() > 0))
@@ -963,8 +985,6 @@ public class BusinessEntityController
 
                     preparedStatement = connection.prepareStatement(preparedStatementSql);
                     preparedStatement.executeUpdate();
-
-                    //TODO: Update published status
 
                     logger.info("New schema " + unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("LocalizedName") + " created in " + databaseName);
                 }
@@ -989,21 +1009,31 @@ public class BusinessEntityController
                 headers.add("ApiKey", apiKey);
                 headers.add("Cookie", authenticationJwt.toString());
 
+//                clientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory();
+//                restTemplate.setRequestFactory(clientHttpRequestFactory);
+
+                restTemplate = new RestTemplate();
+                requestFactory = new HttpComponentsClientHttpRequestFactory();
+//                requestFactory.setConnectTimeout(TIMEOUT);
+//                requestFactory.setReadTimeout(TIMEOUT);
+                restTemplate.setRequestFactory(requestFactory);
+
                 for (int i = 0; i < unpublishedEntityData.get("EntityData").size(); i++)
                 {
                     //TODO: Check for future publish date
 
                     unpublishedEntityTypeAttributes.add(new EntityTypeAttribute(unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("Id").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("EntitySubtypeId").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("TextKey").asText(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("LocalizedName").asText(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("LocalizedDescription").asText(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("LocalizedAbbreviation").asText(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("LocalizedInformation").asText(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("LocalizedPlaceholder").asText(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("IsLocalizable").asBoolean(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("IsToBeAssociatedWithEachEntityTypeDefinition").asBoolean(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("GeneralizedDataTypeEntitySubtypeId").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("DataSizeOrMaximumLengthInBytesOrCharacters").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("DataPrecision").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("DataScale").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("KeyTypeEntitySubtypeId").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("RelatedEntityTypeId").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("RelatedEntityTypeAttributeId").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("RelatedEntityTypeCardinalityEntitySubtypeId").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("EntitySubtypeGroupKey").asText(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("ValueEntitySubtypeId").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("DefaultValue").asText(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("MinimumValue").asText(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("MaximumValue").asText(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("RegExValidationPattern").asText(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("StepIncrementValue").floatValue(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("RemoteValidationMethodAsAjaxUri").asText(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("IndexEntitySubtypeId").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("UniquenessEntitySubtypeId").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("SensitivityEntitySubtypeId").asLong(), Timestamp.valueOf(unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("PublishedAtDateTimeUtc").asText()), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("PublishedByInformationSystemUserId").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("Ordinal").asLong(), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("IsActive").asBoolean(), Timestamp.valueOf(unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("CreatedAtDateTimeUtc").asText()), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("CreatedByInformationSystemUserId").asLong(), Timestamp.valueOf(unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("UpdatedAtDateTimeUtc").asText()), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("UpdatedByInformationSystemUserId").asLong(), Timestamp.valueOf(unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("DeletedAtDateTimeUtc").asText()), unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("DeletedByInformationSystemUserId").asLong()));
 
-                    publishActionRequestBody = "{\n" +
-                            "    \"PublishedAtDateTimeUtc\": \"" + asOfDateTimeUtc + "\",\n" +
-                            "    \"PublishedByInformationSystemUserId\": " + userId + "\n" +
-                            "  }";
-
-                    entity = new HttpEntity<String>(publishActionRequestBody, headers);
-
-                    //TODO: Create and use EDM URL here
-                    publishActionResponseBody = restTemplate.exchange("http://localhost:8080/entityTypes/EntityTypeDefinitionEntityTypeAttributeAssociation", HttpMethod.PATCH, entity, String.class);
+//                    publishActionRequestBody = "{\n" +
+//                            "    \"PublishedAtDateTimeUtc\": \"" + asOfDateTimeUtc + "\",\n" +
+//                            "    \"PublishedByInformationSystemUserId\": " + userId + "\n" +
+//                            "  }";
+//
+//                    entity = new HttpEntity<String>(publishActionRequestBody, headers);
+//
+//                    //TODO: Create and use EDM URL here
+//                    publishActionResponseBody = restTemplate.exchange("http://localhost:8080/entityTypes/EntityTypeDefinitionEntityTypeAttributeAssociation", HttpMethod.PATCH, entity, String.class);
+                    publishActionResponseBody = UpdatePublishedEntity("EntityTypeAttribute", unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("Id").asLong(), asOfDateTimeUtc, headers, userId, connection, restTemplate, exchange);
                     //TODO: * AAF-90 Check response body for success
 
                     //TODO: Update published status
@@ -1266,6 +1296,68 @@ public class BusinessEntityController
         //return "{\"EntityData\":" + entityData + "}";
         //TODO: AAF-82 Echo input parameters in Postgres function return JSON
         return new ResponseEntity<String>(entityData, HttpStatus.CREATED);
+    }
+
+    @Operation(summary = "Update a system entity instance, i.e. database table record, of the specified type, e.g. EntityTypeDefinition, EntityTypeAttribute, EntityTypeDefinitionEntityTypeAttributeAssociation, or EntityTypeData, once the instance has been successfully published.", description = "Update the PublishedAt and PublishedBy attributes of the specified entity type and Id by providing the valid, required data and any valid, optional data as a JSON Web Token (JWT, please see https://jwt.io/) in the HTTP request body")
+//    @Parameter(in = ParameterIn.HEADER, description = "API key", name = "ApiKey", content = @Content(schema = @Schema(type = "string")))
+//    @Parameter(in = ParameterIn.COOKIE, description = "JWT Authentication token", name = "Authentication", content = @Content(schema = @Schema(type = "string")))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(type = "string"))),
+            //TODO: Add 404 @ApiResponse here and above where appropriate
+            @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
+    })
+    @PatchMapping(value = "/entityTypes/{entityTypeName}/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    private ResponseEntity<String> UpdatePublishedEntity(@PathVariable("entityTypeName") String entityTypeName, @PathVariable("id") Long id, @RequestParam(defaultValue = "#{T(java.time.Instant).now()}") Instant asOfDateTimeUtc, HttpHeaders headers, Long userId, Connection connection, RestTemplate restTemplate, ServerWebExchange exchange) throws Exception
+    {
+        ServerHttpRequest request = null;
+
+        String updateActionRequestBody = "";
+        HttpComponentsClientHttpRequestFactory requestFactory = null;
+//        RestTemplateBuilder restTemplateBuilder = null;
+//        RestTemplate restTemplate = null;
+        HttpComponentsClientHttpRequestFactory clientHttpRequestFactory = null;
+        HttpEntity<String> entity = null;
+        ResponseEntity<String> updateActionResponseBody = null;
+
+//        String entityData = "";
+//
+        //NOTE: Rather than validating the EntityTypeDefinition name, we're going to optimistically pass it through to the database if it returns attributes
+        //NOTE: We don't request versions our business entity data structure explicitly in the base URL; instead our explicit (v1.2.3) versioning is maintained internally, based on/derived from the AsOfUtcDateTime query parameter
+        //NOTE: Since we're not automatically parsing the resulting JSON into an object, we're returning a JSON String rather than a JSONObject
+        try
+        {
+            //TODO: logger.info or .debug here and below???
+            logger.info("Attempting to UpdatePublishedEntity() " + entityTypeName + " " + id);
+
+//            request = exchange.getRequest();
+//
+//            if (connection == null)
+//            {
+//                throw new Exception("Unable to get database connection");
+//            }
+//
+//            ENVIRONMENT_JWT_SHARED_SECRET = environment.getProperty("environmentJwtSharedSecret");
+//
+            updateActionRequestBody = "{\n" +
+                    "    \"PublishedAtDateTimeUtc\": \"" + asOfDateTimeUtc + "\",\n" +
+                    "    \"PublishedByInformationSystemUserId\": " + userId + "\n" +
+                    "  }";
+
+            entity = new HttpEntity<String>(updateActionRequestBody, headers);
+
+            //TODO: Create and use EDM URL here
+            updateActionResponseBody = restTemplate.exchange("http://localhost:8080/entityTypes/" + entityTypeName + "/" + id, HttpMethod.PATCH, entity, String.class);
+            //TODO: * AAF-90 Check response body for success
+        }
+        catch (Exception e)
+        {
+            logger.error("UpdatePublishedEntity() failed due to: " + e);
+            //TODO: AAF-81 Improve this error output???
+            return new ResponseEntity<String>("{[]}", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        logger.info("UpdatePublishedEntity() succeeded");
+        return updateActionResponseBody;
     }
 
     private ObjectNode GetUnpublishedEntityData(long entityTypeDefinitionId, @RequestParam(defaultValue = "#{T(java.time.Instant).now()}") Instant asOfDateTimeUtc)
