@@ -3,6 +3,7 @@
 package com.dsimpletech.aafdata.SystemDataService.database;
 
 import lombok.Getter;
+import lombok.Setter;
 
 import java.sql.Timestamp;
 import java.util.UUID;
@@ -41,8 +42,8 @@ public class EntityTypeAttribute {
     @Getter private long IndexEntitySubtypeId;
     @Getter private long UniquenessEntitySubtypeId;
     @Getter private long SensitivityEntitySubtypeId;
-    @Getter private Timestamp PublishedAtDateTimeUtc;
-    @Getter private long PublishedByInformationSystemUserId;
+    @Getter @Setter private Timestamp PublishedAtDateTimeUtc;           //NOTE: @Setter added to enable update during Publish() without re-caching, which releases the database connection, until the Publish() is successful
+    @Getter @Setter private long PublishedByInformationSystemUserId;    //NOTE: @Setter added to enable update during Publish() without re-caching, which releases the database connection, until the Publish() is successful
 
     //    String ResourceName;
     @Getter private long Ordinal;

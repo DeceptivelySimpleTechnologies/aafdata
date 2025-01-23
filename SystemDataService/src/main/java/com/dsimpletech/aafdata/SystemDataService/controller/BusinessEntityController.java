@@ -441,7 +441,7 @@ public class BusinessEntityController
 
                 entity = new HttpEntity<String>(cloneActionRequestBody, headers);
 
-                //TODO: AAF-87 Implement second fix for RestTemplateBuilder
+                //TODO: AAF-87 Implement fixes for RestTemplateBuilder
 //                restTemplateBuilder = new RestTemplateBuilder();
 //                restTemplate = restTemplate;
 
@@ -478,7 +478,8 @@ public class BusinessEntityController
                                 "    \"EntityTypeDefinitionId\": " + entityId + ",\n" +
                                 "    \"EntityTypeAttributeId\": " + entityTypeAttributes.get(i).getId() + ",\n" +
                                 "    \"PublishedAtDateTimeUtc\": \"9999-12-31T23:59:59.999Z\",\n" +
-                                "    \"PublishedByInformationSystemUserId\": " + "-1" + "\n" +
+                                "    \"PublishedByInformationSystemUserId\": " + "-1" + ",\n" +
+                                "    \"Ordinal\": " + entityTypeAttributes.get(i).getOrdinal() + "\n" +
                                 "  }";
 
                         entity = new HttpEntity<String>(cloneActionRequestBody, headers);
@@ -539,6 +540,8 @@ public class BusinessEntityController
         JsonNode bodyJwtPayload = null;
 
         String textKey = "";
+        Long ordinal = -1L;
+        Boolean isActive = false;
 
         HttpHeaders headers = null;
         EntityTypeDefinition cachedEntityTypeDefinition = null;
@@ -676,6 +679,27 @@ public class BusinessEntityController
                     textKey = "entitytypedefinition-" + GetCachedEntitySubtypeById(bodyJwtPayload.get("body").get("EntitySubtypeId").asLong()).getLocalizedName().toLowerCase() + "-" + bodyJwtPayload.get("body").get("LocalizedName").asText().toLowerCase() + "-" + GenerateRandomLowercaseAlphanumericString(5);
                 }
 
+                //NOTE: Get optional Ordinal value in request body or supply default value
+                if (bodyJwtPayload.get("body").has("Ordinal"))
+                {
+                    ordinal = bodyJwtPayload.get("body").get("Ordinal").asLong();
+                }
+                else
+                {
+                    //TODO: Determine a safe default value for Ordinal that places it last and that will not conflict with existing values
+                    ordinal = 1000L;
+                }
+
+                //NOTE: Get optional IsActive value in request body or supply default value
+                if (bodyJwtPayload.get("body").has("IsActive"))
+                {
+                    isActive = bodyJwtPayload.get("body").get("IsActive").asBoolean();
+                }
+                else
+                {
+                    isActive = true;
+                }
+
                 //NOTE: Insert new, unpublished EntityTypeDefinition, and get Id value
                 headers = new HttpHeaders();
                 headers.add("ApiKey", apiKey);
@@ -693,14 +717,14 @@ public class BusinessEntityController
                         "    \"DataStructureEntitySubtypeId\": " + "1" + ",\n" +
                         "    \"PublishedAtDateTimeUtc\": \"9999-12-31T23:59:59.999Z\",\n" +
                         "    \"PublishedByInformationSystemUserId\": " + "-1" + ",\n" +
-                        //NOTE: Cloning existing Ordinal and IsActive values could lead to confusion since existing sort order might not be appropriate for the newly cloned entity and entities cloned from inactive entities would not be visible by default, so they are not copied
-                        "    \"Ordinal\": -1,\n" +
-                        "    \"IsActive\": true\n" +
+                        //NOTE: Cloning existing Ordinal and IsActive values could lead to confusion since existing sort order might not be appropriate for the newly cloned entity and entities cloned from inactive entities would not be visible by default, so they are specified or defaulted, not copied.
+                        "    \"Ordinal\": " + ordinal + ",\n" +
+                        "    \"IsActive\": " + isActive + "\n" +
                         "  }";
 
                 entity = new HttpEntity<String>(cloneActionRequestBody, headers);
 
-                //TODO: AAF-87 Implement second fix for RestTemplateBuilder
+                //TODO: AAF-87 Implement fixes for RestTemplateBuilder
 //                restTemplateBuilder = new RestTemplateBuilder();
 //                restTemplate = restTemplate;
 
@@ -738,7 +762,8 @@ public class BusinessEntityController
                                 "    \"EntityTypeDefinitionId\": " + entityId + ",\n" +
                                 "    \"EntityTypeAttributeId\": " + entityTypeDefinitionEntityTypeAttributeAssociations.get(i).getEntityTypeAttributeId() + ",\n" +
                                 "    \"PublishedAtDateTimeUtc\": \"9999-12-31T23:59:59.999Z\",\n" +
-                                "    \"PublishedByInformationSystemUserId\": " + "-1" + "\n" +
+                                "    \"PublishedByInformationSystemUserId\": " + "-1" + ",\n" +
+                                "    \"Ordinal\": " + entityTypeDefinitionEntityTypeAttributeAssociations.get(i).getOrdinal() + "\n" +
                                 "  }";
 
                         entity = new HttpEntity<String>(cloneActionRequestBody, headers);
@@ -832,6 +857,9 @@ public class BusinessEntityController
             logger.info("Attempting to PublishBusinessEntitys() in " + databaseName);
 
             request = exchange.getRequest();
+
+            UncacheEntityData();
+            CacheEntityData();
 
             DB_DRIVER_CLASS = "postgresql";
             DB_URL = environment.getProperty("spring.jdbc.url");
@@ -1035,10 +1063,10 @@ public class BusinessEntityController
 //                    publishActionResponseBody = restTemplate.exchange("http://localhost:8080/entityTypes/EntityTypeDefinitionEntityTypeAttributeAssociation", HttpMethod.PATCH, entity, String.class);
                     publishActionResponseBody = UpdatePublishedEntity("EntityTypeAttribute", unpublishedEntityData.get("EntityData").get(i).get("EntityTypeAttribute").get("Id").asLong(), asOfDateTimeUtc, headers, userId, connection, restTemplate, exchange);
                     //TODO: * AAF-90 Check response body for success
+                    unpublishedEntityTypeAttributes.get(i).setPublishedAtDateTimeUtc(Timestamp.from(asOfDateTimeUtc));
+                    unpublishedEntityTypeAttributes.get(i).setPublishedByInformationSystemUserId(userId);
 
-                    //TODO: Update published status
-
-                    logger.info("New attribute " + unpublishedEntityData.get("EntityData").get(i).get("EntityTypeDefinition").get("LocalizedName") + " published in " + databaseName);
+                    logger.info("New attribute " + unpublishedEntityTypeAttributes.get(i).getLocalizedName() + " published in " + databaseName);
                 }
 
                 logger.info(unpublishedEntityTypeAttributes.size() + " EntityTypeAttributes published in " + databaseName);
@@ -1172,6 +1200,9 @@ public class BusinessEntityController
 
                             preparedStatementSql = preparedStatementSql + " NOT NULL,\n";
                         }
+
+                        publishActionResponseBody = UpdatePublishedEntity("EntityTypeDefinitionEntityTypeAttributeAssociation", unpublishedEntityData.get("EntityData").get(j).get("EntityTypeDefinitionEntityTypeAttributeAssociation").get("Id").asLong(), asOfDateTimeUtc, headers, userId, connection, restTemplate, exchange);
+                        //TODO: * AAF-90 Check response body for success
                     }
 
                     //CONSTRAINT
@@ -1191,11 +1222,8 @@ public class BusinessEntityController
                     preparedStatement = connection.prepareStatement(preparedStatementSql);
                     preparedStatement.executeUpdate();
 
-                    //TODO: *** Update Entity data with newly published entity type, name, description, abbreviation, etc
-                    //TODO: *** Update EntityTypeDefinition as published
-                    //TODO: *** Update EntityTypeDefinitionEntityTypeAttributeAssociation as published
-
-                    //TODO: Update published status
+                    publishActionResponseBody = UpdatePublishedEntity("EntityTypeDefinition", unpublishedEntityTypeDefinitions.get(i).getId(), asOfDateTimeUtc, headers, userId, connection, restTemplate, exchange);
+                    //TODO: * AAF-90 Check response body for success
 
                     logger.info("New table " + unpublishedEntityTypeDefinitions.get(i).getLocalizedName() + " created in " + databaseName);
                 }
@@ -1319,8 +1347,6 @@ public class BusinessEntityController
         HttpEntity<String> entity = null;
         ResponseEntity<String> updateActionResponseBody = null;
 
-//        String entityData = "";
-//
         //NOTE: Rather than validating the EntityTypeDefinition name, we're going to optimistically pass it through to the database if it returns attributes
         //NOTE: We don't request versions our business entity data structure explicitly in the base URL; instead our explicit (v1.2.3) versioning is maintained internally, based on/derived from the AsOfUtcDateTime query parameter
         //NOTE: Since we're not automatically parsing the resulting JSON into an object, we're returning a JSON String rather than a JSONObject
@@ -1329,15 +1355,14 @@ public class BusinessEntityController
             //TODO: logger.info or .debug here and below???
             logger.info("Attempting to UpdatePublishedEntity() " + entityTypeName + " " + id);
 
-//            request = exchange.getRequest();
-//
-//            if (connection == null)
-//            {
-//                throw new Exception("Unable to get database connection");
-//            }
-//
 //            ENVIRONMENT_JWT_SHARED_SECRET = environment.getProperty("environmentJwtSharedSecret");
 //
+            //NOTE: Sort by Ordinal ASC in Gets (EntityTypeDefinitionId ASC, Ordinal ASC in Assocs).
+            //NOTE: 20 (Cloned Priv) and 21 (CreatedNew Role) Entity Definitions have default (-1) Ordinals.
+            //TODO: 5 (Name) ... 6 (Descr) and 7 (Abbrv) Attribs have 100, 200, and 300 Ordinals (should all be 300 Name).
+            //NOTE: 20 (Priv) and 21 (Role) Associations have default (-1) Ordinals, and Assoc Ordinals should match Attrib "bands".
+            //TODO: Add CorrelationUuid (jti claim in JWT) to update???
+            //TODO: Make sure CorrelationUuid (jti claim in JWT) is the same for new EntityDefinition and Associations in Clone and CreateNew
             updateActionRequestBody = "{\n" +
                     "    \"PublishedAtDateTimeUtc\": \"" + asOfDateTimeUtc + "\",\n" +
                     "    \"PublishedByInformationSystemUserId\": " + userId + "\n" +

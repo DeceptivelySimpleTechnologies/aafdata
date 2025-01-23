@@ -556,7 +556,7 @@ public class BusinessEntityController
             //TODO: If "origin" entity
 //            UncacheEntityData();
 //            CacheEntityData();
-            //TODO: AAF-121 Re-cache SDS data
+            //TODO: AAF-121 Enqueue standardized event data to re-cache SDS data
 
             //TODO: AAF-70 Filter or mask unauthorized or sensitive attributes for this InformationSystemUserRole (as JSON)???
         }
