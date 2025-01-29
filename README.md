@@ -39,6 +39,11 @@
   - **R**ead,
   - **U**pdate, and
   - **D**elete (**CRUD**) operations,
+- A Dockerized, **REST**ful **system data service** (SDS) providing
+    - Create **N**ew,
+    - **C**lone Existing,
+    - **P**ublish, and
+    - **U**pdate entity, attribute, and association process operations,
 - And **SwaggerDoc** **OpenAPI** application programming interface (API) **documentation**.
 
 
@@ -52,13 +57,20 @@
 
 **Features**
   - Containerized. Services run in Docker containers, available from DockerHub.
-  - The business entity microservice (BEM):
+  - The business entity microservice (**BEM**):
     - **Validates each HTTP request** using a JSON Web Token (**JWT**) mechanism with optional cryptographic signing and encryption capabilities,
-    - **Persists and retrieves business entity dat**a via its **API**, which calls low-level `POST`, `GET`, `PATCH`, and “soft” DELETE database functions to ensure data integrity and performance -- **NO direct table access**,
+    - **Persists and retrieves business entity data** via its **API**, which calls low-level `POST`, `GET`, `PATCH`, and “soft” DELETE database functions to ensure data integrity and performance -- **NO direct table access**,
     - **Consistently follows RESTful style and best practices**,
     - **Returns standard and appropriate HTTP response codes**, e.g. `200 OK`, `201 Created`, `400 Bad Request`, `401 Unauthorized`, `404 Not Found`, `500 Internal Server Error`, etc
     - **Accepts and returns structured JSON resource/entity data** in HTTP request/response bodies as specified for each business entity, and 
-    - **Includes** `entities` **in the request URL**, e.g. `/entities/organization/1234`, to partition low-level resource/entity operations from future high-level process invocation, e.g. `/processes/InformationSystem/RegisterInformationSystemUser/`
+<!--     - **Includes** `entities` **in the request URL**, e.g. `/entities/organization/1234`, to partition low-level resource/entity operations from future high-level process invocation, e.g. `/processes/InformationSystem/RegisterInformationSystemUser/` -->
+- The system data service (**SDS**):
+    - **Validates each HTTP request** using a JSON Web Token (**JWT**) mechanism with optional cryptographic signing and encryption capabilities,
+    - **Enables authorized entity Modelers and Publishers** to define new EntityTypeDefinitions, EntityTypeAttribtues, and EntityTypeDefinitionEntityTypeAttributeAssociations via its **API**, which calls high-level process `POST` and low-level `POST`, `PATCH`, and “soft” DELETE database functions to add (or "publish") these new entities, attributes, and associations to the database, resulting in new model-driven data structures, e.g. SCHEMAs, TABLEs, COLUMNs, CONSTRAINTs, INDEXs, etc -- **NO direct table access**,
+    - **Consistently follows RESTful style and best practices**,
+    - **Returns standard and appropriate HTTP response codes**, e.g. `200 OK`, `201 Created`, `400 Bad Request`, `401 Unauthorized`, `404 Not Found`, `500 Internal Server Error`, etc
+    - **Accepts and returns structured JSON resource/entity data** in HTTP request/response bodies as specified for each business entity, and
+<!--     - **Includes** `processes` **in the request URL**, e.g. `/processes/organization/1234`, to partition low-level resource/entity operations from future high-level process invocation, e.g. `/processes/InformationSystem/RegisterInformationSystemUser/` -->
 
 
 **Rules**
@@ -114,7 +126,7 @@ Soon **AAF Data will also include**:
 <!-- GETTING STARTED -->
 ## Getting Started
 
-This is the first AAF Data release, and it supports a single, very simple local environment (LOC), primarily to demonstrate its purpose and basic capabilities.  
+This is the second AAF Data release, and it supports very simple local (LOC) and minimal (MIN) environments, primarily to demonstrate its purpose and basic capabilities.
 
 Please bear in mind that this is a work in progress.  There are many more features and capabilities to come, and features are often "layered", 
 meaning that they have dependencies on other features that must be implemented first.  A good example of this is data validation, which is implemented 
@@ -137,12 +149,12 @@ Before running the EntityDataMicroservice, you must:
    1. `./002-CreateDatabaseRoleAafCoreOwnerAsPostgresRole.sh PostgreSQL 14 localhost 5432 postgres postgres postgres`
    1. `./003-CreateDatabaseRolesAndDatabaseAsAafCoreOwnerRole.sh PostgreSQL 14 localhost 5432 AafCoreOwner postgres 0wn3rCl13nt!`
    1. `./004-CreateDatabaseExtensionsAsAafCoreOwnerRole.sh PostgreSQL 14 localhost 5432 AafCoreOwner AafCore 0wn3rCl13nt!`
-   1. `./005-CreateDatabaseSchemasAsAafCorePublisher.sh PostgreSQL 14 localhost 5432 AafCorePublisher AafCore Publ15h3rCl13nt!`
-   1. `./006-CreateDatabaseTablesAsAafCorePublisher.sh PostgreSQL 14 localhost 5432 AafCorePublisher AafCore Publ15h3rCl13nt!`
-   1. `./007-CreateDatabaseFunctionsAsAafCorePublisher.sh PostgreSQL 14 localhost 5432 AafCorePublisher AafCore Publ15h3rCl13nt!`
-   1. `./008-CreateDatabaseDataAsAafCorePublisher.sh PostgreSQL 14 localhost 5432 AafCorePublisher AafCore Publ15h3rCl13nt!`
+   1. `./005-CreateDatabaseSchemasAsAafCoreModeler.sh PostgreSQL 14 localhost 5432 AafCoreModeler AafCore M0d3l3rCl13nt!`
+   1. `./006-CreateDatabaseTablesAsAafCoreModeler.sh PostgreSQL 14 localhost 5432 AafCoreModeler AafCore M0d3l3rCl13nt!`
+   1. `./007-CreateDatabaseFunctionsAsAafCoreModeler.sh PostgreSQL 14 localhost 5432 AafCoreModeler AafCore M0d3l3rCl13nt!`
+   1. `./008-CreateDatabaseDataAsAafCoreModeler.sh PostgreSQL 14 localhost 5432 AafCoreModeler AafCore M0d3l3rCl13nt!`
 
-Please **note** that **this first AAF Data release is primarily for demonstration and evaluation purposes**.  It supports a single, very simple local environment (LOC) and **is not intended to be used in a production environment**.  **Later releases** will support shared development (DEV), staging (STG), and production (PRD) environments and **will utilize secrets management and other security best practices**.  Crawl, walk, run.
+Please **note** that **this first AAF Data release is primarily for demonstration and evaluation purposes**.  It supports very simple local (LOC) and minimal (MIN) environments and **is not intended to be used in a production environment**.  **Later releases** will support shared development (DEV), staging (STG), and production (PRD) environments and **will utilize secrets management and other security best practices**.  Crawl, walk, run.
 
 2. **Run the EntityDataMicroservice**:
    1. **Locally** in IDE:
@@ -300,6 +312,11 @@ Today, AAF Data is:
     - **R**ead,
     - **U**pdate, and
     - **D**elete (**CRUD**) operations,
+- A Dockerized, **REST**ful **system data service** (SDS) providing
+    - Create **N**ew,
+    - **C**lone Existing,
+    - **P**ublish, and
+    - **U**pdate entity, attribute, and association process operations,
 - And **SwaggerDoc** **OpenAPI** application programming interface (API) **documentation**.
 
 
@@ -349,7 +366,11 @@ Model-based web user interface (UI) components
 
 * 0.0
     * Various bug fixes and optimizations
-    * Initial Release
+    * Initial Release of EDM and basic business entities
+    * See [commit change](https://github.com/DeceptivelySimpleTechnologies/aafdata/graphs/commit-activity) or See [release history]()
+* 1.0
+    * Initial Release of SDS
+    * Various bug fixes and optimizations
     * See [commit change](https://github.com/DeceptivelySimpleTechnologies/aafdata/graphs/commit-activity) or See [release history]()
 
 
@@ -374,10 +395,10 @@ Model-based web user interface (UI) components
 - [x] Set up JWT infrastructure with request body in token
 - [ ] Add JWT helper functions (encode/decode)
 - [x] Finish README.md
-- [ ] LOC environment setup (with profiles, etc)
+- [x] LOC environment setup (with profiles, etc)
 - [ ] Dockerfile with AWS CloudFront logging driver, etc
-- [ ] Add EDM image to DockerHub
-- [ ] Unit testing
+- [x] Add EDM image to DockerHub
+- [.] Unit testing
 - [ ] Security testing (database table direct access, etc)
 - [ ] Integration testingSet up Terraform Remote Backend With AWS Using A Bash Script
 - [ ] Enhance Swagger/OpenAPI documentation with cached EntityType, etc data

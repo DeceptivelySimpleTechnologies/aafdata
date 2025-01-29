@@ -222,6 +222,8 @@ public class BusinessEntityController
 //    }
 //
     @Operation(summary = "Create entity data for the specified EntityType", description = "Create entity data by providing the valid, required data and any valid, optional data as a JSON Web Token (JWT, please see https://jwt.io/) in the HTTP request body")
+    @Parameter(in = ParameterIn.HEADER, description = "API key", name = "ApiKey", content = @Content(schema = @Schema(type = "string")))
+    @Parameter(in = ParameterIn.HEADER, description = "Correlation UUID", name = "CorrelationUuid", content = @Content(schema = @Schema(type = "string")), required = false)
     @Parameter(in = ParameterIn.COOKIE, description = "JWT Authentication token", name = "Authentication", content = @Content(schema = @Schema(type = "string")))
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Created", content = @Content(schema = @Schema(type = "string"))),
@@ -239,6 +241,7 @@ public class BusinessEntityController
         String errorValues = "";
 
         String apiKey = "";
+        String correlationUuid = "";
 
         ObjectMapper objectMapper = null;
 
@@ -298,6 +301,19 @@ public class BusinessEntityController
                 logger.info(("ApiKey header '" + apiKey + "' included in the request"));
             }
 
+            correlationUuid = exchange.getRequest().getHeaders().getFirst("CorrelationUuid");
+
+            if ((correlationUuid == null) || (correlationUuid.length() < 1))
+            {
+                correlationUuid = UUID.randomUUID().toString();
+                logger.info(("CorrelationUuid '" + correlationUuid + "' generated for the request"));
+            }
+            else
+            {
+                //TODO: AAF-66 Validate API key by looking it up in the database, ensuring that it is not disabled, checking its associated permissions extent, and (later) checking that it is associated with the authenticated user's OrganizationalUnit
+                logger.info(("CorrelationUuid '" + correlationUuid + "' included in the request"));
+            }
+
             objectMapper = new ObjectMapper();
 
             //TODO: AAF-67 Validate JWT
@@ -350,7 +366,7 @@ public class BusinessEntityController
                     ((ObjectNode) bodyJwtPayload).put("exp", "1723816920");
                     ((ObjectNode) bodyJwtPayload).put("iat", "1723816800");
                     ((ObjectNode) bodyJwtPayload).put("nbf", "1723816789");
-                    ((ObjectNode) bodyJwtPayload).put("jti", UUID.randomUUID().toString());
+                    ((ObjectNode) bodyJwtPayload).put("jti", correlationUuid);
                     ((ObjectNode) bodyJwtPayload).put("body", objectMapper.readTree(requestBody));
 
                     logger.info(("Request from '" + bodyJwtPayload.get("iss").asText() + "' for '" + bodyJwtPayload.get("aud").asText() + "' using key '" + authenticationJwtHeader.get("kid").asText() + "'"));
@@ -412,17 +428,17 @@ public class BusinessEntityController
                     insertClause = insertClause + "\"" + entityTypeAttributes.get(i).getLocalizedName() + "\",";
 
                     switch (entityTypeAttributes.get(i).getValueEntitySubtypeId()) {
-                        //NOTE: PrimaryKey, Uuid, CreatedDateTime, CreatedByUserId, UpdatedDateTime, UpdatedByUserId, DeletedDateTime, DeletedByUserId, CorrelationUuid, Digest
-                        case 23, 24, 27, 28, 29, 30, 31, 32, 33, 34:
+                        //NOTE: PrimaryKey, Uuid, CreatedDateTime, CreatedByUserId, UpdatedDateTime, UpdatedByUserId, DeletedDateTime, DeletedByUserId, Digest
+                        case 23, 24, 27, 28, 29, 30, 31, 32, 34:
                             if (bodyJwtPayload.get("body").has(entityTypeAttributes.get(i).getLocalizedName())) {
                                 //NOTE: System-generated (server-side) values
-                                logger.warn(("Attempt to specify system-generated '" + entityTypeAttributes.get(i).getLocalizedName() + "' value as " + authenticationJwtPayload.get("body").get(entityTypeAttributes.get(i).getLocalizedName()).asText() + "'"));
+                                logger.warn(("Attempt to specify system-generated '" + entityTypeAttributes.get(i).getLocalizedName() + "' value as " + bodyJwtPayload.get("body").get(entityTypeAttributes.get(i).getLocalizedName()).asText() + "'"));
                             }
                             break;
 
-                        //NOTE: DefaultTextKey
+                        //NOTE: DefaultTextKey, CorrelationUuid
                         //TODO: AAF-78 Log non-pattern matching provided TextKey values
-                        case 25:
+                        case 25, 33:
                             //NOTE: Optional value
                             if (bodyJwtPayload.get("body").has("TextKey"))
                             {
@@ -599,6 +615,8 @@ public class BusinessEntityController
     }
 
     @Operation(summary = "Read entity data for the specified EntityType", description = "Read entity data by providing optional, URL-encoded 'whereClause' (not including the 'WHERE' keyword), URL-encoded 'sortClause' (not including the 'ORDER BY' keywords), 'pageNumber', and 'pageSize' query parameters.  Please note that the 'asOfDateTimeUtc' and 'graphDepthLimit' query parameters are not currently implemented and so have no effect.")
+    @Parameter(in = ParameterIn.HEADER, description = "API key", name = "ApiKey", content = @Content(schema = @Schema(type = "string")))
+    @Parameter(in = ParameterIn.HEADER, description = "Correlation UUID", name = "CorrelationUuid", content = @Content(schema = @Schema(type = "string")), required = false)
     @Parameter(in = ParameterIn.COOKIE, description = "JWT Authentication token", name = "Authentication", content = @Content(schema = @Schema(type = "string")))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(type = "string"))),
@@ -618,6 +636,7 @@ public class BusinessEntityController
         String errorValues = "";
 
         String apiKey = "";
+        String correlationUuid = "";
 
         ObjectMapper objectMapper = null;
 
@@ -669,6 +688,19 @@ public class BusinessEntityController
             {
                 //TODO: AAF-66 Validate API key by looking it up in the database, ensuring that it is not disabled, checking its associated permissions extent, and (later) checking that it is associated with the authenticated user's OrganizationalUnit
                 logger.info(("ApiKey header '" + apiKey + "' included in the request"));
+            }
+
+            correlationUuid = exchange.getRequest().getHeaders().getFirst("CorrelationUuid");
+
+            if ((correlationUuid == null) || (correlationUuid.length() < 1))
+            {
+                correlationUuid = UUID.randomUUID().toString();
+                logger.info(("CorrelationUuid '" + correlationUuid + "' generated for the request"));
+            }
+            else
+            {
+                //TODO: AAF-66 Validate API key by looking it up in the database, ensuring that it is not disabled, checking its associated permissions extent, and (later) checking that it is associated with the authenticated user's OrganizationalUnit
+                logger.info(("CorrelationUuid '" + correlationUuid + "' included in the request"));
             }
 
             objectMapper = new ObjectMapper();
@@ -918,6 +950,8 @@ public class BusinessEntityController
     }
 
     @Operation(summary = "Update entity data for the specified EntityType by Id", description = "Update entity data by providing a valid entity Id query parameter and the valid data for any entity attribute(s) to be changed as a JSON Web Token (JWT, please see https://jwt.io/) in the HTTP request body")
+    @Parameter(in = ParameterIn.HEADER, description = "API key", name = "ApiKey", content = @Content(schema = @Schema(type = "string")))
+    @Parameter(in = ParameterIn.HEADER, description = "Correlation UUID", name = "CorrelationUuid", content = @Content(schema = @Schema(type = "string")), required = false)
     @Parameter(in = ParameterIn.COOKIE, description = "JWT Authentication token", name = "Authentication", content = @Content(schema = @Schema(type = "string")))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(type = "string"))),
@@ -939,6 +973,7 @@ public class BusinessEntityController
         String errorValues = "";
 
         String apiKey = "";
+        String correlationUuid = "";
 
         ObjectMapper objectMapper = null;
 
@@ -1010,6 +1045,19 @@ public class BusinessEntityController
                 logger.info(("ApiKey header '" + apiKey + "' included in the request"));
             }
 
+            correlationUuid = exchange.getRequest().getHeaders().getFirst("CorrelationUuid");
+
+            if ((correlationUuid == null) || (correlationUuid.length() < 1))
+            {
+                correlationUuid = UUID.randomUUID().toString();
+                logger.info(("CorrelationUuid '" + correlationUuid + "' generated for the request"));
+            }
+            else
+            {
+                //TODO: AAF-66 Validate API key by looking it up in the database, ensuring that it is not disabled, checking its associated permissions extent, and (later) checking that it is associated with the authenticated user's OrganizationalUnit
+                logger.info(("CorrelationUuid '" + correlationUuid + "' included in the request"));
+            }
+
             //NOTE: Example request http://localhost:8080/Person with "Authentication" JWT and JWT request body
             //NOTE: https://learning.postman.com/docs/sending-requests/response-data/cookies/
 //            Authentication JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IkF1dGhlbnRpY2F0ZWQiLCJhdWQiOiJBQUZEYXRhLUVudGl0eURhdGFNaWNyb3NlcnZpY2UiLCJleHAiOjE3MjM4MTY5MjAsImlhdCI6MTcyMzgxNjgwMCwibmJmIjoxNzIzODE2Nzg5LCJqdGkiOiJlZjRhZjRlMy1lNzM2LTQyNWEtYWFmZi1lY2EwM2I3YjliMjgiLCJib2R5Ijp7IkVtYWlsQWRkcmVzcyI6ImFteS5hbmRlcnNvbkBhbXlzYWNjb3VudGluZy5jb20ifX0.Djq5LYPEK1QFgBk9aN5Vei37K6Cb8TxNH3ADWDcUaHs
@@ -1062,7 +1110,7 @@ public class BusinessEntityController
                     ((ObjectNode) bodyJwtPayload).put("exp", "1723816920");
                     ((ObjectNode) bodyJwtPayload).put("iat", "1723816800");
                     ((ObjectNode) bodyJwtPayload).put("nbf", "1723816789");
-                    ((ObjectNode) bodyJwtPayload).put("jti", UUID.randomUUID().toString());
+                    ((ObjectNode) bodyJwtPayload).put("jti", correlationUuid);
                     ((ObjectNode) bodyJwtPayload).put("body", objectMapper.readTree(requestBody));
 
                     logger.info(("Request from '" + bodyJwtPayload.get("iss").asText() + "' for '" + bodyJwtPayload.get("aud").asText() + "' using key '" + authenticationJwtHeader.get("kid").asText() + "'"));
@@ -1118,17 +1166,17 @@ public class BusinessEntityController
             {
                 if (entityTypeAssociations.contains(entityTypeAttributes.get(i).getId())) {
                     switch (entityTypeAttributes.get(i).getValueEntitySubtypeId()) {
-                        //NOTE: PrimaryKey, Uuid, CreatedDateTime, CreatedByUserId, UpdatedDateTime, UpdatedByUserId, DeletedDateTime, DeletedByUserId, CorrelationUuid, Digest
-                        case 23, 24, 27, 28, 29, 30, 31, 32, 33, 34:
+                        //NOTE: PrimaryKey, Uuid, CreatedDateTime, CreatedByUserId, UpdatedDateTime, UpdatedByUserId, DeletedDateTime, DeletedByUserId, Digest
+                        case 23, 24, 27, 28, 29, 30, 31, 32, 34:
                             if (bodyJwtPayload.get("body").has(entityTypeAttributes.get(i).getLocalizedName())) {
                                 //NOTE: System-generated (server-side) values
-                                logger.warn(("Attempt to specify system-generated '" + entityTypeAttributes.get(i).getLocalizedName() + "' value as " + authenticationJwtPayload.get("body").get(entityTypeAttributes.get(i).getLocalizedName()).asText() + "'"));
+                                logger.warn(("Attempt to specify system-generated '" + entityTypeAttributes.get(i).getLocalizedName() + "' value as " + bodyJwtPayload.get("body").get(entityTypeAttributes.get(i).getLocalizedName()).asText() + "'"));
                             }
                             break;
 
-                        //NOTE: DefaultTextKey
+                        //NOTE: DefaultTextKey, CorrelationUuid
                         //TODO: AAF-78 Log non-pattern matching provided TextKey values
-//                        case 25:
+//                        case 25, 33:
 //
                         //NOTE: Required and optional values
                         default:
@@ -1252,6 +1300,8 @@ public class BusinessEntityController
     }
 
     @Operation(summary = "Mark entity data for the specified EntityType for deletion by Id", description = "Mark entity data for deletion (i.e. \"soft\" delete) by providing a valid entity Id query parameter and the valid, required data and any valid, optional data as a JSON Web Token (JWT, please see https://jwt.io/) in the HTTP request body")
+    @Parameter(in = ParameterIn.HEADER, description = "API key", name = "ApiKey", content = @Content(schema = @Schema(type = "string")))
+    @Parameter(in = ParameterIn.HEADER, description = "Correlation UUID", name = "CorrelationUuid", content = @Content(schema = @Schema(type = "string")), required = false)
     @Parameter(in = ParameterIn.COOKIE, description = "JWT Authentication token", name = "Authentication", content = @Content(schema = @Schema(type = "string")))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(type = "string"))),
@@ -1271,6 +1321,7 @@ public class BusinessEntityController
         String errorValues = "";
 
         String apiKey = "";
+        String correlationUuid = "";
 
         ObjectMapper objectMapper = null;
 
@@ -1330,6 +1381,19 @@ public class BusinessEntityController
                 logger.info(("ApiKey header '" + apiKey + "' included in the request"));
             }
 
+            correlationUuid = exchange.getRequest().getHeaders().getFirst("CorrelationUuid");
+
+            if ((correlationUuid == null) || (correlationUuid.length() < 1))
+            {
+                correlationUuid = UUID.randomUUID().toString();
+                logger.info(("CorrelationUuid '" + correlationUuid + "' generated for the request"));
+            }
+            else
+            {
+                //TODO: AAF-66 Validate API key by looking it up in the database, ensuring that it is not disabled, checking its associated permissions extent, and (later) checking that it is associated with the authenticated user's OrganizationalUnit
+                logger.info(("CorrelationUuid '" + correlationUuid + "' included in the request"));
+            }
+
             objectMapper = new ObjectMapper();
 
             //TODO: AAF-67 Validate JWT
@@ -1382,7 +1446,7 @@ public class BusinessEntityController
                     ((ObjectNode) bodyJwtPayload).put("exp", "1723816920");
                     ((ObjectNode) bodyJwtPayload).put("iat", "1723816800");
                     ((ObjectNode) bodyJwtPayload).put("nbf", "1723816789");
-                    ((ObjectNode) bodyJwtPayload).put("jti", UUID.randomUUID().toString());
+                    ((ObjectNode) bodyJwtPayload).put("jti", correlationUuid);
                     ((ObjectNode) bodyJwtPayload).put("body", objectMapper.readTree(requestBody));
 
                     logger.info(("Request from '" + bodyJwtPayload.get("iss").asText() + "' for '" + bodyJwtPayload.get("aud").asText() + "' using key '" + authenticationJwtHeader.get("kid").asText() + "'"));
@@ -1438,11 +1502,11 @@ public class BusinessEntityController
             {
                 if (entityTypeAssociations.contains(entityTypeAttributes.get(i).getId())) {
                     switch (entityTypeAttributes.get(i).getValueEntitySubtypeId()) {
-                        //NOTE: PrimaryKey, Uuid, CreatedDateTime, CreatedByUserId, UpdatedDateTime, UpdatedByUserId, DeletedDateTime, DeletedByUserId, CorrelationUuid, Digest
-                        case 23, 24, 27, 28, 29, 30, 31, 32, 33, 34:
+                        //NOTE: PrimaryKey, Uuid, CreatedDateTime, CreatedByUserId, UpdatedDateTime, UpdatedByUserId, DeletedDateTime, DeletedByUserId, Digest (CorrelationUuid = 33 is optional, i.e. not system-supplied unless not specified)
+                        case 23, 24, 27, 28, 29, 30, 31, 32, 34:
                             if (bodyJwtPayload.get("body").has(entityTypeAttributes.get(i).getLocalizedName())) {
                                 //NOTE: System-generated (server-side) values
-                                logger.warn(("Attempt to specify system-generated '" + entityTypeAttributes.get(i).getLocalizedName() + "' value as " + authenticationJwtPayload.get("body").get(entityTypeAttributes.get(i).getLocalizedName()).asText() + "'"));
+                                logger.warn(("Attempt to specify system-generated '" + entityTypeAttributes.get(i).getLocalizedName() + "' value as " + bodyJwtPayload.get("body").get(entityTypeAttributes.get(i).getLocalizedName()).asText() + "'"));
                             }
                             break;
 

@@ -6,250 +6,536 @@
 	},
 	"item": [
 		{
-			"name": "GET Health",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:8080/actuator/health",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"actuator",
-						"health"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "GET API Documentation",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:8080/v3/api-docs",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"v3",
-						"api-docs"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "GET Swagger UI Page",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:8080/swagger-ui.html",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"swagger-ui.html"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "GET EntityData (EntitySubtype)",
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "ApiKey",
-						"value": "6fdcf7a4-6442-4c1e-a375-9f8064ea34d0",
-						"type": "text"
-					}
-				],
-				"url": {
-					"raw": "http://localhost:8080/entityTypes/EntitySubtype?whereClause=%22Id%22%20%3E%200&sortClause=%22LocalizedName%22%20ASC&pageNumber=1&pageSize=20",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"entityTypes",
-						"EntitySubtype"
-					],
-					"query": [
-						{
-							"key": "whereClause",
-							"value": "%22Id%22%20%3E%200"
-						},
-						{
-							"key": "sortClause",
-							"value": "%22LocalizedName%22%20ASC"
-						},
-						{
-							"key": "pageNumber",
-							"value": "1"
-						},
-						{
-							"key": "pageSize",
-							"value": "20"
+			"name": "Entity Data Microservice (EDM)",
+			"item": [
+				{
+					"name": "GET EDM Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/actuator/health",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"actuator",
+								"health"
+							]
 						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "POST EntityData (Person) with JSON Body",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "ApiKey",
-						"type": "text",
-						"value": "6fdcf7a4-6442-4c1e-a375-9f8064ea34d0"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"EntitySubtypeId\": -1,\n    \"TextKey\": \"person-none-bill-baker\",\n    \"LegalGivenName\": \"Bill\",\n    \"LegalSurname\": \"Baker\",\n    \"BornAtDateTimeUtc\": \"2002-02-03 11:12:13.123\",\n    \"LegalCitizenOfCountryGeographicUnitId\": 1,\n    \"LocaleId\": 1,\n    \"Ordinal\": -1,\n    \"IsActive\": true\n  }",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
+					},
+					"response": []
 				},
-				"url": {
-					"raw": "http://localhost:8080/entityTypes/Person",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"entityTypes",
-						"Person"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "GET EntityData (Person)",
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "ApiKey",
-						"value": "6fdcf7a4-6442-4c1e-a375-9f8064ea34d0",
-						"type": "text"
-					}
-				],
-				"url": {
-					"raw": "http://localhost:8080/entityTypes/Person?pageNumber=1&pageSize=20",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"entityTypes",
-						"Person"
-					],
-					"query": [
-						{
-							"key": "pageNumber",
-							"value": "1"
+				{
+					"name": "GET EDM API Documentation",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/v3/api-docs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"v3",
+								"api-docs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET EDM Swagger UI Page",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/swagger-ui.html",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"swagger-ui.html"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET EntityData (EntitySubtype)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "ApiKey",
+								"value": "6fdcf7a4-6442-4c1e-a375-9f8064ea34d0",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8080/entityTypes/EntitySubtype?whereClause=%22Id%22%20%3E%200&sortClause=%22LocalizedName%22%20ASC&pageNumber=1&pageSize=20&ApiKey=6fdcf7a4-6442-4c1e-a375-9f8064ea34d0&CorrelationUuid=5595adaa-0312-4983-82e7-1127e3c43444",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"entityTypes",
+								"EntitySubtype"
+							],
+							"query": [
+								{
+									"key": "whereClause",
+									"value": "%22Id%22%20%3E%200"
+								},
+								{
+									"key": "sortClause",
+									"value": "%22LocalizedName%22%20ASC"
+								},
+								{
+									"key": "pageNumber",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "20"
+								},
+								{
+									"key": "ApiKey",
+									"value": "6fdcf7a4-6442-4c1e-a375-9f8064ea34d0"
+								},
+								{
+									"key": "CorrelationUuid",
+									"value": "5595adaa-0312-4983-82e7-1127e3c43444"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST EntityData (Person) with JSON Body",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "ApiKey",
+								"type": "text",
+								"value": "6fdcf7a4-6442-4c1e-a375-9f8064ea34d0"
+							},
+							{
+								"key": "CorrelationUuid",
+								"value": "5595adaa-0312-4983-82e7-1127e3c43444",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"EntitySubtypeId\": -1,\n    \"TextKey\": \"person-none-bill-baker\",\n    \"LegalGivenName\": \"Bill\",\n    \"LegalSurname\": \"Baker\",\n    \"BornAtDateTimeUtc\": \"2002-02-03 11:12:13.123\",\n    \"LegalCitizenOfCountryGeographicUnitId\": 1,\n    \"LocaleId\": 1,\n    \"Ordinal\": -1,\n    \"IsActive\": true\n  }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
-						{
-							"key": "pageSize",
-							"value": "20"
+						"url": {
+							"raw": "http://localhost:8080/entityTypes/Person",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"entityTypes",
+								"Person"
+							]
 						}
-					]
+					},
+					"response": []
+				},
+				{
+					"name": "GET EntityData (Person)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "ApiKey",
+								"value": "6fdcf7a4-6442-4c1e-a375-9f8064ea34d0",
+								"type": "text"
+							},
+							{
+								"key": "CorrelationUuid",
+								"value": "5595adaa-0312-4983-82e7-1127e3c43444",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8080/entityTypes/Person?pageNumber=1&pageSize=20",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"entityTypes",
+								"Person"
+							],
+							"query": [
+								{
+									"key": "pageNumber",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PATCH EntityData (Person) with JSON Body",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "ApiKey",
+								"type": "text",
+								"value": "6fdcf7a4-6442-4c1e-a375-9f8064ea34d0"
+							},
+							{
+								"key": "CorrelationUuid",
+								"value": "2260dbe6-c8a9-4efb-991e-c539ddb560b9",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"LegalGivenName\": \"William\",\n    \"LegalSurname\": \"Baker-PATCHED\",\n    \"BornAtDateTimeUtc\": \"2002-03-04 12:13:14.234\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/entityTypes/Person/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"entityTypes",
+								"Person",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE EntityData (Person) with JSON Body",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "ApiKey",
+								"type": "text",
+								"value": "6fdcf7a4-6442-4c1e-a375-9f8064ea34d0"
+							},
+							{
+								"key": "CorrelationUuid",
+								"value": "765a25f9-3e5e-4b15-a2b1-947c8b502aa0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/entityTypes/Person/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"entityTypes",
+								"Person",
+								"2"
+							]
+						}
+					},
+					"response": []
 				}
-			},
-			"response": []
+			]
 		},
 		{
-			"name": "PATCH EntityData (Person) with JSON Body",
-			"request": {
-				"method": "PATCH",
-				"header": [
-					{
-						"key": "ApiKey",
-						"type": "text",
-						"value": "6fdcf7a4-6442-4c1e-a375-9f8064ea34d0"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"LegalGivenName\": \"William\",\n    \"LegalSurname\": \"Baker-PATCHED\",\n    \"BornAtDateTimeUtc\": \"2002-03-04 12:13:14.234\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
+			"name": "System Data Service (SDS)",
+			"item": [
+				{
+					"name": "GET SDS Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8081/actuator/health",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"actuator",
+								"health"
+							]
 						}
-					}
+					},
+					"response": []
 				},
-				"url": {
-					"raw": "http://localhost:8080/entityTypes/Person/2",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"entityTypes",
-						"Person",
-						"2"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "DELETE EntityData (Person) with JSON Body",
-			"request": {
-				"method": "DELETE",
-				"header": [
-					{
-						"key": "ApiKey",
-						"type": "text",
-						"value": "6fdcf7a4-6442-4c1e-a375-9f8064ea34d0"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{}",
-					"options": {
-						"raw": {
-							"language": "json"
+				{
+					"name": "GET SDS API Documentation",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8081/v3/api-docs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"v3",
+								"api-docs"
+							]
 						}
-					}
+					},
+					"response": []
 				},
-				"url": {
-					"raw": "http://localhost:8080/entityTypes/Person/2",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"entityTypes",
-						"Person",
-						"2"
-					]
+				{
+					"name": "GET SDS Swagger UI Page",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8081/swagger-ui.html",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"swagger-ui.html"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST Clone Existing EntityTypeDefinition with JSON Body",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "ApiKey",
+								"type": "text",
+								"value": "6fdcf7a4-6442-4c1e-a375-9f8064ea34d0"
+							},
+							{
+								"key": "CorrelationUuid",
+								"value": "fd5597a3-961e-4f3f-a19f-0743abda5bba",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"EntitySubtypeId\": 0,\n    \"TextKey\": \"entitytypedefinition-businessentity-informationsystemprivilege-create-1a2b3\",\n    \"LocalizedName\": \"InformationSystemPrivilege\",\n    \"LocalizedDescription\": \"Represents an InformationSystemUser privilege (or right) in an InformationSystem\",\n    \"LocalizedAbbreviation\": \"Prvlg\",\n    \"Ordinal\": 20\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8081/entityTypeDefinitions/7",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"entityTypeDefinitions",
+								"7"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST Create New EntityTypeDefinition with JSON Body",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "ApiKey",
+								"type": "text",
+								"value": "6fdcf7a4-6442-4c1e-a375-9f8064ea34d0"
+							},
+							{
+								"key": "CorrelationUuid",
+								"value": "a0c648aa-8448-41ba-99bd-7ec9971a3071",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"EntitySubtypeId\": 0,\n    \"TextKey\": \"entitytypedefinition-businessentity-informationsystemrole-administrator-1a2b3\",\n    \"LocalizedName\": \"InformationSystemRole\",\n    \"LocalizedDescription\": \"Represents an InformationSystemUser role (or set of privileges/rights) in an InformationSystem\",\n    \"LocalizedAbbreviation\": \"Role\",\n    \"Ordinal\": 21\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8081/entityTypeDefinitions",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"entityTypeDefinitions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST Create New EntityTypeAttribute with JSON Body",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "ApiKey",
+								"type": "text",
+								"value": "6fdcf7a4-6442-4c1e-a375-9f8064ea34d0"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"EntitySubtypeId\": 8,\n    \"TextKey\": \"entitytypeattribute-integer-contenttypeid\",\n    \"LocalizedName\": \"ContentTypeId\",\n    \"LocalizedDescription\": \"The unique identifier of the ContentType to which this InformationSystemPrivilege applies\",\n    \"LocalizedAbbreviation\": \"Cnt Typ Id\",\n    \"LocalizedInformation\": \"This privilege''s ContentType\",\n    \"LocalizedPlaceholder\": \"Select the ContentType id\",\n    \"IsLocalizable\": false,\n    \"IsToBeAssociatedWithEachEntityTypeDefinition\": false,\n    \"GeneralizedDataTypeEntitySubtypeId\": 11,\n    \"DataSizeOrMaximumLengthInBytesOrCharacters\": 0,\n    \"DataPrecision\": 0,\n    \"DataScale\": 0,\n    \"KeyTypeEntitySubtypeId\": -1,\n    \"RelatedEntityTypeId\": 0,\n    \"RelatedEntityTypeAttributeId\": 0,\n    \"RelatedEntityTypeCardinalityEntitySubtypeId\": -1,\n    \"EntitySubtypeGroupKey\": \"\",\n    \"ValueEntitySubtypeId\": -1,\n    \"DefaultValue\": \"\",\n    \"MinimumValue\": \"\",\n    \"MaximumValue\": \"\",\n    \"RegExValidationPattern\": \"^[0-9-]\",\n    \"StepIncrementValue\": 0.00,\n    \"RemoteValidationMethodAsAjaxUri\": \"\",\n    \"IndexEntitySubtypeId\": -1,\n    \"UniquenessEntitySubtypeId\": -1,\n    \"SensitivityEntitySubtypeId\": -1,\n    \"PublishedAtDateTimeUtc\": \"9999-12-31 23:59:59.999\",\n    \"PublishedByInformationSystemUserId\": -1,\n    \"Ordinal\": 1025,\n    \"IsActive\": true\n  }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/entityTypes/EntityTypeAttribute",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"entityTypes",
+								"EntityTypeAttribute"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST Associate Attribute with TypeDefinition with JSON Body",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "ApiKey",
+								"type": "text",
+								"value": "6fdcf7a4-6442-4c1e-a375-9f8064ea34d0"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"EntitySubtypeId\": 0,\n    \"TextKey\": \"entitytypedefinitionentitytypeattributeassociation-informationsystemprivilege-contenttypeid\",\n    \"EntityTypeDefinitionId\": 20,\n    \"EntityTypeAttributeId\": 70,\n    \"PublishedAtDateTimeUtc\": \"9999-12-31 23:59:59.999\",\n    \"PublishedByInformationSystemUserId\": -1,\n    \"Ordinal\": 102,\n    \"IsActive\": true\n  }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/entityTypes/EntityTypeDefinitionEntityTypeAttributeAssociation",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"entityTypes",
+								"EntityTypeDefinitionEntityTypeAttributeAssociation"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST Publish with JSON Body",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "ApiKey",
+								"type": "text",
+								"value": "6fdcf7a4-6442-4c1e-a375-9f8064ea34d0"
+							},
+							{
+								"key": "CorrelationUuid",
+								"value": "b0248ef4-1cc0-4cf0-bf94-3d74ffe648f3",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8081/databases/AAFCore",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"databases",
+								"AAFCore"
+							]
+						}
+					},
+					"response": []
 				}
-			},
-			"response": []
+			]
 		}
 	]
 }

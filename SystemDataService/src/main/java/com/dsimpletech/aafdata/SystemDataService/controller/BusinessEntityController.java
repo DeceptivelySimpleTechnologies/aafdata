@@ -230,9 +230,13 @@ public class BusinessEntityController
 
     @Operation(summary = "Create new, unpublished business entity data in the AafCore database, following all AAF rules and conventions.", description = "Create new, unpublished business entity data in the AafCore database, following all AAF rules and conventions, by providing the valid, required data and any valid, optional data as a JSON Web Token (JWT, please see https://jwt.io/) in the HTTP request body")
     @Parameter(in = ParameterIn.HEADER, description = "API key", name = "ApiKey", content = @Content(schema = @Schema(type = "string")))
+    @Parameter(in = ParameterIn.HEADER, description = "Correlation UUID", name = "CorrelationUuid", content = @Content(schema = @Schema(type = "string")), required = false)
     @Parameter(in = ParameterIn.COOKIE, description = "JWT Authentication token", name = "Authentication", content = @Content(schema = @Schema(type = "string")))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Created", content = @Content(schema = @Schema(type = "string"))),
+            @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content(schema = @Schema(type = "string"))),
+            @ApiResponse(responseCode = "401", description = "Unauthenticated", content = @Content(schema = @Schema(type = "string"))),
+            @ApiResponse(responseCode = "422", description = "Unprocessable Entity", content = @Content(schema = @Schema(type = "string"))),
             @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
     })
     @PostMapping(value = "/entityTypeDefinitions", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -244,6 +248,7 @@ public class BusinessEntityController
         String errorValues = "";
 
         String apiKey = "";
+        String correlationUuid = "";
 
         ObjectMapper objectMapper = null;
 
@@ -301,6 +306,19 @@ public class BusinessEntityController
                 logger.info(("ApiKey header '" + apiKey + "' included in the request"));
             }
 
+            correlationUuid = exchange.getRequest().getHeaders().getFirst("CorrelationUuid");
+
+            if ((correlationUuid == null) || (correlationUuid.length() < 1))
+            {
+                correlationUuid = UUID.randomUUID().toString();
+                logger.info(("CorrelationUuid '" + correlationUuid + "' generated for the request"));
+            }
+            else
+            {
+                //TODO: AAF-66 Validate API key by looking it up in the database, ensuring that it is not disabled, checking its associated permissions extent, and (later) checking that it is associated with the authenticated user's OrganizationalUnit
+                logger.info(("CorrelationUuid '" + correlationUuid + "' included in the request"));
+            }
+
             objectMapper = new ObjectMapper();
 
             //TODO: AAF-67 Validate JWT
@@ -339,6 +357,12 @@ public class BusinessEntityController
 
             if (bodyJwtPayload != null)
             {
+                //NOTE: If both the CorrelationUuid header value and the JWT jti claim are present, warn.  One or the other should be used.
+                if ((exchange.getRequest().getHeaders().getFirst("CorrelationUuid") != null) && (bodyJwtPayload.has("body")))
+                {
+                    logger.warn("Request contains both both the CorrelationUuid header value and the JWT 'jti' claim.  Only one should be used.");
+                }
+
                 if (bodyJwtPayload.has("body"))
                 {
                     //NOTE: Contains a JWT request body
@@ -354,7 +378,7 @@ public class BusinessEntityController
                     ((ObjectNode) bodyJwtPayload).put("exp", "1723816920");
                     ((ObjectNode) bodyJwtPayload).put("iat", "1723816800");
                     ((ObjectNode) bodyJwtPayload).put("nbf", "1723816789");
-                    ((ObjectNode) bodyJwtPayload).put("jti", UUID.randomUUID().toString());
+                    ((ObjectNode) bodyJwtPayload).put("jti", correlationUuid);
                     ((ObjectNode) bodyJwtPayload).put("body", objectMapper.readTree(requestBody));
 
                     logger.info(("Request from '" + bodyJwtPayload.get("iss").asText() + "' for '" + bodyJwtPayload.get("aud").asText() + "' using key '" + authenticationJwtHeader.get("kid").asText() + "'"));
@@ -421,6 +445,7 @@ public class BusinessEntityController
                 //NOTE: Insert new, unpublished EntityTypeDefinition, and get Id value
                 headers = new HttpHeaders();
                 headers.add("ApiKey", apiKey);
+                headers.add("CorrelationUuid", correlationUuid);
                 headers.add("Cookie", authenticationJwt.toString());
 
                 //TODO: AAF-86 Figure out appropriate VersionTag, DataLocationEntitySubtypeId, and DataStructureEntitySubtypeId values
@@ -436,7 +461,8 @@ public class BusinessEntityController
                         "    \"PublishedAtDateTimeUtc\": \"9999-12-31T23:59:59.999Z\",\n" +
                         "    \"PublishedByInformationSystemUserId\": " + "-1" + ",\n" +
                         "    \"Ordinal\": " + ordinal + ",\n" +
-                        "    \"IsActive\": " + isActive + "\n" +
+                        "    \"IsActive\": " + isActive + ",\n" +
+                        "    \"CorrelationUuid\": \"" + correlationUuid + "\"\n" +
                         "  }";
 
                 entity = new HttpEntity<String>(cloneActionRequestBody, headers);
@@ -479,7 +505,8 @@ public class BusinessEntityController
                                 "    \"EntityTypeAttributeId\": " + entityTypeAttributes.get(i).getId() + ",\n" +
                                 "    \"PublishedAtDateTimeUtc\": \"9999-12-31T23:59:59.999Z\",\n" +
                                 "    \"PublishedByInformationSystemUserId\": " + "-1" + ",\n" +
-                                "    \"Ordinal\": " + entityTypeAttributes.get(i).getOrdinal() + "\n" +
+                                "    \"Ordinal\": " + entityTypeAttributes.get(i).getOrdinal() + ",\n" +
+                                "    \"CorrelationUuid\": \"" + correlationUuid + "\"\n" +
                                 "  }";
 
                         entity = new HttpEntity<String>(cloneActionRequestBody, headers);
@@ -511,9 +538,14 @@ public class BusinessEntityController
 
     @Operation(summary = "Clone an existing business entity as the starting point for new, unpublished business entity data in the AafCore database, following all AAF rules and conventions.", description = "Clone existing business entity data in the AafCore database, following all AAF rules and conventions, by providing the valid, required data and any valid, optional data as a JSON Web Token (JWT, please see https://jwt.io/) in the HTTP request body")
     @Parameter(in = ParameterIn.HEADER, description = "API key", name = "ApiKey", content = @Content(schema = @Schema(type = "string")))
+    @Parameter(in = ParameterIn.HEADER, description = "Correlation UUID", name = "CorrelationUuid", content = @Content(schema = @Schema(type = "string")), required = false)
     @Parameter(in = ParameterIn.COOKIE, description = "JWT Authentication token", name = "Authentication", content = @Content(schema = @Schema(type = "string")))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Created", content = @Content(schema = @Schema(type = "string"))),
+            @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content(schema = @Schema(type = "string"))),
+            @ApiResponse(responseCode = "401", description = "Unauthenticated", content = @Content(schema = @Schema(type = "string"))),
+            @ApiResponse(responseCode = "404", description = "Not Found", content = @Content(schema = @Schema(type = "string"))),
+            @ApiResponse(responseCode = "422", description = "Unprocessable Entity", content = @Content(schema = @Schema(type = "string"))),
             @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
     })
     @PostMapping(value = "/entityTypeDefinitions/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -525,6 +557,7 @@ public class BusinessEntityController
         String errorValues = "";
 
         String apiKey = "";
+        String correlationUuid = "";
 
         ObjectMapper objectMapper = null;
 
@@ -582,6 +615,19 @@ public class BusinessEntityController
                 logger.info(("ApiKey header '" + apiKey + "' included in the request"));
             }
 
+            correlationUuid = exchange.getRequest().getHeaders().getFirst("CorrelationUuid");
+
+            if ((correlationUuid == null) || (correlationUuid.length() < 1))
+            {
+                correlationUuid = UUID.randomUUID().toString();
+                logger.info(("CorrelationUuid '" + correlationUuid + "' generated for the request"));
+            }
+            else
+            {
+                //TODO: AAF-66 Validate API key by looking it up in the database, ensuring that it is not disabled, checking its associated permissions extent, and (later) checking that it is associated with the authenticated user's OrganizationalUnit
+                logger.info(("CorrelationUuid '" + correlationUuid + "' included in the request"));
+            }
+
             objectMapper = new ObjectMapper();
 
             //TODO: AAF-67 Validate JWT
@@ -635,7 +681,7 @@ public class BusinessEntityController
                     ((ObjectNode) bodyJwtPayload).put("exp", "1723816920");
                     ((ObjectNode) bodyJwtPayload).put("iat", "1723816800");
                     ((ObjectNode) bodyJwtPayload).put("nbf", "1723816789");
-                    ((ObjectNode) bodyJwtPayload).put("jti", UUID.randomUUID().toString());
+                    ((ObjectNode) bodyJwtPayload).put("jti", correlationUuid);
                     ((ObjectNode) bodyJwtPayload).put("body", objectMapper.readTree(requestBody));
 
                     logger.info(("Request from '" + bodyJwtPayload.get("iss").asText() + "' for '" + bodyJwtPayload.get("aud").asText() + "' using key '" + authenticationJwtHeader.get("kid").asText() + "'"));
@@ -703,6 +749,7 @@ public class BusinessEntityController
                 //NOTE: Insert new, unpublished EntityTypeDefinition, and get Id value
                 headers = new HttpHeaders();
                 headers.add("ApiKey", apiKey);
+                headers.add("CorrelationUuid", correlationUuid);
                 headers.add("Cookie", authenticationJwt.toString());
 
                 //TODO: AAF-86  VersionTag, DataLocationEntitySubtypeId, and DataStructureEntitySubtypeId values
@@ -719,7 +766,8 @@ public class BusinessEntityController
                         "    \"PublishedByInformationSystemUserId\": " + "-1" + ",\n" +
                         //NOTE: Cloning existing Ordinal and IsActive values could lead to confusion since existing sort order might not be appropriate for the newly cloned entity and entities cloned from inactive entities would not be visible by default, so they are specified or defaulted, not copied.
                         "    \"Ordinal\": " + ordinal + ",\n" +
-                        "    \"IsActive\": " + isActive + "\n" +
+                        "    \"IsActive\": " + isActive + ",\n" +
+                        "    \"CorrelationUuid\": \"" + correlationUuid + "\"\n" +
                         "  }";
 
                 entity = new HttpEntity<String>(cloneActionRequestBody, headers);
@@ -763,7 +811,8 @@ public class BusinessEntityController
                                 "    \"EntityTypeAttributeId\": " + entityTypeDefinitionEntityTypeAttributeAssociations.get(i).getEntityTypeAttributeId() + ",\n" +
                                 "    \"PublishedAtDateTimeUtc\": \"9999-12-31T23:59:59.999Z\",\n" +
                                 "    \"PublishedByInformationSystemUserId\": " + "-1" + ",\n" +
-                                "    \"Ordinal\": " + entityTypeDefinitionEntityTypeAttributeAssociations.get(i).getOrdinal() + "\n" +
+                                "    \"Ordinal\": " + entityTypeDefinitionEntityTypeAttributeAssociations.get(i).getOrdinal() + ",\n" +
+                                "    \"CorrelationUuid\": \"" + correlationUuid + "\"\n" +
                                 "  }";
 
                         entity = new HttpEntity<String>(cloneActionRequestBody, headers);
@@ -785,7 +834,7 @@ public class BusinessEntityController
         catch (Exception e)
         {
             logger.error("CloneExistingBusinessEntity() failed due to: " + e);
-            //TODO: *AAF-81 output???
+            //TODO: * AAF-81 output???
             return new ResponseEntity<String>("{[]}", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
@@ -795,9 +844,13 @@ public class BusinessEntityController
 
     @Operation(summary = "Create or alter the internal structure of the AafCore database, including its schemas, entity models (tables), functions, and system/lookup data, e.g. EntityTypeDefinition, EntityTypeAttribute, EntityType, EntitySubtype, etc, that has been defined/scripted by the AafCoreModeler role.", description = "Create or alter the internal structure of the database by providing the valid, required data and any valid, optional data as a JSON Web Token (JWT, please see https://jwt.io/) in the HTTP request body")
     @Parameter(in = ParameterIn.HEADER, description = "API key", name = "ApiKey", content = @Content(schema = @Schema(type = "string")))
+    @Parameter(in = ParameterIn.HEADER, description = "Correlation UUID", name = "CorrelationUuid", content = @Content(schema = @Schema(type = "string")), required = false)
     @Parameter(in = ParameterIn.COOKIE, description = "JWT Authentication token", name = "Authentication", content = @Content(schema = @Schema(type = "string")))
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Created", content = @Content(schema = @Schema(type = "string"))),
+            @ApiResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(type = "string"))),
+            @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content(schema = @Schema(type = "string"))),
+            @ApiResponse(responseCode = "401", description = "Unauthenticated", content = @Content(schema = @Schema(type = "string"))),
+            @ApiResponse(responseCode = "422", description = "Unprocessable Entity", content = @Content(schema = @Schema(type = "string"))),
             @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
     })
     @PostMapping(value = "/databases/{databaseName}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -816,6 +869,7 @@ public class BusinessEntityController
         HttpHeaders headers = null;
 
         String apiKey = "";
+        String correlationUuid = "";
 
         ObjectMapper objectMapper = null;
 
@@ -888,6 +942,19 @@ public class BusinessEntityController
                 logger.info(("ApiKey header '" + apiKey + "' included in the request"));
             }
 
+            correlationUuid = exchange.getRequest().getHeaders().getFirst("CorrelationUuid");
+
+            if ((correlationUuid == null) || (correlationUuid.length() < 1))
+            {
+                correlationUuid = UUID.randomUUID().toString();
+                logger.info(("CorrelationUuid '" + correlationUuid + "' generated for the request"));
+            }
+            else
+            {
+                //TODO: AAF-66 Validate API key by looking it up in the database, ensuring that it is not disabled, checking its associated permissions extent, and (later) checking that it is associated with the authenticated user's OrganizationalUnit
+                logger.info(("CorrelationUuid '" + correlationUuid + "' included in the request"));
+            }
+
             objectMapper = new ObjectMapper();
 
             //TODO: AAF-67 Validate JWT
@@ -940,7 +1007,7 @@ public class BusinessEntityController
                     ((ObjectNode) bodyJwtPayload).put("exp", "1723816920");
                     ((ObjectNode) bodyJwtPayload).put("iat", "1723816800");
                     ((ObjectNode) bodyJwtPayload).put("nbf", "1723816789");
-                    ((ObjectNode) bodyJwtPayload).put("jti", UUID.randomUUID().toString());
+                    ((ObjectNode) bodyJwtPayload).put("jti", correlationUuid);
                     ((ObjectNode) bodyJwtPayload).put("body", objectMapper.readTree(requestBody));
 
                     logger.info(("Request from '" + bodyJwtPayload.get("iss").asText() + "' for '" + bodyJwtPayload.get("aud").asText() + "' using key '" + authenticationJwtHeader.get("kid").asText() + "'"));
@@ -1035,6 +1102,7 @@ public class BusinessEntityController
 
                 headers = new HttpHeaders();
                 headers.add("ApiKey", apiKey);
+                headers.add("CorrelationUuid", correlationUuid);
                 headers.add("Cookie", authenticationJwt.toString());
 
 //                clientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory();
@@ -1327,17 +1395,21 @@ public class BusinessEntityController
     }
 
     @Operation(summary = "Update a system entity instance, i.e. database table record, of the specified type, e.g. EntityTypeDefinition, EntityTypeAttribute, EntityTypeDefinitionEntityTypeAttributeAssociation, or EntityTypeData, once the instance has been successfully published.", description = "Update the PublishedAt and PublishedBy attributes of the specified entity type and Id by providing the valid, required data and any valid, optional data as a JSON Web Token (JWT, please see https://jwt.io/) in the HTTP request body")
-//    @Parameter(in = ParameterIn.HEADER, description = "API key", name = "ApiKey", content = @Content(schema = @Schema(type = "string")))
-//    @Parameter(in = ParameterIn.COOKIE, description = "JWT Authentication token", name = "Authentication", content = @Content(schema = @Schema(type = "string")))
+    @Parameter(in = ParameterIn.HEADER, description = "Correlation UUID", name = "CorrelationUuid", content = @Content(schema = @Schema(type = "string")), required = false)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(type = "string"))),
-            //TODO: Add 404 @ApiResponse here and above where appropriate
+            @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content(schema = @Schema(type = "string"))),
+            @ApiResponse(responseCode = "401", description = "Unauthenticated", content = @Content(schema = @Schema(type = "string"))),
+            @ApiResponse(responseCode = "404", description = "Not Found", content = @Content(schema = @Schema(type = "string"))),
+            @ApiResponse(responseCode = "422", description = "Unprocessable Entity", content = @Content(schema = @Schema(type = "string"))),
             @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
     })
     @PatchMapping(value = "/entityTypes/{entityTypeName}/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     private ResponseEntity<String> UpdatePublishedEntity(@PathVariable("entityTypeName") String entityTypeName, @PathVariable("id") Long id, @RequestParam(defaultValue = "#{T(java.time.Instant).now()}") Instant asOfDateTimeUtc, HttpHeaders headers, Long userId, Connection connection, RestTemplate restTemplate, ServerWebExchange exchange) throws Exception
     {
         ServerHttpRequest request = null;
+
+        String correlationUuid = "";
 
         String updateActionRequestBody = "";
         HttpComponentsClientHttpRequestFactory requestFactory = null;
@@ -1352,20 +1424,33 @@ public class BusinessEntityController
         //NOTE: Since we're not automatically parsing the resulting JSON into an object, we're returning a JSON String rather than a JSONObject
         try
         {
-            //TODO: logger.info or .debug here and below???
-            logger.info("Attempting to UpdatePublishedEntity() " + entityTypeName + " " + id);
+            logger.debug("Attempting to UpdatePublishedEntity() " + entityTypeName + " " + id);
 
 //            ENVIRONMENT_JWT_SHARED_SECRET = environment.getProperty("environmentJwtSharedSecret");
 //
+            correlationUuid = exchange.getRequest().getHeaders().getFirst("CorrelationUuid");
+
+            if ((correlationUuid == null) || (correlationUuid.length() < 1))
+            {
+                correlationUuid = UUID.randomUUID().toString();
+                logger.info(("CorrelationUuid '" + correlationUuid + "' generated for the request"));
+            }
+            else
+            {
+                //TODO: AAF-66 Validate API key by looking it up in the database, ensuring that it is not disabled, checking its associated permissions extent, and (later) checking that it is associated with the authenticated user's OrganizationalUnit
+                logger.info(("CorrelationUuid '" + correlationUuid + "' included in the request"));
+            }
+
             //NOTE: Sort by Ordinal ASC in Gets (EntityTypeDefinitionId ASC, Ordinal ASC in Assocs).
             //NOTE: 20 (Cloned Priv) and 21 (CreatedNew Role) Entity Definitions have default (-1) Ordinals.
             //TODO: 5 (Name) ... 6 (Descr) and 7 (Abbrv) Attribs have 100, 200, and 300 Ordinals (should all be 300 Name).
             //NOTE: 20 (Priv) and 21 (Role) Associations have default (-1) Ordinals, and Assoc Ordinals should match Attrib "bands".
-            //TODO: Add CorrelationUuid (jti claim in JWT) to update???
-            //TODO: Make sure CorrelationUuid (jti claim in JWT) is the same for new EntityDefinition and Associations in Clone and CreateNew
+            //NOTE: Add CorrelationUuid (jti claim in JWT) to update???
+            //NOTE: Make sure CorrelationUuid (jti claim in JWT) is the same for new EntityDefinition and Associations in Clone and CreateNew
             updateActionRequestBody = "{\n" +
                     "    \"PublishedAtDateTimeUtc\": \"" + asOfDateTimeUtc + "\",\n" +
-                    "    \"PublishedByInformationSystemUserId\": " + userId + "\n" +
+                    "    \"PublishedByInformationSystemUserId\": " + userId + ",\n" +
+                    "    \"CorrelationUuid\": \"" + correlationUuid + "\"\n" +
                     "  }";
 
             entity = new HttpEntity<String>(updateActionRequestBody, headers);
@@ -1381,7 +1466,7 @@ public class BusinessEntityController
             return new ResponseEntity<String>("{[]}", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        logger.info("UpdatePublishedEntity() succeeded");
+        logger.debug("UpdatePublishedEntity() succeeded");
         return updateActionResponseBody;
     }
 
