@@ -31,19 +31,21 @@
 ## TL;DR
 **Today, AAF Data is**:
 - A standalone set of
-  - Generalized **business entity models**,
-  - **Database creation scripts** for roles, schemas, tables, functions, and
-  - **Scripted lookup/reference data**,
+  - Generalized **business entity models**, e.g. Person, Organization, OrganizationalUnit, Employee, etc,
+  - **Database creation scripts** for roles, schemas, tables, constraints, indexes, functions, and
+  - **Scripted lookup/reference data**, e.g. EntityType (Person, Organization, OrganizationalUnit, Employee, etc), EntitySubtype (Organization - C Corp, S Corp, LLC, etc, OrganizationalUnit - Region, Division, Department, etc), etc,
 - A Dockerized, **REST**ful **business entity microservice** (BEM) providing
   - **C**reate,
   - **R**ead,
   - **U**pdate, and
   - **D**elete (**CRUD**) operations,
-- A Dockerized, **REST**ful **system data service** (SDS) providing
-    - Create **N**ew,
-    - **C**lone Existing,
-    - **P**ublish, and
-    - **U**pdate entity, attribute, and association process operations,
+- A Dockerized, **REST**ful **system data service** (SDS) providing the capability to
+    - Create **N**ew business entity definition,
+    - **C**lone Existing business entity definition,
+    - Create New business entity **A**ttribute,
+    - **A**ssociate business entity attribute with business entity definition(s),
+    - **P**ublish entities, attributes, and associations, thereby creating corresponding new database schemas, tables, constraints, indexes, etc, and
+    - **U**pdate the published status of entities, attributes, and associations,
 - And **SwaggerDoc** **OpenAPI** application programming interface (API) **documentation**.
 
 
@@ -57,18 +59,19 @@
 
 **Features**
   - Containerized. Services run in Docker containers, available from DockerHub.
+<!-- -->
   - The business entity microservice (**BEM**):
-    - **Validates each HTTP request** using a JSON Web Token (**JWT**) mechanism with optional cryptographic signing and encryption capabilities,
+    - **Will validate each HTTP request** (near future) using a JSON Web Token (**JWT**) mechanism with optional cryptographic signing and encryption capabilities,
     - **Persists and retrieves business entity data** via its **API**, which calls low-level `POST`, `GET`, `PATCH`, and “soft” DELETE database functions to ensure data integrity and performance -- **NO direct table access**,
     - **Consistently follows RESTful style and best practices**,
-    - **Returns standard and appropriate HTTP response codes**, e.g. `200 OK`, `201 Created`, `400 Bad Request`, `401 Unauthorized`, `404 Not Found`, `500 Internal Server Error`, etc
+    - **Returns standard and appropriate HTTP response codes**, e.g. `200 OK`, `201 Created`, `400 Bad Request`, `401 Unauthorized`, `404 Not Found`, `422 Unprocessable Entity`, `500 Internal Server Error`, etc
     - **Accepts and returns structured JSON resource/entity data** in HTTP request/response bodies as specified for each business entity, and 
 <!--     - **Includes** `entities` **in the request URL**, e.g. `/entities/organization/1234`, to partition low-level resource/entity operations from future high-level process invocation, e.g. `/processes/InformationSystem/RegisterInformationSystemUser/` -->
 - The system data service (**SDS**):
-    - **Validates each HTTP request** using a JSON Web Token (**JWT**) mechanism with optional cryptographic signing and encryption capabilities,
-    - **Enables authorized entity Modelers and Publishers** to define new EntityTypeDefinitions, EntityTypeAttribtues, and EntityTypeDefinitionEntityTypeAttributeAssociations via its **API**, which calls high-level process `POST` and low-level `POST`, `PATCH`, and “soft” DELETE database functions to add (or "publish") these new entities, attributes, and associations to the database, resulting in new model-driven data structures, e.g. SCHEMAs, TABLEs, COLUMNs, CONSTRAINTs, INDEXs, etc -- **NO direct table access**,
+    - **Will validate each HTTP request** (near future) using a JSON Web Token (**JWT**) mechanism with optional cryptographic signing and encryption capabilities,
+    - **Enables authorized entity Modelers and Publishers** to define new EntityTypeDefinitions, EntityTypeAttribtues, and EntityTypeDefinitionEntityTypeAttributeAssociations via its **API**, which calls high-level process `POST` and low-level entity `POST`, `PATCH`, and “soft” DELETE database functions to add (or "publish") these new entities, attributes, and associations to the database, resulting in new model-driven data structures, e.g. SCHEMAs, TABLEs, COLUMNs, CONSTRAINTs, INDEXs, etc,
     - **Consistently follows RESTful style and best practices**,
-    - **Returns standard and appropriate HTTP response codes**, e.g. `200 OK`, `201 Created`, `400 Bad Request`, `401 Unauthorized`, `404 Not Found`, `500 Internal Server Error`, etc
+    - **Returns standard and appropriate HTTP response codes**, e.g. `200 OK`, `201 Created`, `400 Bad Request`, `401 Unauthenticated`, `404 Not Found`, `422 Unprocessable Entity`, 500 Internal Server Error`, etc
     - **Accepts and returns structured JSON resource/entity data** in HTTP request/response bodies as specified for each business entity, and
 <!--     - **Includes** `processes` **in the request URL**, e.g. `/processes/organization/1234`, to partition low-level resource/entity operations from future high-level process invocation, e.g. `/processes/InformationSystem/RegisterInformationSystemUser/` -->
 
@@ -76,6 +79,9 @@
 **Rules**
 - **The custom database roles**, e.g. AafCoreOwner, AafCoreDataReadWrite, etc, **are to be used appropriately** (as designed and demonstrated in this project) **to improve data security**.
 - **The current set of business entities and their descriptions can be retrieved** using the `GetEntityTypeDefinitions` database function and includes:
+  - *`EntityTypeDefinition`
+  - *`EntityTypeAttribute`
+  - *`EntityTypeDefinitionEntityTypeAttributeAssociation`
   - `EntityType`
   - `EntitySubtype`
   - `Language`
@@ -88,6 +94,7 @@
   - `Person`
   - `Employee`
   - `LegalEntity`
+- **The set of "origin" (*) business entities can produce other business entities and their corresponding database structures**
 - **The current set of business entity attributes and their descriptions can be retrieved** using the `GetEntityTypeAttributes` database function and includes:
   - *`Id` `bigint`
   - *`Uuid` `uuid`
@@ -154,14 +161,14 @@ Before running the EntityDataMicroservice, you must:
    1. `./007-CreateDatabaseFunctionsAsAafCoreModeler.sh PostgreSQL 14 localhost 5432 AafCoreModeler AafCore M0d3l3rCl13nt!`
    1. `./008-CreateDatabaseDataAsAafCoreModeler.sh PostgreSQL 14 localhost 5432 AafCoreModeler AafCore M0d3l3rCl13nt!`
 
-Please **note** that **this first AAF Data release is primarily for demonstration and evaluation purposes**.  It supports very simple local (LOC) and minimal (MIN) environments and **is not intended to be used in a production environment**.  **Later releases** will support shared development (DEV), staging (STG), and production (PRD) environments and **will utilize secrets management and other security best practices**.  Crawl, walk, run.
+Please **note** that **this second AAF Data release is primarily for demonstration and evaluation purposes**.  It supports very simple local (LOC) and minimal (MIN) remote/cloud environments and **is not intended to be used in a production environment**.  **Later releases** will support shared, remote/cloud development (DEV), staging (STG), and production (PRD) environments and **will utilize secrets management and other security best practices**.  Crawl, walk, run.
 
 2. **Run the EntityDataMicroservice**:
    1. **Locally** in IDE:
       1. **Open** the `aafdata` project in **IntelliJ IDEA**.
       1. **Run** the `EntityDataMicroservice` class.
    1. **Locally** from the command line:
-      1. Set the profile environment variable with `export spring_profiles_active=min` (NOTE: Remove it with `unset spring_profiles_active`)
+      1. Set the profile environment variable with `export spring_profiles_active=loc` (NOTE: Remove it with `unset spring_profiles_active`)
       1. **Change directory** (`cd`) to `aafdata/EntityDataMicroservice/`.
       1. **Build** the project:
          ```sh
@@ -174,14 +181,43 @@ Please **note** that **this first AAF Data release is primarily for demonstratio
    1. **In Docker**:
       1. Set the profile environment variable with `export spring_profiles_active=min` (NOTE: Remove it with `unset spring_profiles_active`)
       1. **Build** a Docker image with `docker build -t deceptivelysimpletechnologies/aafdata-entitydatamicroservice:$(date +%Y%m%d_%H%M%S) .`
+      1. -OR-
       1. **Pull** the Docker image from DockerHub:
          ```sh
-         docker pull deceptivelysimpletechnologies/aafdata-entitydatamicroservice:latest
+         docker pull deceptivelysimpletechnologies/aafdata-entitydatamicroservice:20241106_143503
          ```
       1. **Run** the Docker container:
          ```sh
-         docker run -d --name aafdata-min -e spring_profiles_active=min -p 8080:8080 -t deceptivelysimpletechnologies/aafdata-entitydatamicroservice:latest
+         docker run -d --name aafdata-edm-min -e spring_profiles_active=min -p 8080:8080 -t deceptivelysimpletechnologies/aafdata-entitydatamicroservice:latest
          ```
+
+3. **Run the SystemDataService**:
+    1. **Locally** in IDE:
+        1. **Open** the `aafdata` project in **IntelliJ IDEA**.
+        1. **Run** the `SystemDataService` class.
+    1. **Locally** from the command line:
+        1. Set the profile environment variable with `export spring_profiles_active=loc` (NOTE: Remove it with `unset spring_profiles_active`)
+        1. **Change directory** (`cd`) to `aafdata/SystemDataService/`.
+        1. **Build** the project:
+           ```sh
+           mvn clean package
+           ```
+        1. **Run** the project:
+           ```sh
+           java -jar target/SystemDataService-0.0.1-SNAPSHOT.jar
+           ```
+    1. **In Docker**:
+        1. Set the profile environment variable with `export spring_profiles_active=min` (NOTE: Remove it with `unset spring_profiles_active`)
+        1. **Build** a Docker image with `docker build -t deceptivelysimpletechnologies/aafdata-systemdataservice:$(date +%Y%m%d_%H%M%S) .`
+        1. -OR-
+        1. **Pull** the Docker image from DockerHub:
+           ```sh
+           docker pull deceptivelysimpletechnologies/aafdata-systemdataservice:20250130_154029
+           ```
+        1. **Run** the Docker container:
+           ```sh
+           docker run -d --name aafdata-sds-min -e spring_profiles_active=min -p 8081:8081 -t deceptivelysimpletechnologies/aafdata-systemdataservice:latest
+           ```
 
 
 
@@ -192,7 +228,7 @@ Please **note** that **this first AAF Data release is primarily for demonstratio
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-A complete set of Postman requests is included with the source code at `aafdata/client/DST AAF Data.postman_collection.json`.
+A complete set of Postman requests for both EDM and SDS services is included with the source code at `aafdata/client/DST AAF Data.postman_collection.json`.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -231,7 +267,7 @@ A complete set of Postman requests is included with the source code at `aafdata/
           <a href="#how-are-the-aaf-models-represented-in-the-data-layer">How Are the AAF Models Represented in the Data Layer?</a>
           <ul>
             <li><a href="#business-entity-microservice">Business Entity Microservice</a></li>
-            <li><a href="#data-structure-service">Data Structure Service</a></li> 
+            <li><a href="#system-data-service">Data Structure Service</a></li> 
           </ul>
         </li>
       </ul>
@@ -313,10 +349,12 @@ Today, AAF Data is:
     - **U**pdate, and
     - **D**elete (**CRUD**) operations,
 - A Dockerized, **REST**ful **system data service** (SDS) providing
-    - Create **N**ew,
-    - **C**lone Existing,
-    - **P**ublish, and
-    - **U**pdate entity, attribute, and association process operations,
+    - Create **N**ew business entity definition,
+    - **C**lone Existing business entity definition,
+    - Create New business entity **A**ttribute,
+    - **A**ssociate business entity attribute with business entity definition(s),
+    - **P**ublish entities, attributes, and associations, thereby creating corresponding new database schemas, tables, constraints, indexes, etc, and
+    - **U**pdate the published status of entities, attributes, and associations,
 - And **SwaggerDoc** **OpenAPI** application programming interface (API) **documentation**.
 
 
@@ -333,11 +371,11 @@ EntityType structure and data
 EntitySubtype structure and data
 
 
-#### Data Structure Service
+#### System Data Service
 
 TODO: Define LegalEntity, Environment, EnvironmentOwner, Domain, DomainOwner, Entity, EntityOwner, Database, DatabaseOwner, DatabaseSchemaOwner, DatabaseSchemaDataReadOnly, DatabaseSchemaDataReadWrite, DatabaseSchemaDataDelete
 
-Structure service logic:
+System data service logic:
 - Does the given LegalEntity's local copy of the AAF Core database exist as its AAF Company database as expected in the given environment?
 - Create the given LegalEntity's AAF Company database with its own UUID-based name in the given environment.
 - Is the given LegalEntity's AAF Company database valid in the given environment?
@@ -369,7 +407,7 @@ Model-based web user interface (UI) components
     * Initial Release of EDM and basic business entities
     * See [commit change](https://github.com/DeceptivelySimpleTechnologies/aafdata/graphs/commit-activity) or See [release history]()
 * 1.0
-    * Initial Release of SDS
+    * Initial Release of SDS and related EDM changes
     * Various bug fixes and optimizations
     * See [commit change](https://github.com/DeceptivelySimpleTechnologies/aafdata/graphs/commit-activity) or See [release history]()
 

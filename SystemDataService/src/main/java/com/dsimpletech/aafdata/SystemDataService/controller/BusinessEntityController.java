@@ -1294,6 +1294,8 @@ public class BusinessEntityController
                     //TODO: * AAF-90 Check response body for success
 
                     logger.info("New table " + unpublishedEntityTypeDefinitions.get(i).getLocalizedName() + " created in " + databaseName);
+
+                    //TODO: *** Insert new entity into EntityType table
                 }
 
                 logger.info(unpublishedEntityTypeAssociations.size() + " EntityTypeDefinitionEntityTypeAttributeAssociations published in " + databaseName);
@@ -1445,8 +1447,6 @@ public class BusinessEntityController
             //NOTE: 20 (Cloned Priv) and 21 (CreatedNew Role) Entity Definitions have default (-1) Ordinals.
             //TODO: 5 (Name) ... 6 (Descr) and 7 (Abbrv) Attribs have 100, 200, and 300 Ordinals (should all be 300 Name).
             //NOTE: 20 (Priv) and 21 (Role) Associations have default (-1) Ordinals, and Assoc Ordinals should match Attrib "bands".
-            //NOTE: Add CorrelationUuid (jti claim in JWT) to update???
-            //NOTE: Make sure CorrelationUuid (jti claim in JWT) is the same for new EntityDefinition and Associations in Clone and CreateNew
             updateActionRequestBody = "{\n" +
                     "    \"PublishedAtDateTimeUtc\": \"" + asOfDateTimeUtc + "\",\n" +
                     "    \"PublishedByInformationSystemUserId\": " + userId + ",\n" +
