@@ -1,4 +1,4 @@
--- NOTE: Run this script as the custom AafCorePublisher database role/account, which should be created by the AafCoreOwner role.
+-- NOTE: Run this script as the custom AafCoreModeler database role/account, which should be created by the AafCoreOwner role.
 -- Table: EntityTypeDefinition.EntityTypeDefinition
 
 -- DROP TABLE "EntityTypeDefinition"."EntityTypeDefinition";
@@ -16,6 +16,8 @@ CREATE TABLE "EntityTypeDefinition"."EntityTypeDefinition"
     "VersionTag" character varying(11) COLLATE pg_catalog."default" NOT NULL,
     "DataLocationEntitySubtypeId" bigint NOT NULL,
     "DataStructureEntitySubtypeId" bigint NOT NULL,
+    "PublishedAtDateTimeUtc" timestamp without time zone NOT NULL,
+    "PublishedByInformationSystemUserId" bigint NOT NULL,
 
     "ResourceName" character varying(100) COLLATE pg_catalog."default" NOT NULL DEFAULT '',
     "Ordinal" bigint NOT NULL DEFAULT -1,
@@ -32,7 +34,10 @@ CREATE TABLE "EntityTypeDefinition"."EntityTypeDefinition"
     CONSTRAINT "EntityTypeDefinition_PK" PRIMARY KEY ("Id"),
 
     CONSTRAINT "EntityTypeDefinition_CHK_TextKey" CHECK ("TextKey" ~* '^[a-z0-9-]+$'),
-    CONSTRAINT "EntityTypeDefinition_CHK_LocalizedName" CHECK ("LocalizedName" ~* '^[A-Za-z]+$')
+    CONSTRAINT "EntityTypeDefinition_CHK_LocalizedName" CHECK ("LocalizedName" ~* '^[A-Za-z]+$'),
+
+    CONSTRAINT "EntityTypeDefinition_UQ1_TextKey_DeletedAtDateTimeUtc" UNIQUE ("TextKey", "DeletedAtDateTimeUtc"),
+    CONSTRAINT "EntityTypeDefinition_UQ1_LocalizedName_DeletedAtDateTimeUtc" UNIQUE ("LocalizedName", "DeletedAtDateTimeUtc")
 )
 
     TABLESPACE pg_default;

@@ -1,4 +1,4 @@
--- NOTE: Run this script as the custom AafCorePublisher database role/account, which should be created by the AafCoreOwner role.
+-- NOTE: Run this script as the custom AafCoreModeler database role/account, which should be created by the AafCoreOwner role.
 -- Table: EntityTypeAttribute.EntityTypeAttribute
 
 -- DROP TABLE "EntityTypeAttribute"."EntityTypeAttribute";
@@ -16,6 +16,7 @@ CREATE TABLE "EntityTypeAttribute"."EntityTypeAttribute"
     "LocalizedInformation" character varying(100) COLLATE pg_catalog."default" NOT NULL,
     "LocalizedPlaceholder" character varying(100) COLLATE pg_catalog."default" NOT NULL,
     "IsLocalizable" boolean NOT NULL,
+    "IsToBeAssociatedWithEachEntityTypeDefinition" boolean NOT NULL,
     "GeneralizedDataTypeEntitySubtypeId" bigint NOT NULL,
     "DataSizeOrMaximumLengthInBytesOrCharacters" bigint NOT NULL,
     "DataPrecision" bigint NOT NULL,
@@ -25,7 +26,7 @@ CREATE TABLE "EntityTypeAttribute"."EntityTypeAttribute"
     "RelatedEntityTypeAttributeId" bigint NOT NULL,
     "RelatedEntityTypeCardinalityEntitySubtypeId" bigint NOT NULL,
     "EntitySubtypeGroupKey" character varying(100) COLLATE pg_catalog."default" NOT NULL,
-    "EntityTypeAttributeValueEntitySubtypeId" bigint NOT NULL,
+    "ValueEntitySubtypeId" bigint NOT NULL,
     "DefaultValue" character varying(100) COLLATE pg_catalog."default" NOT NULL,
     "MinimumValue" character varying(100) COLLATE pg_catalog."default" NOT NULL,
     "MaximumValue" character varying(100) COLLATE pg_catalog."default" NOT NULL,
@@ -35,6 +36,8 @@ CREATE TABLE "EntityTypeAttribute"."EntityTypeAttribute"
     "IndexEntitySubtypeId" bigint NOT NULL,
     "UniquenessEntitySubtypeId" bigint NOT NULL,
     "SensitivityEntitySubtypeId" bigint NOT NULL,
+    "PublishedAtDateTimeUtc" timestamp without time zone NOT NULL,
+    "PublishedByInformationSystemUserId" bigint NOT NULL,
 
     "ResourceName" character varying(100) COLLATE pg_catalog."default" NOT NULL DEFAULT '',
     "Ordinal" bigint NOT NULL DEFAULT -1,
@@ -51,7 +54,10 @@ CREATE TABLE "EntityTypeAttribute"."EntityTypeAttribute"
     CONSTRAINT "EntityTypeAttribute_PK" PRIMARY KEY ("Id"),
 
     CONSTRAINT "EntityTypeAttribute_CHK_TextKey" CHECK ("TextKey" ~* '^[a-z0-9-]+$'),
-    CONSTRAINT "EntityTypeAttribute_CHK_LocalizedName" CHECK ("LocalizedName" ~* '^[A-Za-z]+$')
+    CONSTRAINT "EntityTypeAttribute_CHK_LocalizedName" CHECK ("LocalizedName" ~* '^[A-Za-z]+$'),
+
+    CONSTRAINT "EntityTypeAttribute_UQ1_TextKey_DeletedAtDateTimeUtc" UNIQUE ("TextKey", "DeletedAtDateTimeUtc"),
+    CONSTRAINT "EntityTypeAttribute_UQ1_LocalizedName_DeletedAtDateTimeUtc" UNIQUE ("LocalizedName", "DeletedAtDateTimeUtc")
 )
 
     TABLESPACE pg_default;

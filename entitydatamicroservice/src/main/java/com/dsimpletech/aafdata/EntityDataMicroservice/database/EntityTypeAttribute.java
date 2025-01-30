@@ -25,7 +25,7 @@ public class EntityTypeAttribute {
 //    (13, 'f6215d7f-9a0e-465a-8f24-685b188b8763', 0, 'entitysubtype-entitytypeattribute-generalizeddatatype-unicodestring', 2, 'GeneralizedDataType', 'UnicodeString', 'Indicates a double-byte character string data type.  Note: This generalized data type, along with its size or maximum length, etc, will be translated into the corresponding implementation type in the data, service, and presentation layers, based on the implementation technologies utilized (e.g. PostgreSQL, Java, React, etc)', 'Eta Strg', '', -1, true, '00000000-0000-0000-0000-000000000000', 'e48f3984d18d425aed091271820e2128285e78fc2bffae4ac63da9b676cc39be', '2022-06-01 00:00:00.000', 0, '2022-06-01 00:00:00.000', 0, '9999-12-31 23:59:59.999', 0),
 //    (14, '3b8d5ba4-d391-4eed-b0f0-f2f6824b43ce', 0, 'entitysubtype-entitytypeattribute-generalizeddatatype-datetime', 2, 'GeneralizedDataType', 'DateTime', 'Indicates a date-time data type.  Note: This generalized data type, along with its size or maximum length, etc, will be translated into the corresponding implementation type in the data, service, and presentation layers, based on the implementation technologies utilized (e.g. PostgreSQL, Java, React, etc)', 'Eta DatTm', '', -1, true, '00000000-0000-0000-0000-000000000000', '9d11a75a495b0391ef6ac5f1edf1554d13590bd852c5969b3744132be7b8449d', '2022-06-01 00:00:00.000', 0, '2022-06-01 00:00:00.000', 0, '9999-12-31 23:59:59.999', 0),
 //    (16, 'edd4fdc7-506b-427c-a518-ca00f2018872', 0, 'entitysubtype-entitytypeattribute-generalizeddatatype-decimal', 2, 'GeneralizedDataType', 'Decimal', 'Indicates a decimal data type.  Note: This generalized data type, along with its size or maximum length, etc, will be translated into the corresponding implementation type in the data, service, and presentation layers, based on the implementation technologies utilized (e.g. PostgreSQL, Java, React, etc)', 'Eta Dec', '', -1, true, '00000000-0000-0000-0000-000000000000', '906d8ff1bc8c51e7c26b95bc7493dc1a27f766f85829623f808a5ad0e7638d37', '2022-06-01 00:00:00.000', 0, '2022-06-01 00:00:00.000', 0, '9999-12-31 23:59:59.999', 0),
-    @Getter private int EntityTypeAttributeValueEntitySubtypeId;
+    @Getter private int ValueEntitySubtypeId;
 //    (23, '9ebd5421-8fef-4214-b430-8d81b82aeda2', 0, 'entitysubtype-entitytypeattribute-value-primarykey', 2, 'Value', 'PrimaryKey', 'A system-generated integer value that uniquely identifies every row in a relational database table', 'Eta Val Prim', '', -1, true, '00000000-0000-0000-0000-000000000000', '1cc815ba648c4559d2f0d5e7fb67fdb24ca063ffac8809b06b9a6880724af0c5', '2022-06-01 00:00:00.000', 0, '2022-06-01 00:00:00.000', 0, '9999-12-31 23:59:59.999', 0),
 //    (24, 'eebc4c70-0d56-430f-8142-80bba3edc962', 0, 'entitysubtype-entitytypeattribute-value-uuid', 2, 'Value', 'Uuid', 'A system-generated universally unique identifier (UUID) value that uniquely identifies every row in a relational database table', 'Eta Val Uuid', '', -1, true, '00000000-0000-0000-0000-000000000000', 'be16698b9a67d0a2cc6887421eeb96eb9f20e30fa9c5785e78bc979a729c912c', '2022-06-01 00:00:00.000', 0, '2022-06-01 00:00:00.000', 0, '9999-12-31 23:59:59.999', 0),
 //    (25, '7b741ada-d5d8-46b2-b287-b492f698b510', 0, 'entitysubtype-entitytypeattribute-value-defaulttextkey', 2, 'Value', 'DefaultTextKey', 'A system-generated, human-readable string value that uniquely identifies every row in a relational database table', 'Eta Val TxtKy', '', -1, true, '00000000-0000-0000-0000-000000000000', 'f095a08777b2502e5a82f30142714cd6ee4bc6e70c5b8444ce534215b4841db1', '2022-06-01 00:00:00.000', 0, '2022-06-01 00:00:00.000', 0, '9999-12-31 23:59:59.999', 0),
@@ -52,13 +52,13 @@ public class EntityTypeAttribute {
     @Getter private Timestamp DeletedAtDateTimeUtc;
 //    int DeletedByInformationSystemUserId;
 
-    public EntityTypeAttribute(int id, int entitySubtypeId, String textKey, String localizedName, int generalizedDataTypeEntitySubtypeId, int entityTypeAttributeValueEntitySubtypeId, String defaultValue, int ordinal, boolean isActive, Timestamp deletedAtDateTimeUtc) {
+    public EntityTypeAttribute(int id, int entitySubtypeId, String textKey, String localizedName, int generalizedDataTypeEntitySubtypeId, int valueEntitySubtypeId, String defaultValue, int ordinal, boolean isActive, Timestamp deletedAtDateTimeUtc) {
         Id = id;
         EntitySubtypeId = entitySubtypeId;
         TextKey = textKey;
         LocalizedName = localizedName;
         GeneralizedDataTypeEntitySubtypeId = generalizedDataTypeEntitySubtypeId;
-        EntityTypeAttributeValueEntitySubtypeId = entityTypeAttributeValueEntitySubtypeId;
+        ValueEntitySubtypeId = valueEntitySubtypeId;
         DefaultValue = defaultValue;
         Ordinal = ordinal;
         IsActive = isActive;

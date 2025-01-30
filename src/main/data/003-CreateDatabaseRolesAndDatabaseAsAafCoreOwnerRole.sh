@@ -7,7 +7,7 @@
 customRoleNameOwner="AafCoreOwner"
 
 customRoleNameModeler="AafCoreModeler"
-customRoleNamePublisher="AafCorePublisher"
+#customRoleNamePublisher="AafCorePublisher"
 customRoleNameAdministrator="AafCoreAdministrator"
 customRoleNameReadWrite="AafCoreReadWrite"
 customRoleNameReadOnly="AafCoreReadOnly"
@@ -25,8 +25,8 @@ export PGPASSWORD=$postgresPassword
 echo "Creating custom $customRoleNameModeler role in $postgresServerGroupName $postgresVersion as $customRoleNameOwner role"
 psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/001-role/002-AafCoreModeler.sql
 
-echo "Creating custom $customRoleNamePublisher role in $postgresServerGroupName $postgresVersion as $customRoleNameOwner role"
-psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/001-role/003-AafCorePublisher.sql
+#echo "Creating custom $customRoleNamePublisher role in $postgresServerGroupName $postgresVersion as $customRoleNameOwner role"
+#psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/001-role/003-AafCorePublisher.sql
 
 echo "Creating custom $customRoleNameAdministrator role in $postgresServerGroupName $postgresVersion as $customRoleNameOwner role"
 psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/001-role/004-AafCoreAdministrator.sql
@@ -40,10 +40,13 @@ psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresData
 echo "Creating AafCore database in $postgresServerGroupName $postgresVersion as $customRoleNameOwner role"
 createdb -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -E UTF8 "AafCore"
 
-echo "Granting CREATE permission on custom $customRoleNamePublisher role in $postgresServerGroupName $postgresVersion as $customRoleNameOwner role"
-psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/001-role/007-GrantCreateOnAafCorePublisher.sql
+#echo "Granting CREATE permission on custom $customRoleNamePublisher role in $postgresServerGroupName $postgresVersion as $customRoleNameOwner role"
+#psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/001-role/007-GrantCreateOnAafCorePublisher.sql
+
+echo "Granting CREATE permission on custom $customRoleNameModeler role in $postgresServerGroupName $postgresVersion as $customRoleNameOwner role"
+psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/001-role/007-GrantCreateOnAafCoreModeler.sql
 
 unset PGPASSWORD
 
 # Log in using custom AafCoreOwner role
-# TODO: Create custom AafCoreModeler, AafCorePublisher, AafCoreAdministrator, AafCoreReadWrite, AafCoreReadOnly roles and passwords (use AWS SecretManager in the future) and AafCore database
+# TODO: Create custom AafCoreModeler, AafCoreAdministrator, AafCoreReadWrite, AafCoreReadOnly roles and passwords (use AWS SecretManager in the future) and AafCore database

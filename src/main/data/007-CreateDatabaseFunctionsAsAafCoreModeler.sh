@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # NOTE: This script adds custom functions to the AafCore database in the Postgres database server to be used by Deceptively Simple Technologies Inc's Adaptív Application Foundation (AAF) Data Layer (AAF Data)
-# NOTE: Make this script executable with chmod +x 007-CreateDatabaseFunctionsAsAafCorePublisher.sh
-# Usage: ./007-CreateDatabaseFunctionsAsAafCorePublisher.sh PostgreSQL 14 localhost 5432 AafCorePublisher AafCore Publ15h3rCl13nt!
+# NOTE: Make this script executable with chmod +x 007-CreateDatabaseFunctionsAsAafCoreModeler.sh
+# Usage: ./007-CreateDatabaseFunctionsAsAafCoreModeler.sh PostgreSQL 14 localhost 5432 AafCoreModeler AafCore M0d3l3rCl13nt!
 
 postgresServerGroupName=$1
 postgresVersion=$2
@@ -46,5 +46,5 @@ psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresData
 
 unset PGPASSWORD
 
-# Log in using custom AafCorePublisher role
+# Log in using custom AafCoreModeler role
 # Create AafCore database functions

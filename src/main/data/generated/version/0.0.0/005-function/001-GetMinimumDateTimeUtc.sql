@@ -1,4 +1,4 @@
--- NOTE: Run this script as the custom AafCorePublisher database role/account, which should be created by the AafCoreOwner role.
+-- NOTE: Run this script as the custom AafCoreModeler database role/account, which should be created by the AafCoreOwner role.
 -- FUNCTION: GetMinimumDateTimeUtc
 
 -- DROP FUNCTION "GetMinimumDateTimeUtc";
@@ -24,7 +24,7 @@ END;
 $BODY$;
 
 --ALTER FUNCTION "GetMinimumDateTimeUtc"(character varying)
---	OWNER TO AafCorePublisher;
+--	OWNER TO AafCoreModeler;
 
 REVOKE EXECUTE ON FUNCTION public."GetMinimumDateTimeUtc" FROM PUBLIC;
 
