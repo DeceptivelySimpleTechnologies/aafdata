@@ -163,7 +163,7 @@ Before running the EntityDataMicroservice, you must:
 
 Please **note** that **this second AAF Data release is primarily for demonstration and evaluation purposes**.  It supports very simple local (LOC) and minimal (MIN) remote/cloud environments and **is not intended to be used in a production environment**.  **Later releases** will support shared, remote/cloud development (DEV), staging (STG), and production (PRD) environments and **will utilize secrets management and other security best practices**.  Crawl, walk, run.
 
-2. **Run the EntityDataMicroservice**:
+2. **Run the Java/Springboot-based EntityDataMicroservice**:
    1. **Locally** in IDE:
       1. **Open** the `aafdata` project in **IntelliJ IDEA**.
       1. **Run** the `EntityDataMicroservice` class.
@@ -191,7 +191,7 @@ Please **note** that **this second AAF Data release is primarily for demonstrati
          docker run -d --name aafdata-edm-min -e spring_profiles_active=min -p 8080:8080 -t deceptivelysimpletechnologies/aafdata-entitydatamicroservice:latest
          ```
 
-3. **Run the SystemDataService**:
+3. **Run the Java/Springboot-based SystemDataService**:
     1. **Locally** in IDE:
         1. **Open** the `aafdata` project in **IntelliJ IDEA**.
         1. **Run** the `SystemDataService` class.
@@ -219,6 +219,16 @@ Please **note** that **this second AAF Data release is primarily for demonstrati
            docker run -d --name aafdata-sds-min -e spring_profiles_active=min -p 8081:8081 -t deceptivelysimpletechnologies/aafdata-systemdataservice:latest
            ```
 
+4. **Run the Progessive Web Application (PWA) EntityModelingService**:
+    1. **In Docker**:
+        1. **Change directory** (`cd`) to `aafdata/EntityModelingService/`.
+        1. **Build** a Docker image with `docker build -t deceptivelysimpletechnologies/aafdata-entitymodelingservice:$(date +%Y%m%d_%H%M%S) .`
+        1. **Run** the Docker container:
+           ```sh
+           docker run -d --name EntityModelingService -e spring_profiles_active=min -p 8082:80 -v ~/Documents/Project/dst/aafdata/EntityModelingService:/usr/share/nginx/html:ro deceptivelysimpletechnologies/aafdata-entitymodelingservice:20250203_114613
+           ```
+        1. **Open a web browser** and navigate to `http://localhost:8082/` to view the EntityModelingService.
+<!--         1. Set the profile environment variable with `export spring_profiles_active=min` (NOTE: Remove it with `unset spring_profiles_active`) -->
 
 
 <p align="right">(<a href="#top">back to top</a>)</p>

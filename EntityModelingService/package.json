@@ -1,0 +1,24 @@
+{
+  "name": "EntityModelingService",
+  "version": "20250200_??????",
+  "description": "AAF Data: Entity Modeling Service (EMS) Copyright © 2003-2025 Deceptively Simple Technologies Inc. Some rights reserved. Please see the aafdata/LICENSE.txt file for details.",
+  "private": true,
+  "keywords": [
+    ""
+  ],
+  "license": "GNU GPLv3",
+  "author": "deceptivelysimpletechnologies.com",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "webpack serve --open --config webpack.config.dev.js",
+    "build": "webpack --config webpack.config.prod.js"
+  },
+  "devDependencies": {
+    "copy-webpack-plugin": "^11.0.0",
+    "html-webpack-plugin": "^5.6.0",
+    "webpack": "^5.91.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^5.0.4",
+    "webpack-merge": "^5.10.0"
+  }
+}

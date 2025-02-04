@@ -229,6 +229,7 @@ public class BusinessEntityController
         @ApiResponse(responseCode = "201", description = "Created", content = @Content(schema = @Schema(type = "string"))),
         @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
     })
+    @CrossOrigin
     @PostMapping(value = "/entityTypes/{entityTypeName}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> PostBusinessEntity(@PathVariable("entityTypeName") String entityTypeName, @RequestBody String requestBody, ServerWebExchange exchange) throws Exception
     {
@@ -622,6 +623,7 @@ public class BusinessEntityController
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(type = "string"))),
             @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
     })
+    @CrossOrigin(allowCredentials = "true", origins = "http://localhost:8082")
     @GetMapping(value = "/entityTypes/{entityTypeName}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity<String> GetBusinessEntities(@PathVariable("entityTypeName") String entityTypeName, @RequestParam(defaultValue = "") String whereClause, @RequestParam(defaultValue = "") String sortClause, @RequestParam(defaultValue = "#{T(java.time.Instant).now()}") Instant asOfDateTimeUtc, @RequestParam(defaultValue = "1") long graphDepthLimit, @RequestParam(defaultValue = "1") long pageNumber, @RequestParam(defaultValue = "20") long pageSize, ServerWebExchange exchange) throws Exception
@@ -957,6 +959,7 @@ public class BusinessEntityController
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(type = "string"))),
             @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
     })
+    @CrossOrigin
     @PatchMapping(value = "/entityTypes/{entityTypeName}/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> UpdateBusinessEntity(@PathVariable("entityTypeName") String entityTypeName, @PathVariable("id") Long id, @RequestBody String requestBody, ServerWebExchange exchange) throws Exception
     {
@@ -1307,6 +1310,7 @@ public class BusinessEntityController
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(type = "string"))),
             @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
     })
+    @CrossOrigin
     @DeleteMapping(value = "/entityTypes/{entityTypeName}/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> DeleteBusinessEntity(@PathVariable("entityTypeName") String entityTypeName, @PathVariable("id") Long id, @RequestBody String requestBody, ServerWebExchange exchange) throws Exception
     {

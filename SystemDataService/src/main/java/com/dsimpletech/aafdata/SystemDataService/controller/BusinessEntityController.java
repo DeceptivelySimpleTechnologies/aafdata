@@ -239,6 +239,7 @@ public class BusinessEntityController
             @ApiResponse(responseCode = "422", description = "Unprocessable Entity", content = @Content(schema = @Schema(type = "string"))),
             @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
     })
+    @CrossOrigin
     @PostMapping(value = "/entityTypeDefinitions", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> CreateNewBusinessEntity(@RequestParam(defaultValue = "#{T(java.time.Instant).now()}") Instant asOfDateTimeUtc, @RequestBody String requestBody, ServerWebExchange exchange) throws Exception
     {
@@ -548,6 +549,7 @@ public class BusinessEntityController
             @ApiResponse(responseCode = "422", description = "Unprocessable Entity", content = @Content(schema = @Schema(type = "string"))),
             @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
     })
+    @CrossOrigin
     @PostMapping(value = "/entityTypeDefinitions/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> CloneExistingBusinessEntity(@PathVariable("id") Long id, @RequestParam(defaultValue = "#{T(java.time.Instant).now()}") Instant asOfDateTimeUtc, @RequestBody String requestBody, ServerWebExchange exchange) throws Exception
     {
@@ -853,6 +855,7 @@ public class BusinessEntityController
             @ApiResponse(responseCode = "422", description = "Unprocessable Entity", content = @Content(schema = @Schema(type = "string"))),
             @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
     })
+    @CrossOrigin
     @PostMapping(value = "/databases/{databaseName}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> PublishBusinessEntitys(@PathVariable("databaseName") String databaseName, @RequestParam(defaultValue = "#{T(java.time.Instant).now()}") Instant asOfDateTimeUtc, @RequestBody String requestBody, ServerWebExchange exchange) throws Exception
     {
