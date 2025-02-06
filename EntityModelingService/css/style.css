@@ -14,8 +14,9 @@
    ========================================================================== */
 
 html {
-  color: #222;
-  font-size: 1em;
+  color: #222222;
+  font-family: "Open Sans", sans-serif;
+  font-size: 0.75em;
   line-height: 1.4;
 }
 
@@ -245,5 +246,56 @@ textarea {
   h3 {
     page-break-after: avoid;
   }
+}
+
+/* NOTE: DST-specific styling */
+table {
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #222222;
+}
+
+caption {
+  font-family: "Inter", sans-serif;
+  font-size: 1.25em;
+}
+
+thead {
+  font-family: "Inter", sans-serif;
+  font-size: 1.00em;
+}
+
+tbody {
+  font-family: "Open Sans", sans-serif;
+  font-size: 1.00em;
+}
+
+th, td {
+  padding: 0.50em;
+}
+
+tbody td {
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+tr > td:hover {
+  overflow: visible;
+  white-space: unset;
+}
+
+tbody tr:nth-child(odd) {
+  background-color: #dddddd;
+}
+
+tbody tr:nth-child(even) {
+  background-color: #ffffff;
+}
+
+tfoot td {
+  text-align: right;
 }
 
