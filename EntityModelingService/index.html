@@ -23,6 +23,11 @@
   <link rel="apple-touch-icon" href="icon.png">
 
   <link rel="manifest" href="site.webmanifest">
+
+  <!-- NOTE: https://stackoverflow.com/questions/436411/where-should-i-put-script-tags-in-html-markup -->
+  <script src="js/app.js"></script>
+  <script src="js/webcomponent/EntityTable.js"></script>
+
   <meta name="theme-color" content="#fafafa">
 </head>
 
@@ -30,22 +35,38 @@
 
   <title>Entity Data Modeler | EntityTypeDefinitions & Associated EntityTypeAttributes</title>
 
-  <h1 style="text-align: center">Adaptív Application Foundation Data Layer (AAF Data)</h1>
-  <h2 style="text-align: center">EntityTypeDefinitions & Associated EntityTypeAttributes | Delivering Foundational Business Agility</h2>
+  <header>
+    <h1 style="text-align: center">Adaptív Application Foundation Data Layer (AAF Data)</h1>
+    <h2 style="text-align: center">EntityTypeDefinitions & Associated EntityTypeAttributes | Delivering Foundational Business Agility</h2>
+  </header>
 
-  <nav style="text-align: center"><a href="#">Definitions & Associated Attributes</a></nav>
+  <nav style="text-align: center">
+    <ul>
+      <li><a href="#">Definitions & Associated Attributes</a></li>
+    </ul>
+  </nav>
 
-  <menu style="text-align: center">
-    <button id="create">Create New</button>
-    <button id="clone">Clone Existing</button>
-    <button id="publish">Publish</button>
-  </menu>
+  <main>
+    <section id="definitions">
+      <!-- <entity-table id="entitytypedefinition" baseUrl="http://localhost:8080/entityTypes/" entityTypeName="EntityTypeDefinition" whereClause="%22Id%22%20%3E%200" sortClause="%22Ordinal%22%20ASC" pageNumber="1" pageSize="20" includeColumns="['Id', 'LocalizedName', 'LocalizedDescription', 'LocalizedAbbreviation']" zeroWidthColumns="['Id']" eventListener="DOMContentLoaded"></entity-table> -->
+      <!-- <entity-table id="entitytypedefinition" baseUrl="http://localhost:8080/entityTypes/" entityTypeName="EntityTypeDefinition" whereClause="%22Id%22%20%3E%200" sortClause="%22Ordinal%22%20ASC" pageNumber="1" pageSize="20" includeColumns="['Id', 'LocalizedName', 'LocalizedDescription', 'LocalizedAbbreviation']" zeroWidthColumns="['Id']"></entity-table> -->
+      <entity-table id="entitytypedefinition" baseUrl="http://localhost:8080/entityTypes/" entityTypeName="EntityTypeDefinition" whereClause="%22Id%22%20%3E%200" sortClause="%22Ordinal%22%20ASC" pageNumber="1" pageSize="20" includeColumns="['Id', 'LocalizedName', 'LocalizedDescription', 'LocalizedAbbreviation']" zeroWidthColumns="['Id']" eventListener="entityTableCreated"></entity-table>
 
-  <table id="data-table"></table>
+      <menu style="text-align: center">
+        <button id="create">Create New</button>
+        <button id="clone">Clone Existing</button>
+        <!-- <button id="publish">Publish</button> -->
+      </menu>
+    </section>
+
+    <section id="attributes">
+      <!-- <entity-table id="entitytypeattribute" baseUrl="http://localhost:8080/entityTypes/" entityTypeName="EntityTypeAttribute" pageNumber="1" pageSize="20" includeColumns="['Id', 'LocalizedName', 'LocalizedDescription', 'LocalizedAbbreviation']" zeroWidthColumns="['Id']" eventListener="click"></entity-table> -->
+      <!-- <entity-table id="entitytypeattribute" baseUrl="http://localhost:8080/entityTypes/" entityTypeName="EntityTypeAttribute" pageNumber="1" pageSize="20" includeColumns="['Id', 'LocalizedName', 'LocalizedDescription', 'LocalizedAbbreviation']" zeroWidthColumns="['Id']"></entity-table> -->
+      <entity-table id="entitytypeattribute" baseUrl="http://localhost:8080/entityTypes/" entityTypeName="EntityTypeAttribute" pageNumber="1" pageSize="20" includeColumns="['Id', 'LocalizedName', 'LocalizedDescription', 'LocalizedAbbreviation']" zeroWidthColumns="['Id']" eventListener="entityTableRowClicked"></entity-table>
+    </section>
+  </main>
 
   <footer style="text-align: center">Copyright © 2003-2025 Deceptively Simple Technologies Inc. Some rights reserved.</footer>
-
-<script src="js/app.js"></script>
 
 </body>
 

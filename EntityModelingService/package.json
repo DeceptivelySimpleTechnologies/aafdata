@@ -4,7 +4,14 @@
   "description": "AAF Data: Entity Modeling Service (EMS) Copyright © 2003-2025 Deceptively Simple Technologies Inc. Some rights reserved. Please see the aafdata/LICENSE.txt file for details.",
   "private": true,
   "keywords": [
-    ""
+    "AAF",
+    "Association",
+    "Attribute",
+    "Business",
+    "Data",
+    "EMS",
+    "Entity",
+    "Entity Modeling Service"
   ],
   "license": "GNU GPLv3",
   "author": "deceptivelysimpletechnologies.com",

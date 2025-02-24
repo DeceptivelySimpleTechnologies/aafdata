@@ -249,11 +249,17 @@ textarea {
 }
 
 /* NOTE: DST-specific styling */
+#definitions, #attributes {
+  width: 49.5%;
+  display: inline-table;
+}
+
 table {
   table-layout: fixed;
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
   border: 1px solid #222222;
+  border-radius:5px;
 }
 
 caption {
@@ -298,4 +304,3 @@ tbody tr:nth-child(even) {
 tfoot td {
   text-align: right;
 }
-

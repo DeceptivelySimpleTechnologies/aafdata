@@ -89,9 +89,12 @@ public class BusinessEntityController
             logger.info("Attempting to CacheEntityData()");
 
             DB_DRIVER_CLASS = "postgresql";
-            DB_URL = environment.getProperty("spring.jdbc.url");
-            DB_USERNAME = environment.getProperty("spring.jdbc.username");
-            DB_PASSWORD = environment.getProperty("spring.jdbc.password");
+//            DB_URL = environment.getProperty("spring.jdbc.url");
+//            DB_USERNAME = environment.getProperty("spring.jdbc.username");
+//            DB_PASSWORD = environment.getProperty("spring.jdbc.password");
+            DB_URL = environment.getProperty("spring.datasource.url");
+            DB_USERNAME = environment.getProperty("spring.datasource.username");
+            DB_PASSWORD = environment.getProperty("spring.datasource.password");
 
             databaseConnection = new DatabaseConnection();
             connection = databaseConnection.GetDatabaseConnection(DB_DRIVER_CLASS, DB_URL, DB_USERNAME, DB_PASSWORD);
@@ -666,9 +669,12 @@ public class BusinessEntityController
             queryParams = request.getQueryParams();
 
             DB_DRIVER_CLASS = "postgresql";
-            DB_URL = environment.getProperty("spring.jdbc.url");
-            DB_USERNAME = environment.getProperty("spring.jdbc.username");
-            DB_PASSWORD = environment.getProperty("spring.jdbc.password");
+//            DB_URL = environment.getProperty("spring.jdbc.url");
+//            DB_USERNAME = environment.getProperty("spring.jdbc.username");
+//            DB_PASSWORD = environment.getProperty("spring.jdbc.password");
+            DB_URL = environment.getProperty("spring.datasource.url");
+            DB_USERNAME = environment.getProperty("spring.datasource.username");
+            DB_PASSWORD = environment.getProperty("spring.datasource.password");
 
             databaseConnection = new DatabaseConnection();
             connection = databaseConnection.GetDatabaseConnection(DB_DRIVER_CLASS, DB_URL, DB_USERNAME, DB_PASSWORD);
