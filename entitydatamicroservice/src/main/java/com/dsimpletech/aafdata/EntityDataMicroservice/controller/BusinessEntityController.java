@@ -58,18 +58,12 @@ public class BusinessEntityController
     @Autowired
     private Environment environment;
 
-    private ResultSet resultSet = null;
-
-    private DatabaseConnection databaseConnection = null;
-
     private String DB_DRIVER_CLASS = "";
     private String DB_URL = "";
     private String DB_USERNAME = "";
     private String DB_PASSWORD = "";
 
-    private Connection connection = null;
-
-    private CallableStatement statement = null;
+    //NOTE: https://medium.com/@AlexanderObregon/how-to-use-connection-pooling-for-faster-database-access-in-spring-boot-a352f672dfe3
 
     private ArrayList<EntityTypeDefinition> entityTypeDefinitions = null;
     private ArrayList<EntityTypeAttribute> entityTypeAttributes = null;
@@ -85,13 +79,16 @@ public class BusinessEntityController
     @PostConstruct
     private void CacheEntityData() {
 
+        DatabaseConnection databaseConnection = null;
+
+        Connection connection = null;
+        CallableStatement statement = null;
+        ResultSet resultSet = null;
+
         try {
             logger.info("Attempting to CacheEntityData()");
 
             DB_DRIVER_CLASS = "postgresql";
-//            DB_URL = environment.getProperty("spring.jdbc.url");
-//            DB_USERNAME = environment.getProperty("spring.jdbc.username");
-//            DB_PASSWORD = environment.getProperty("spring.jdbc.password");
             DB_URL = environment.getProperty("spring.datasource.url");
             DB_USERNAME = environment.getProperty("spring.datasource.username");
             DB_PASSWORD = environment.getProperty("spring.datasource.password");
@@ -262,6 +259,12 @@ public class BusinessEntityController
 
         String[] entityTypeAttributesNeverToReturn = null;
 
+        DatabaseConnection databaseConnection = null;
+
+        Connection connection = null;
+        CallableStatement statement = null;
+        ResultSet resultSet = null;
+
         String insertClause = "";
         String insertValues = "";
 
@@ -279,9 +282,9 @@ public class BusinessEntityController
             request = exchange.getRequest();
 
             DB_DRIVER_CLASS = "postgresql";
-            DB_URL = environment.getProperty("spring.jdbc.url");
-            DB_USERNAME = environment.getProperty("spring.jdbc.username");
-            DB_PASSWORD = environment.getProperty("spring.jdbc.password");
+            DB_URL = environment.getProperty("spring.datasource.url");
+            DB_USERNAME = environment.getProperty("spring.datasource.username");
+            DB_PASSWORD = environment.getProperty("spring.datasource.password");
 
             databaseConnection = new DatabaseConnection();
             connection = databaseConnection.GetDatabaseConnection(DB_DRIVER_CLASS, DB_URL, DB_USERNAME, DB_PASSWORD);
@@ -654,6 +657,12 @@ public class BusinessEntityController
 
         String[] entityTypeAttributesNeverToReturn = null;
 
+        DatabaseConnection databaseConnection = null;
+
+        Connection connection = null;
+        CallableStatement statement = null;
+        ResultSet resultSet = null;
+
         String selectClause = "";
 
         String entityData = "";
@@ -669,9 +678,6 @@ public class BusinessEntityController
             queryParams = request.getQueryParams();
 
             DB_DRIVER_CLASS = "postgresql";
-//            DB_URL = environment.getProperty("spring.jdbc.url");
-//            DB_USERNAME = environment.getProperty("spring.jdbc.username");
-//            DB_PASSWORD = environment.getProperty("spring.jdbc.password");
             DB_URL = environment.getProperty("spring.datasource.url");
             DB_USERNAME = environment.getProperty("spring.datasource.username");
             DB_PASSWORD = environment.getProperty("spring.datasource.password");
@@ -1001,6 +1007,12 @@ public class BusinessEntityController
 
         String[] entityTypeAttributesNeverToReturn = null;
 
+        DatabaseConnection databaseConnection = null;
+
+        Connection connection = null;
+        CallableStatement statement = null;
+        ResultSet resultSet = null;
+
         String updateClause = "";
 
         String selectClause = "";
@@ -1028,9 +1040,9 @@ public class BusinessEntityController
             existingEntityData = GetBusinessEntities(entityTypeName, URLEncoder.encode("\"Id\" = " + id, StandardCharsets.UTF_8), "", Instant.now(), 1, 1, 1, exchange);
 
             DB_DRIVER_CLASS = "postgresql";
-            DB_URL = environment.getProperty("spring.jdbc.url");
-            DB_USERNAME = environment.getProperty("spring.jdbc.username");
-            DB_PASSWORD = environment.getProperty("spring.jdbc.password");
+            DB_URL = environment.getProperty("spring.datasource.url");
+            DB_USERNAME = environment.getProperty("spring.datasource.username");
+            DB_PASSWORD = environment.getProperty("spring.datasource.password");
 
             databaseConnection = new DatabaseConnection();
             connection = databaseConnection.GetDatabaseConnection(DB_DRIVER_CLASS, DB_URL, DB_USERNAME, DB_PASSWORD);
@@ -1350,6 +1362,12 @@ public class BusinessEntityController
 
         String[] entityTypeAttributesNeverToReturn = null;
 
+        DatabaseConnection databaseConnection = null;
+
+        Connection connection = null;
+        CallableStatement statement = null;
+        ResultSet resultSet = null;
+
         String selectClause = "";
 
         String entityData = "";
@@ -1365,9 +1383,9 @@ public class BusinessEntityController
             queryParams = request.getQueryParams();
 
             DB_DRIVER_CLASS = "postgresql";
-            DB_URL = environment.getProperty("spring.jdbc.url");
-            DB_USERNAME = environment.getProperty("spring.jdbc.username");
-            DB_PASSWORD = environment.getProperty("spring.jdbc.password");
+            DB_URL = environment.getProperty("spring.datasource.url");
+            DB_USERNAME = environment.getProperty("spring.datasource.username");
+            DB_PASSWORD = environment.getProperty("spring.datasource.password");
 
             databaseConnection = new DatabaseConnection();
             connection = databaseConnection.GetDatabaseConnection(DB_DRIVER_CLASS, DB_URL, DB_USERNAME, DB_PASSWORD);

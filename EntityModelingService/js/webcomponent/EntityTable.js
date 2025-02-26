@@ -13,31 +13,17 @@ class EntityTable extends HTMLElement {
     //TODO: Get live authentication token
     document.cookie = "Authentication=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImxvYyJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IkF1dGhlbnRpY2F0aW9uIiwiYXVkIjoiQUFGRGF0YS1FbnRpdHlEYXRhTWljcm9zZXJ2aWNlIiwiZXhwIjoxNzIzODE2OTIwLCJpYXQiOjE3MjM4MTY4MDAsIm5iZiI6MTcyMzgxNjc4OSwianRpIjoiZWY0YWY0ZTMtZTczNi00MjVhLWFhZmYtZWNhMDNiN2I5YjI4IiwiYm9keSI6eyJFbWFpbEFkZHJlc3MiOiJhbXkuYW5kZXJzb25AYW15c2FjY291bnRpbmcuY29tIn19.a5UdLPgo4CzMyK1_JuWbQQQEMYz-rBcLu5uH0sZElqw; path=/";
 
-    //TODO: Link tables with click and Id
-    //TODO: Cache JSON data for entities, attributes, associations, and subtypes
-    //TODO: Set CORS parameters dynamically, e.g. protocol, host, port, etc
-    //TODO: Set ApiKey
-    //TODO: Generate new CorrelationUuid for each request
-    //TODO: Make pagination dynamic
-
-    //TODO: Require HTTPS
-    //TODO: Add service worker(s), e.g. https://learn.microsoft.com/en-us/microsoft-edge/progressive-web-apps-chromium/how-to/
-    //TODO: Use a nonce to prevent CSRF
-    //TODO: Use a nonce to prevent XSS
-    //TODO: Use a nonce to prevent Clickjacking
-    //TODO: Use a nonce to prevent Replay Attacks
-
     const table = document.createElement('table');
 
     table.setAttribute('id', this.getAttribute('id') || 'entitytypedefinition-12345')   //TODO: Generate and append a unique id
     table.setAttribute('class', 'entity-table');
 
-    console.log(`EntityTable constructor firing, but not fetching data!`);
+    console.log(`EntityTable constructor firing, but not fetching data yet!`);
 
     document.addEventListener(this.getAttribute('eventListener') || 'DOMContentLoaded', async () => {
-      console.log(this.getAttribute('eventListener') + ` event added.`);
+      console.log(this.getAttribute('eventListener') + ` event listener added in EntityTable constructor.`);
       try {
-        if (this.getAttribute('eventListener') == 'entityTableCreated') {
+        if ((this.getAttribute('eventListener') == 'entityTableCreated') || (this.getAttribute('eventListener') == 'entityTableRowClicked')) {
           const data = await fetchData(this.getAttribute('baseUrl') || 'http://localhost:8080/entityTypes/', this.getAttribute('entityTypeName') || 'EntityTypeDefinition', this.getAttribute('whereClause') || '%22Id%22%20%3E%20-2', this.getAttribute('sortClause') || '%22Ordinal%22%20ASC', this.getAttribute('pageSize') || 20, this.getAttribute('pageNumber') || 1);
           displayData(data, table, this.getAttribute('includeColumns') || ['Id', 'EntitySubtypeId', 'TextKey'], this.getAttribute('zeroWidthColumns') || []);
         }

@@ -56,19 +56,12 @@ public class BusinessEntityController
     @Autowired
     private Environment environment;
 
-    private ResultSet resultSet = null;
-
-    private DatabaseConnection databaseConnection = null;
-
     private String DB_DRIVER_CLASS = "";
     private String DB_URL = "";
     private String DB_USERNAME = "";
     private String DB_PASSWORD = "";
 
-    private Connection connection = null;
-
-    private CallableStatement callableStatement = null;
-    private PreparedStatement preparedStatement = null;
+    //NOTE: https://medium.com/@AlexanderObregon/how-to-use-connection-pooling-for-faster-database-access-in-spring-boot-a352f672dfe3
 
     private ArrayList<EntityTypeDefinition> entityTypeDefinitions = null;
     private ArrayList<EntityTypeAttribute> entityTypeAttributes = null;
@@ -90,13 +83,19 @@ public class BusinessEntityController
     @PostConstruct
     private void CacheEntityData()
     {
+        DatabaseConnection databaseConnection = null;
+
+        Connection connection = null;
+        CallableStatement callableStatement = null;
+        ResultSet resultSet = null;
+
         try {
             logger.info("Attempting to CacheEntityData()");
 
             DB_DRIVER_CLASS = "postgresql";
-            DB_URL = environment.getProperty("spring.jdbc.url");
-            DB_USERNAME = environment.getProperty("spring.jdbc.username");
-            DB_PASSWORD = environment.getProperty("spring.jdbc.password");
+            DB_URL = environment.getProperty("spring.datasource.url");
+            DB_USERNAME = environment.getProperty("spring.datasource.username");
+            DB_PASSWORD = environment.getProperty("spring.datasource.password");
 
             databaseConnection = new DatabaseConnection();
             connection = databaseConnection.GetDatabaseConnection(DB_DRIVER_CLASS, DB_URL, DB_USERNAME, DB_PASSWORD);
@@ -228,7 +227,7 @@ public class BusinessEntityController
 //    }
 //
 
-    @Operation(summary = "Create new, unpublished business entity data in the AafCore database, following all AAF rules and conventions.", description = "Create new, unpublished business entity data in the AafCore database, following all AAF rules and conventions, by providing the valid, required data and any valid, optional data as a JSON Web Token (JWT, please see https://jwt.io/) in the HTTP request body")
+    @Operation(summary = "Create a new, unpublished business entity definition in the AafCore database, following all AAF rules and conventions.", description = "Create a new, unpublished business entity definition in the AafCore database, following all AAF rules and conventions, by providing the valid, required data and any valid, optional data as a JSON Web Token (JWT, please see https://jwt.io/) in the HTTP request body")
     @Parameter(in = ParameterIn.HEADER, description = "API key", name = "ApiKey", content = @Content(schema = @Schema(type = "string")))
     @Parameter(in = ParameterIn.HEADER, description = "Correlation UUID", name = "CorrelationUuid", content = @Content(schema = @Schema(type = "string")), required = false)
     @Parameter(in = ParameterIn.COOKIE, description = "JWT Authentication token", name = "Authentication", content = @Content(schema = @Schema(type = "string")))
@@ -291,7 +290,7 @@ public class BusinessEntityController
 
             request = exchange.getRequest();
 
-            //NOTE: No database structure changes are necessary for this operation, which calls the EDM PostBusinessEntity method, etc, so no database connection is required
+            //NOTE: No direct database structure changes are necessary for this operation, which calls the EDM PostBusinessEntity method, etc, so no database connection is required
 
             ENVIRONMENT_JWT_SHARED_SECRET = environment.getProperty("environmentJwtSharedSecret");
 
@@ -537,7 +536,7 @@ public class BusinessEntityController
         return new ResponseEntity<String>(entityData, HttpStatus.CREATED);
     }
 
-    @Operation(summary = "Clone an existing business entity as the starting point for new, unpublished business entity data in the AafCore database, following all AAF rules and conventions.", description = "Clone existing business entity data in the AafCore database, following all AAF rules and conventions, by providing the valid, required data and any valid, optional data as a JSON Web Token (JWT, please see https://jwt.io/) in the HTTP request body")
+    @Operation(summary = "Clone an existing business entity definition as the starting point for a new, unpublished business entity definition in the AafCore database, following all AAF rules and conventions.", description = "Clone an existing business entity definition in the AafCore database, following all AAF rules and conventions, by providing the valid, required data and any valid, optional data as a JSON Web Token (JWT, please see https://jwt.io/) in the HTTP request body")
     @Parameter(in = ParameterIn.HEADER, description = "API key", name = "ApiKey", content = @Content(schema = @Schema(type = "string")))
     @Parameter(in = ParameterIn.HEADER, description = "Correlation UUID", name = "CorrelationUuid", content = @Content(schema = @Schema(type = "string")), required = false)
     @Parameter(in = ParameterIn.COOKIE, description = "JWT Authentication token", name = "Authentication", content = @Content(schema = @Schema(type = "string")))
@@ -601,7 +600,7 @@ public class BusinessEntityController
 
             request = exchange.getRequest();
 
-            //NOTE: No database structure changes are necessary for this operation, which calls the EDM PostBusinessEntity method, etc, so no database connection is required
+            //NOTE: No direct database structure changes are necessary for this operation, which calls the EDM PostBusinessEntity method, etc, so no database connection is required
 
             ENVIRONMENT_JWT_SHARED_SECRET = environment.getProperty("environmentJwtSharedSecret");
 
@@ -844,7 +843,7 @@ public class BusinessEntityController
         return new ResponseEntity<String>(entityData, HttpStatus.CREATED);
     }
 
-    @Operation(summary = "Create or alter the internal structure of the AafCore database, including its schemas, entity models (tables), functions, and system/lookup data, e.g. EntityTypeDefinition, EntityTypeAttribute, EntityType, EntitySubtype, etc, that has been defined/scripted by the AafCoreModeler role.", description = "Create or alter the internal structure of the database by providing the valid, required data and any valid, optional data as a JSON Web Token (JWT, please see https://jwt.io/) in the HTTP request body")
+    @Operation(summary = "Create or alter the structure of the AafCore database, including its schemas, entity models (tables), functions, and scripted system/lookup data, e.g. EntityTypeDefinition, EntityTypeAttribute, EntityType, EntitySubtype, etc, that has been defined/scripted by the AafCoreModeler role.", description = "Create or alter the structure of the database by providing the valid, required data and any valid, optional data as a JSON Web Token (JWT, please see https://jwt.io/) in the HTTP request body")
     @Parameter(in = ParameterIn.HEADER, description = "API key", name = "ApiKey", content = @Content(schema = @Schema(type = "string")))
     @Parameter(in = ParameterIn.HEADER, description = "Correlation UUID", name = "CorrelationUuid", content = @Content(schema = @Schema(type = "string")), required = false)
     @Parameter(in = ParameterIn.COOKIE, description = "JWT Authentication token", name = "Authentication", content = @Content(schema = @Schema(type = "string")))
@@ -893,6 +892,13 @@ public class BusinessEntityController
 
         String preparedStatementSql = "";
 
+        DatabaseConnection databaseConnection = null;
+
+        Connection connection = null;
+        CallableStatement callableStatement = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+
         EntityTypeDefinitionEntityTypeAttributeAssociation cachedEntityAssociation = null;
         EntityTypeAttribute cachedEntityTypeAttribute = null;
 
@@ -919,9 +925,9 @@ public class BusinessEntityController
             CacheEntityData();
 
             DB_DRIVER_CLASS = "postgresql";
-            DB_URL = environment.getProperty("spring.jdbc.url");
-            DB_USERNAME = environment.getProperty("spring.jdbc.username");
-            DB_PASSWORD = environment.getProperty("spring.jdbc.password");
+            DB_URL = environment.getProperty("spring.datasource.url");
+            DB_USERNAME = environment.getProperty("spring.datasource.username");
+            DB_PASSWORD = environment.getProperty("spring.datasource.password");
 
             databaseConnection = new DatabaseConnection();
             connection = databaseConnection.GetDatabaseConnection(DB_DRIVER_CLASS, DB_URL, DB_USERNAME, DB_PASSWORD);

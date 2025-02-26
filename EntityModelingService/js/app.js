@@ -13,16 +13,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
   console.log(`app.js still executing! DOMContentLoaded listener now added to page.`);
 
-  //NOTE: Populate the definitions table with data by dispatching custom event
-  const event = new CustomEvent('entityTableCreated', {
+  //NOTE: Populate the definitions table with data by adding custom listener and dispatching custom event
+  const definitionsEvent = new CustomEvent('entityTableCreated', {
     detail: { entityTableDefinitions }
   });
 
-  console.log(`entityTableCreated event dispatched`);
-  entityTableDefinitions.dispatchEvent(event);
+  console.log(`app.js still executing! entityTableCreated event dispatched ...`);
+  entityTableDefinitions.dispatchEvent(definitionsEvent);
 
-  // Add click event listener to each row in the first table
+  const selectedRow = entityTableDefinitions.querySelector('tr').rowIndex[0];
 
-  // Add event listener to the second table to handle the custom event
+  //NOTE: Populate the attributes table with data by adding custom listener and dispatching custom event
+  const attributesEvent = new CustomEvent('entityTableRowClicked', {
+    detail: { selectedRow }
+  });
+
+  console.log(`app.js still executing! entityTableRowClicked event dispatched ...`);
+  entityTableAttributes.dispatchEvent(attributesEvent);
+
+  //TODO: Add click event listener to each row in the first table??? (unless passing the EntityTable reference is sufficient)
 
 });

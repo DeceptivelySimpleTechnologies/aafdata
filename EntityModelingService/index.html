@@ -37,6 +37,7 @@
 
   <header>
     <h1 style="text-align: center">Adaptív Application Foundation Data Layer (AAF Data)</h1>
+    <h2 style="text-align: center">Business Entity Modeler</h2>
     <h2 style="text-align: center">EntityTypeDefinitions & Associated EntityTypeAttributes | Delivering Foundational Business Agility</h2>
   </header>
 
@@ -48,9 +49,19 @@
 
   <main>
     <section id="definitions">
-      <!-- <entity-table id="entitytypedefinition" baseUrl="http://localhost:8080/entityTypes/" entityTypeName="EntityTypeDefinition" whereClause="%22Id%22%20%3E%200" sortClause="%22Ordinal%22%20ASC" pageNumber="1" pageSize="20" includeColumns="['Id', 'LocalizedName', 'LocalizedDescription', 'LocalizedAbbreviation']" zeroWidthColumns="['Id']" eventListener="DOMContentLoaded"></entity-table> -->
-      <!-- <entity-table id="entitytypedefinition" baseUrl="http://localhost:8080/entityTypes/" entityTypeName="EntityTypeDefinition" whereClause="%22Id%22%20%3E%200" sortClause="%22Ordinal%22%20ASC" pageNumber="1" pageSize="20" includeColumns="['Id', 'LocalizedName', 'LocalizedDescription', 'LocalizedAbbreviation']" zeroWidthColumns="['Id']"></entity-table> -->
       <entity-table id="entitytypedefinition" baseUrl="http://localhost:8080/entityTypes/" entityTypeName="EntityTypeDefinition" whereClause="%22Id%22%20%3E%200" sortClause="%22Ordinal%22%20ASC" pageNumber="1" pageSize="20" includeColumns="['Id', 'LocalizedName', 'LocalizedDescription', 'LocalizedAbbreviation']" zeroWidthColumns="['Id']" eventListener="entityTableCreated"></entity-table>
+
+      <form id="newentitydata">
+        <fieldset>
+          <legend>Enter New Entity Data</legend>
+          <label for="localizedName">LocalizedName* (4 to 8 characters):</label>
+          <input type="text" id="localizedName" name="localizedName" required minlength="4" maxlength="50" size="10" /><br>
+          <label for="localizedDescription">LocalizedDescription* (4 to 8 characters):</label>
+          <textarea id="localizedDescription" name="localizedDescription"  required minlength="4" maxlength="50" rows="5" cols="30"></textarea><br>
+          <label for="localizedAbbreviation">LocalizedAbbreviation* (4 to 8 characters):</label>
+          <input type="text" id="localizedAbbreviation" name="localizedAbbreviation" required minlength="4" maxlength="50" size="10" />
+        </fieldset>
+      </form>
 
       <menu style="text-align: center">
         <button id="create">Create New</button>
@@ -60,8 +71,6 @@
     </section>
 
     <section id="attributes">
-      <!-- <entity-table id="entitytypeattribute" baseUrl="http://localhost:8080/entityTypes/" entityTypeName="EntityTypeAttribute" pageNumber="1" pageSize="20" includeColumns="['Id', 'LocalizedName', 'LocalizedDescription', 'LocalizedAbbreviation']" zeroWidthColumns="['Id']" eventListener="click"></entity-table> -->
-      <!-- <entity-table id="entitytypeattribute" baseUrl="http://localhost:8080/entityTypes/" entityTypeName="EntityTypeAttribute" pageNumber="1" pageSize="20" includeColumns="['Id', 'LocalizedName', 'LocalizedDescription', 'LocalizedAbbreviation']" zeroWidthColumns="['Id']"></entity-table> -->
       <entity-table id="entitytypeattribute" baseUrl="http://localhost:8080/entityTypes/" entityTypeName="EntityTypeAttribute" pageNumber="1" pageSize="20" includeColumns="['Id', 'LocalizedName', 'LocalizedDescription', 'LocalizedAbbreviation']" zeroWidthColumns="['Id']" eventListener="entityTableRowClicked"></entity-table>
     </section>
   </main>
