@@ -1,6 +1,4 @@
 //NOTE: Copyright © 2003-2025 Deceptively Simple Technologies Inc. Some rights reserved. Please see the aafdata/LICENSE.txt file for details.
-//TODO: Get live authentication token
-//document.cookie = "Authentication=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImxvYyJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IkF1dGhlbnRpY2F0aW9uIiwiYXVkIjoiQUFGRGF0YS1FbnRpdHlEYXRhTWljcm9zZXJ2aWNlIiwiZXhwIjoxNzIzODE2OTIwLCJpYXQiOjE3MjM4MTY4MDAsIm5iZiI6MTcyMzgxNjc4OSwianRpIjoiZWY0YWY0ZTMtZTczNi00MjVhLWFhZmYtZWNhMDNiN2I5YjI4IiwiYm9keSI6eyJFbWFpbEFkZHJlc3MiOiJhbXkuYW5kZXJzb25AYW15c2FjY291bnRpbmcuY29tIn19.a5UdLPgo4CzMyK1_JuWbQQQEMYz-rBcLu5uH0sZElqw; path=/";
 
 console.log(`app.js executing! No DOMContentLoaded listener added yet.`);
 
@@ -18,17 +16,17 @@ document.addEventListener('DOMContentLoaded', () => {
     detail: { entityTableDefinitions }
   });
 
-  console.log(`app.js still executing! entityTableCreated event dispatched ...`);
+  console.log(`app.js still executing! Dispatching entityTableCreated event ...`);
   entityTableDefinitions.dispatchEvent(definitionsEvent);
 
-  const selectedRow = entityTableDefinitions.querySelector('tr').rowIndex[0];
+  const selectedRow = entityTableDefinitions.getElementsByTagName('tr')[0]; //NOTE: Get the first row in the table
 
   //NOTE: Populate the attributes table with data by adding custom listener and dispatching custom event
   const attributesEvent = new CustomEvent('entityTableRowClicked', {
     detail: { selectedRow }
   });
 
-  console.log(`app.js still executing! entityTableRowClicked event dispatched ...`);
+  console.log(`app.js still executing! Dispatching entityTableRowClicked event ...`);
   entityTableAttributes.dispatchEvent(attributesEvent);
 
   //TODO: Add click event listener to each row in the first table??? (unless passing the EntityTable reference is sufficient)

@@ -304,3 +304,23 @@ tbody tr:nth-child(even) {
 tfoot td {
   text-align: right;
 }
+
+fieldset {
+  display: block;
+}
+
+legend {
+  font-family: "Open Sans", sans-serif;
+  font-size: 1.25em;
+}
+
+legend, label, input, textarea {
+  font-family: "Open Sans", sans-serif;
+  font-size: 1.00em;
+}
+
+input, textarea {
+  border: 1px solid #222222;
+  border-radius: 5px;
+}
+

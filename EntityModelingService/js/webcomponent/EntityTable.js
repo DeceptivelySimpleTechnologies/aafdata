@@ -5,6 +5,11 @@ class EntityTable extends HTMLElement {
     super();
     const shadow = this.attachShadow({ mode: 'open' });
 
+    console.log(`EntityTable constructor ends.`);
+  }
+
+  //NOTE: Called each time this custom element is added to the document, and the specification recommends that custom element setup be performed in this callback rather than in the constructor
+  connectedCallback() {
     const link = document.createElement('link');
     link.setAttribute('rel', 'stylesheet');
     link.setAttribute('href', 'css/style.css');
@@ -15,15 +20,18 @@ class EntityTable extends HTMLElement {
 
     const table = document.createElement('table');
 
-    table.setAttribute('id', this.getAttribute('id') || 'entitytypedefinition-12345')   //TODO: Generate and append a unique id
+    console.log(`EntityTable connectedCallback() Explicit parent id: ${this.getAttribute('id')}`);
+    table.setAttribute('id', this.getAttribute('id') + '-23456' || 'entitytypedefinition-34567')   //TODO: Generate and append a unique id
     table.setAttribute('class', 'entity-table');
 
-    console.log(`EntityTable constructor firing, but not fetching data yet!`);
+    console.log(`EntityTable connectedCallback() Not fetching data yet!`);
 
-    document.addEventListener(this.getAttribute('eventListener') || 'DOMContentLoaded', async () => {
-      console.log(this.getAttribute('eventListener') + ` event listener added in EntityTable constructor.`);
+    //TODO: Should this be put back into the constructor???
+    //TODO: And should the event listener be added to the document or to the table???
+    this.addEventListener(this.getAttribute('eventListener') || 'DOMContentLoaded', async () => {
+      console.log('EntityTable connectedCallback() ' + this.getAttribute('eventListener') + ` event listener added.`);
       try {
-        if ((this.getAttribute('eventListener') == 'entityTableCreated') || (this.getAttribute('eventListener') == 'entityTableRowClicked')) {
+        if ((this.getAttribute('eventListener') == 'entitytablecreated') || (this.getAttribute('eventListener') == 'entitytablerowclicked')) {
           const data = await fetchData(this.getAttribute('baseUrl') || 'http://localhost:8080/entityTypes/', this.getAttribute('entityTypeName') || 'EntityTypeDefinition', this.getAttribute('whereClause') || '%22Id%22%20%3E%20-2', this.getAttribute('sortClause') || '%22Ordinal%22%20ASC', this.getAttribute('pageSize') || 20, this.getAttribute('pageNumber') || 1);
           displayData(data, table, this.getAttribute('includeColumns') || ['Id', 'EntitySubtypeId', 'TextKey'], this.getAttribute('zeroWidthColumns') || []);
         }
@@ -33,8 +41,7 @@ class EntityTable extends HTMLElement {
       }
     });
 
-    shadow.appendChild(table);
-    console.log(`EntityTable constructor ends.`);
+    this.shadowRoot.appendChild(table);
   }
 }
 
