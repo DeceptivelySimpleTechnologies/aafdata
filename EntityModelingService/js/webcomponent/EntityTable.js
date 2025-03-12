@@ -31,7 +31,7 @@ class EntityTable extends HTMLElement {
     this.addEventListener(this.getAttribute('eventListener') || 'DOMContentLoaded', async () => {
       console.log('EntityTable connectedCallback() ' + this.getAttribute('eventListener') + ` event listener added.`);
       try {
-        if ((this.getAttribute('eventListener') == 'entitytablecreated') || (this.getAttribute('eventListener') == 'entitytablerowclicked')) {
+        if ((this.getAttribute('eventListener') == 'entityTableCreated') || (this.getAttribute('eventListener') == 'entityTableRowClicked')) {
           const data = await fetchData(this.getAttribute('baseUrl') || 'http://localhost:8080/entityTypes/', this.getAttribute('entityTypeName') || 'EntityTypeDefinition', this.getAttribute('whereClause') || '%22Id%22%20%3E%20-2', this.getAttribute('sortClause') || '%22Ordinal%22%20ASC', this.getAttribute('pageSize') || 20, this.getAttribute('pageNumber') || 1);
           displayData(data, table, this.getAttribute('includeColumns') || ['Id', 'EntitySubtypeId', 'TextKey'], this.getAttribute('zeroWidthColumns') || []);
         }
