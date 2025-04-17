@@ -34,7 +34,7 @@
   - Generalized **business entity models**, e.g. Person, Organization, OrganizationalUnit, Employee, etc,
   - **Database creation scripts** for roles, schemas, tables, constraints, indexes, functions, and
   - **Scripted lookup/reference data**, e.g. EntityType (Person, Organization, OrganizationalUnit, Employee, etc), EntitySubtype (Organization - C Corp, S Corp, LLC, etc, OrganizationalUnit - Region, Division, Department, etc), etc,
-- A Dockerized, **REST**ful **business entity microservice** (BEM) providing
+- A Dockerized, **REST**ful **entity data microservice** (EDM) providing
   - **C**reate,
   - **R**ead,
   - **U**pdate, and
@@ -60,7 +60,7 @@
 **Features**
   - Containerized. Services run in Docker containers, available from DockerHub.
 <!-- -->
-  - The business entity microservice (**BEM**):
+  - The entity data microservice (**EDM**):
     - **Will validate each HTTP request** (near future) using a JSON Web Token (**JWT**) mechanism with optional cryptographic signing and encryption capabilities,
     - **Persists and retrieves business entity data** via its **API**, which calls low-level `POST`, `GET`, `PATCH`, and “soft” DELETE database functions to ensure data integrity and performance -- **NO direct table access**,
     - **Consistently follows RESTful style and best practices**,
@@ -82,12 +82,16 @@
   - *`EntityTypeDefinition`
   - *`EntityTypeAttribute`
   - *`EntityTypeDefinitionEntityTypeAttributeAssociation`
-  - `EntityType`
   - `EntitySubtype`
+  - `EntitySubtypeHierarchy`
+  - `EntityType`
   - `Language`
-  - `Locale`
   - `GeographicUnit`
   - `GeographicUnitHierarchy`
+  - `Locale`
+  - `Currency`
+  - `Periodicity`
+  - `PostalAddress`
   - `Organization`
   - `OrganizationalUnit`
   - `OrganizationalUnitHierarchy`
@@ -125,7 +129,7 @@
 Soon **AAF Data will also include**:
 - **Terraform scripts** for creating AWS infrastruture and deploying the AAF Data services to the cloud,
 - **JWT helper functions** (encode/decode),
-- A **business entity modeler** web application and service for extending or modifying these models and their scripted data,
+- A web-based **business entity modeler** for extending or modifying these models and their scripted data,
 - A **structure service** for conforming the entity data structures to the model, and
 - **CRUD** operation **event publishing**.
 
@@ -240,6 +244,13 @@ Please **note** that **this second AAF Data release is primarily for demonstrati
 
 A complete set of Postman requests for both EDM and SDS services is included with the source code at `aafdata/client/DST AAF Data.postman_collection.json`.
 
+**Note**: Each AAF Data API request requires a JWT-encoded cookie, which must be added to the Postman client manually since it will not export with the request collection 
+for security reasons.  The cookie must be name "Authentication" and is for the moment hard-coded with the following structure and content: 
+
+```jwt
+Authentication=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImxvYyJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IkF1dGhlbnRpY2F0aW9uIiwiYXVkIjoiQUFGRGF0YS1FbnRpdHlEYXRhTWljcm9zZXJ2aWNlIiwiZXhwIjoxNzIzODE2OTIwLCJpYXQiOjE3MjM4MTY4MDAsIm5iZiI6MTcyMzgxNjc4OSwianRpIjoiZWY0YWY0ZTMtZTczNi00MjVhLWFhZmYtZWNhMDNiN2I5YjI4IiwiYm9keSI6eyJFbWFpbEFkZHJlc3MiOiJhbXkuYW5kZXJzb25AYW15c2FjY291bnRpbmcuY29tIn19.a5UdLPgo4CzMyK1_JuWbQQQEMYz-rBcLu5uH0sZElqw; Path=/; Domain=localhost; HttpOnly; Expires=Mon, 18 Aug 2025 12:07:49 GMT;
+```
+
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 
@@ -353,7 +364,7 @@ Today, AAF Data is:
     - Generalized **business entity models**,
     - **Database creation scripts** for roles, schemas, tables, functions, and
     - **Scripted lookup/reference data**,
-- A Dockerized, **REST**ful **business entity microservice** (BEM) providing
+- A Dockerized, **REST**ful **entity data microservice** (EDM) providing
     - **C**reate,
     - **R**ead,
     - **U**pdate, and

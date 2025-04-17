@@ -29,6 +29,9 @@ psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresData
 echo "Adding EntityType schema to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
 psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/003-schema/005-EntityType.sql
 
+echo "Adding EntitySubtypeHierarchy schema to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
+psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/003-schema/006-EntitySubtypeHierarchy.sql
+
 echo "Adding GeographicUnit schema to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
 psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/003-schema/007-GeographicUnit.sql
 
@@ -40,6 +43,15 @@ psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresData
 
 echo "Adding Locale schema to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
 psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/003-schema/010-Locale.sql
+
+echo "Adding Currency schema to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
+psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/003-schema/011-Currency.sql
+
+echo "Adding Periodicity schema to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
+psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/003-schema/012-Periodicity.sql
+
+echo "Adding PostalAddress schema to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
+psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/003-schema/013-PostalAddress.sql
 
 echo "Adding Person schema to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
 psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/003-schema/014-Person.sql

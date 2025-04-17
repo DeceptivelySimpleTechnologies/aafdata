@@ -30,7 +30,7 @@ CREATE TABLE "Employee"."Employee"
     CONSTRAINT "Employee_CHK_TextKey" CHECK ("TextKey" ~* '^[a-z0-9-]+$'),
 
     CONSTRAINT "Employee_UQ1_TextKey_DeletedAtDateTimeUtc" UNIQUE ("TextKey", "DeletedAtDateTimeUtc"),
-    CONSTRAINT "Employee_UQ1_EntitySubtypeId_OrganizationId_PersonId_DeletedAtDateTimeUtc" UNIQUE ("EntitySubtypeId", "OrganizationId", "PersonId", "DeletedAtDateTimeUtc"),
+    CONSTRAINT "Employee_UQ1_EntSubId_OrgId_PersonId_DeletedAtDateTimeUtc" UNIQUE ("EntitySubtypeId", "OrganizationId", "PersonId", "DeletedAtDateTimeUtc"),
 
     CONSTRAINT "Employee_FK_EntitySubtypeId" FOREIGN KEY ("EntitySubtypeId") REFERENCES "EntitySubtype"."EntitySubtype"("Id"),
     CONSTRAINT "Employee_FK_OrganizationId" FOREIGN KEY ("OrganizationId") REFERENCES "Organization"."Organization"("Id"),

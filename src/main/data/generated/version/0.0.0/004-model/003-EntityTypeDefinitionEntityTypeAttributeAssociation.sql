@@ -1,4 +1,4 @@
--- NOTE: Run this script as the custom AafCoreModeler database role/account, which should be created by the AafCoreOwner role.
+    -- NOTE: Run this script as the custom AafCoreModeler database role/account, which should be created by the AafCoreOwner role.
 -- Table: EntityTypeDefinitionEntityTypeAttributeAssociation.EntityTypeDefinitionEntityTypeAttributeAssociation
 
 -- DROP TABLE "EntityTypeDefinitionEntityTypeAttributeAssociation"."EntityTypeDefinitionEntityTypeAttributeAssociation";
@@ -27,10 +27,18 @@ CREATE TABLE "EntityTypeDefinitionEntityTypeAttributeAssociation"."EntityTypeDef
     "DeletedAtDateTimeUtc" timestamp without time zone NOT NULL,
     "DeletedByInformationSystemUserId" bigint NOT NULL,
 
-    CONSTRAINT "EntityTypeDefinitionEntityTypeAttributeAssociation_PK" PRIMARY KEY ("Id")
+    CONSTRAINT "EntTypDefEntTypAtrAssoc_PK" PRIMARY KEY ("Id"),
+
+    CONSTRAINT "EntTypDefEntTypAtrAssoc_CHK_TextKey" CHECK ("TextKey" ~* '^[a-z0-9-]+$'),
+
+    CONSTRAINT "EntTypDefEntTypAtrAssoc_UQ1_TextKey_DeletedAt" UNIQUE ("TextKey", "DeletedAtDateTimeUtc"),
+    CONSTRAINT "EntTypDefEntTypAtrAssoc_UQ1_EntTypDefId_EntTypAtrId_DeletedAt" UNIQUE ("EntityTypeDefinitionId", "EntityTypeAttributeId", "DeletedAtDateTimeUtc"),
+
+    CONSTRAINT "EntTypDefEntTypAtrAssoc_FK_EntityTypeDefinition" FOREIGN KEY ("EntityTypeDefinitionId") REFERENCES "EntityTypeDefinition"."EntityTypeDefinition"("Id"),
+    CONSTRAINT "EntTypDefEntTypAtrAssoc_FK_EntityTypeAttribute" FOREIGN KEY ("EntityTypeAttributeId") REFERENCES "EntityTypeAttribute"."EntityTypeAttribute"("Id")
 )
 
     TABLESPACE pg_default;
 
-CREATE INDEX "EntityTypeDefinitionEntityTypeAttributeAssociation_IDX_EntityTypeDefinitionId" ON "EntityTypeDefinitionEntityTypeAttributeAssociation"."EntityTypeDefinitionEntityTypeAttributeAssociation" ("EntityTypeDefinitionId");
-CREATE INDEX "EntityTypeDefinitionEntityTypeAttributeAssociation_IDX_EntityTypeAttributeId" ON "EntityTypeDefinitionEntityTypeAttributeAssociation"."EntityTypeDefinitionEntityTypeAttributeAssociation" ("EntityTypeAttributeId")
+CREATE INDEX "EntTypDefEntTypAtrAssoc_IDX_EntityTypeDefinitionId" ON "EntityTypeDefinitionEntityTypeAttributeAssociation"."EntityTypeDefinitionEntityTypeAttributeAssociation" ("EntityTypeDefinitionId");
+CREATE INDEX "EntTypDefEntTypAtrAssoc_IDX_EntityTypeAttributeId" ON "EntityTypeDefinitionEntityTypeAttributeAssociation"."EntityTypeDefinitionEntityTypeAttributeAssociation" ("EntityTypeAttributeId")
