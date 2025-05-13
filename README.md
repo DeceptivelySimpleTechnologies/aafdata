@@ -188,7 +188,7 @@ Please **note** that **this second AAF Data release is primarily for demonstrati
       1. -OR-
       1. **Pull** the Docker image from DockerHub:
          ```sh
-         docker pull deceptivelysimpletechnologies/aafdata-entitydatamicroservice:20241106_143503
+         docker pull deceptivelysimpletechnologies/aafdata-entitydatamicroservice:20250512_152618
          ```
       1. **Run** the Docker container:
          ```sh
