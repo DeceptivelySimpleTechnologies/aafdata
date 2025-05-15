@@ -253,10 +253,15 @@ textarea {
    ========================================================================== */
 #product {
   margin-top: 2.00em;
+  color: #999999;
 }
 
 #service {
   margin: 0;
+}
+
+#page {
+  margin-top: 0;
 }
 
 nav {
