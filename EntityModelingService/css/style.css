@@ -299,11 +299,6 @@ nav ul li a:hover:not(.active) {
   background-color: #04AA6D;
 }
 
-#definitions, #attributes {
-  width: 49.5%;
-  display: inline-table;
-}
-
 table {
   table-layout: fixed;
   width: 100%;

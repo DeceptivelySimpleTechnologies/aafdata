@@ -7,6 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AAF Entity Modeler</title>
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/attributes.css">
   <meta name="description" content="">
 
   <meta property="og:title" content="">
@@ -25,7 +26,7 @@
   <link rel="manifest" href="site.webmanifest">
 
   <!-- NOTE: https://stackoverflow.com/questions/436411/where-should-i-put-script-tags-in-html-markup -->
-  <!-- <script src="js/index.js"></script> -->
+  <!-- <script src="js/attributes.js"></script> -->
   <script src="js/webcomponent/EntityTable.js"></script>
 
   <meta name="theme-color" content="#fafafa">
@@ -33,12 +34,12 @@
 
 <body>
 
-  <title>Entity Data Modeler | EntityTypeDefinitions & Associated EntityTypeAttributes</title>
+  <title>Entity Data Modeler | EntityTypeAttributes</title>
 
   <header>
     <h1 id="product" style="text-align: center; font-family: 'Inter', sans-serif; font-size: 1.00em;">Adaptív Application Foundation Data Layer (AAF Data) | Delivering Foundational Business Agility</h1>
     <h2 id="service" style="text-align: center; font-family: 'Inter', sans-serif; font-size: 2.00em;">Business Entity Modeler</h2>
-    <h2 id="page" style="text-align: center; font-family: 'Inter', sans-serif; font-size: 1.25em;">Home | Orientation & Getting Started</h2>
+    <h2 id="page" style="text-align: center; font-family: 'Inter', sans-serif; font-size: 1.25em;">Manage EntityType Attributes</h2>
   </header>
 
   <nav>
@@ -53,12 +54,34 @@
   </nav>
 
   <main>
-    <h3>Welcome!</h3>
-    <h3>A Career in Modeling</h3>
-    <h3>Importance</h3>
-    <h3>Benefits</h3>
-    <h3>Approach</h3>
-    <h3>Current Statistics, Including Pending Publish</h3>
+    <input type="hidden" id="selectedEntityTypeDefinitionId" value="0">
+    <input type="hidden" id="selectedEntityTypeAttributeId" value="0">
+    <input type="hidden" id="entityTypeDefinitionPageNumber" value="1">
+
+    <section id="attributes">
+      <entity-table id="entitytypeattribute" baseUrl="http://localhost:8080/entityTypes/" entityTypeName="EntityTypeAttribute" pageNumber="1" pageSize="20" includeColumns="['Id', 'EntitySubtypeId', 'LocalizedName', 'LocalizedDescription', 'LocalizedAbbreviation', 'IsLocalizable', 'IsToBeAssociatedWithEachEntityTypeDefinition', 'GeneralizedDataTypeEntitySubtypeId', 'DataSizeOrMaximumLengthInBytesOrCharacters', 'Ordinal', 'IsActive']" zeroWidthColumns="['Id']" eventListener="entityTableRowClicked"></entity-table>
+
+      <form id="newattributedata">
+        <fieldset>
+          <legend>Create New or Clone Existing EntityAttribute </legend>
+
+          <label for="localizedname">LocalizedName* (4 to 8 characters):</label>
+          <input type="text" id="localizedname" required minlength="4" maxlength="50" size="10" />
+
+          <label for="localizeddescription">LocalizedDescription* (4 to 8 characters):</label>
+          <textarea id="localizeddescription" required minlength="4" maxlength="50" rows="5" cols="30"></textarea>
+
+          <label for="localizedabbreviation">LocalizedAbbreviation* (4 to 8 characters):</label>
+          <input type="text" id="localizedabbreviation" required minlength="4" maxlength="50" size="10" />
+        </fieldset>
+      </form>
+
+      <menu style="text-align: center">
+        <button id="create">Create New</button>
+        <button id="clone">Clone Existing</button>
+        <!-- <button id="publish">Publish</button> -->
+      </menu>
+    </section>
   </main>
 
   <footer style="text-align: center">Copyright © 2003-2025 Deceptively Simple Technologies Inc. Some rights reserved.</footer>

@@ -1,0 +1,100 @@
+<!-- #NOTE: Copyright © 2003-2025 Deceptively Simple Technologies Inc. Some rights reserved. Please see the aafdata/LICENSE.txt file for details. -->
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AAF Entity Modeler</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/definitions.css">
+  <meta name="description" content="">
+
+  <meta property="og:title" content="">
+  <meta property="og:type" content="">
+  <meta property="og:url" content="">
+  <meta property="og:image" content="">
+  <meta property="og:image:alt" content="">
+
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Open+Sans:400&amp;lang=en" />
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Inter:600&amp;lang=en" />
+
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon.png">
+
+  <link rel="manifest" href="site.webmanifest">
+
+  <!-- NOTE: https://stackoverflow.com/questions/436411/where-should-i-put-script-tags-in-html-markup -->
+  <script src="js/definitions.js"></script>
+  <script src="js/webcomponent/EntityTable.js"></script>
+
+  <meta name="theme-color" content="#fafafa">
+</head>
+
+<body>
+
+  <title>Entity Data Modeler | EntityTypeDefinitions & Associated EntityTypeAttributes</title>
+
+  <header>
+    <h1 id="product" style="text-align: center; font-family: 'Inter', sans-serif; font-size: 1.00em;">Adaptív Application Foundation Data Layer (AAF Data) | Delivering Foundational Business Agility</h1>
+    <h2 id="service" style="text-align: center; font-family: 'Inter', sans-serif; font-size: 2.00em;">Business Entity Modeler</h2>
+    <h2 id="page" style="text-align: center; font-family: 'Inter', sans-serif; font-size: 1.25em;">Manage EntityType Definitions & Associated EntityType Attributes</h2>
+  </header>
+
+  <nav>
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="#">Entity-Relationship Diagrams (ERDs)</a></li>
+      <li><a href="#">Entity Request Bodies</a></li>
+      <li><a href="definitions.html">Manage Entity Definitions</a></li>
+      <li><a href="attributes.html">Manage Entity Attributes</a></li>
+      <li><a href="#">Manage Scripted Data</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <input type="hidden" id="selectedEntityTypeDefinitionId" value="0">
+    <input type="hidden" id="selectedEntityTypeAttributeId" value="0">
+    <input type="hidden" id="entityTypeDefinitionPageNumber" value="1">
+
+    <section id="definitions">
+      <entity-table id="entitytypedefinition" baseUrl="http://localhost:8080/entityTypes/" entityTypeName="EntityTypeDefinition" whereClause="%22Id%22%20%3E%200" sortClause="%22Ordinal%22%20ASC" pageNumber="1" pageSize="20" includeColumns="['Id', 'LocalizedName', 'LocalizedDescription', 'LocalizedAbbreviation']" zeroWidthColumns="['Id']" eventListener="entityTableCreated"></entity-table>
+
+      <form id="newentitydata">
+        <fieldset>
+          <legend>Create New or Clone Existing EntityDefinition </legend>
+
+          <label for="localizedname">LocalizedName* (4 to 8 characters):</label>
+          <input type="text" id="localizedname" required minlength="4" maxlength="50" size="10" />
+
+          <label for="localizeddescription">LocalizedDescription* (4 to 8 characters):</label>
+          <textarea id="localizeddescription" required minlength="4" maxlength="50" rows="5" cols="30"></textarea>
+
+          <label for="localizedabbreviation">LocalizedAbbreviation* (4 to 8 characters):</label>
+          <input type="text" id="localizedabbreviation" required minlength="4" maxlength="50" size="10" />
+        </fieldset>
+      </form>
+
+      <menu style="text-align: center">
+        <button id="create">Create New</button>
+        <button id="clone">Clone Existing</button>
+        <!-- <button id="publish">Publish</button> -->
+      </menu>
+    </section>
+
+    <section id="attributes">
+      <entity-table id="entitytypeattribute" baseUrl="http://localhost:8080/entityTypes/" entityTypeName="EntityTypeAttribute" pageNumber="1" pageSize="20" includeColumns="['Id', 'LocalizedName', 'LocalizedDescription', 'LocalizedAbbreviation']" zeroWidthColumns="['Id']" eventListener="entityTableRowClicked"></entity-table>
+
+      <menu style="text-align: center">
+        <!-- <button id="associate">Associate</button> -->
+        <button id="dissociate">Dissociate</button>
+      </menu>
+    </section>
+  </main>
+
+  <footer style="text-align: center">Copyright © 2003-2025 Deceptively Simple Technologies Inc. Some rights reserved.</footer>
+
+</body>
+
+</html>
