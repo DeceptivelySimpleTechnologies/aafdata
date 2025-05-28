@@ -5,8 +5,35 @@ document.cookie = "Authentication=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im
 
 //NOTE: "Wire up" the two EntityTables so that when a row is clicked in the first EntityTable, the data is sent to the second EntityTable
 document.addEventListener('entityTablePopulated', handleEntityTablePopulated);
+document.addEventListener('entityTableRowSelected', handleEntityTableRowSelected);
 
 function handleEntityTablePopulated(event) {
+  const entityTableDefinitions = document.getElementById('entitytypedefinition');
+
+  if (event.detail.tableId === 'entitytypedefinition') {
+    let rows = entityTableDefinitions.shadowRoot.getElementById("entitytypedefinition").getElementsByTagName("tr");
+    for (let i = 0; i < rows.length; i++) {
+        rows[i].addEventListener('click', function (event) {
+          const rowClickedEvent = new CustomEvent('entityTableRowSelected', {
+            detail: {
+              row: rows[i]
+            },
+          });
+          document.dispatchEvent(rowClickedEvent);
+        });
+    }
+
+    const selectedRow = entityTableDefinitions.shadowRoot.querySelectorAll('tbody tr')[0];
+    const rowClickedEvent = new CustomEvent('entityTableRowSelected', {
+      detail: {
+        row: selectedRow
+      },
+    });
+    document.dispatchEvent(rowClickedEvent);
+  }
+}
+
+function handleEntityTableRowSelected(event) {
   const entityTableDefinitions = document.getElementById('entitytypedefinition');
   const entityTableAttributes = document.getElementById('entitytypeattribute');
 
@@ -14,32 +41,28 @@ function handleEntityTablePopulated(event) {
   const inputLocalizedDescription = document.getElementById('localizeddescription');
   const inputLocalizedAbbreviation = document.getElementById('localizedabbreviation');
 
-  if (event.detail.tableId === 'entitytypedefinition') {
-    const selectedRow = entityTableDefinitions.shadowRoot.querySelectorAll('tbody tr')[0];
+  entityTableDefinitions.shadowRoot.getElementById("entitytypedefinition").querySelectorAll('tr').forEach((tableRow) => {
+    tableRow.removeAttribute('class');
+  });
+  event.detail.row.setAttribute('class', 'selected');
 
-    // console.log(`Selected row id: ${selectedRow.querySelectorAll('td')[0].innerText}`);
-    selectedRow.setAttribute('class', 'selected');
+  const associatedAttributes = fetchData(entityTableDefinitions.getAttribute('baseUrl') || 'http://localhost:8080/entityTypes/', 'EntityTypeDefinitionEntityTypeAttributeAssociation', '%22EntityTypeDefinitionId%22%20%3D%20' + event.detail.row.querySelectorAll('td')[0].innerText, entityTableDefinitions.getAttribute('sortClause') || '%22Ordinal%22%20ASC', 200, 1).then((data) => {
+    let associatedAttributeIds = "";
 
-    const associatedAttributes = fetchData(entityTableDefinitions.getAttribute('baseUrl') || 'http://localhost:8080/entityTypes/', 'EntityTypeDefinitionEntityTypeAttributeAssociation', '%22EntityTypeDefinitionId%22%20%3D%20' + selectedRow.querySelectorAll('td')[0].innerText, entityTableDefinitions.getAttribute('sortClause') || '%22Ordinal%22%20ASC', 200, 1).then((data) => {
-      // let associatedAttributeIds = data.EntityData.filter((item) => item.EntityTypeDefinitionId + ',');
-      // let associatedAttributeIds = data.EntityData.map((item) => item.EntityTypeAttributeId);
-      let associatedAttributeIds = "";
+    //NOTE: Produce a URL-encoded, comma-separated list of EntityTypeAttribute Ids to pass as a whereClause to refresh the second EntityTable
+    for (i = 0; i < data.EntityData.length; i++) {
+      associatedAttributeIds = associatedAttributeIds + data.EntityData[i].EntityTypeAttributeId + '%2C';
+    };
 
-      //NOTE: Produce a URL-encoded, comma-separated list of EntityTypeAttribute Ids to pass as a whereClause to refresh the second EntityTable
-      for (i = 0; i < data.EntityData.length; i++) {
-        associatedAttributeIds = associatedAttributeIds + data.EntityData[i].EntityTypeAttributeId + '%2C';
-      };
+    associatedAttributeIds = associatedAttributeIds.slice(0, -3);
 
-      associatedAttributeIds = associatedAttributeIds.slice(0, -3);
+    entityTableAttributes.refreshData(entityTableAttributes.getAttribute('baseUrl') || 'http://localhost:8080/entityTypeAttributes/', entityTableAttributes.getAttribute('entityTypeName') || 'EntityTypeAttribute', '%22EntityTypeAttribute%22.%22Id%22%20IN%20%28' + associatedAttributeIds + '%29', entityTableAttributes.getAttribute('sortClause') || '%22Ordinal%22%20ASC', 200, entityTableAttributes.getAttribute('pageNumber') || 1);
+  });
 
-      entityTableAttributes.refreshData(entityTableAttributes.getAttribute('baseUrl') || 'http://localhost:8080/entityTypeAttributes/', entityTableAttributes.getAttribute('entityTypeName') || 'EntityTypeAttribute', '%22EntityTypeAttribute%22.%22Id%22%20IN%20%28' + associatedAttributeIds + '%29', entityTableAttributes.getAttribute('sortClause') || '%22Ordinal%22%20ASC', 200, entityTableAttributes.getAttribute('pageNumber') || 1);
-    });
-
-    inputLocalizedName.value = selectedRow.querySelectorAll('td')[1].innerText;
-    inputLocalizedDescription.value = selectedRow.querySelectorAll('td')[2].innerText;
-    inputLocalizedAbbreviation.value = selectedRow.querySelectorAll('td')[3].innerText;
-  }
-}
+  inputLocalizedName.value = event.detail.row.querySelectorAll('td')[1].innerText;
+  inputLocalizedDescription.value = event.detail.row.querySelectorAll('td')[2].innerText;
+  inputLocalizedAbbreviation.value = event.detail.row.querySelectorAll('td')[3].innerText;
+};
 
 async function fetchData(baseUrl, entityTypeName, whereClause, sortClause, pageSize, pageNumber) {
   const response = await fetch(baseUrl + entityTypeName + '?whereClause=' + whereClause + '&sortClause=' + sortClause + '&pageNumber=' + pageNumber + '&pageSize=' + pageSize, {

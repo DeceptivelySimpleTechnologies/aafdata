@@ -355,7 +355,7 @@ tbody tr:nth-child(even of tr.selected) {
 }
 
 tfoot td {
-  text-align: right;
+  text-align: center;
 }
 
 fieldset {
@@ -401,4 +401,22 @@ footer {
   font-size: 1.00em;
   text-align: center;
   margin-bottom: 3.00em;
+}
+
+#firstPageLink, #previousPageLink, #nextPageLink, #lastPageLink {
+  text-decoration: none;
+  color: white;
+  background-color: lightgrey;
+  border: 1px solid darkgrey;
+  border-radius: 5px;
+  padding: 0 0.25em 0 0.25em;
+  font-weight: bold;
+}
+
+#currentPageNumberDisplay, #pageSizeDisplay, #totalRecordsDisplay {
+  font-weight: bold;
+}
+
+#previousPageLink, #currentPageNumberDisplay, #lastPageLink, #pageSizeDisplay, #totalRecordsDisplay {
+  margin-right: 0.50em;
 }

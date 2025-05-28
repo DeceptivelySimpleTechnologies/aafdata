@@ -2,6 +2,9 @@
 
 class EntityTable extends HTMLElement {
 
+  currentPageNumber = 1;
+  pageSize = 20;
+
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
@@ -17,21 +20,24 @@ class EntityTable extends HTMLElement {
     //TODO: Get live authentication token
     document.cookie = "Authentication=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImxvYyJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IkF1dGhlbnRpY2F0aW9uIiwiYXVkIjoiQUFGRGF0YS1FbnRpdHlEYXRhTWljcm9zZXJ2aWNlIiwiZXhwIjoxNzIzODE2OTIwLCJpYXQiOjE3MjM4MTY4MDAsIm5iZiI6MTcyMzgxNjc4OSwianRpIjoiZWY0YWY0ZTMtZTczNi00MjVhLWFhZmYtZWNhMDNiN2I5YjI4IiwiYm9keSI6eyJFbWFpbEFkZHJlc3MiOiJhbXkuYW5kZXJzb25AYW15c2FjY291bnRpbmcuY29tIn19.a5UdLPgo4CzMyK1_JuWbQQQEMYz-rBcLu5uH0sZElqw; path=/";
 
+    this.currentPageNumber = this.getAttribute('pageNumber') || 1;
+    this.pageSize = this.getAttribute('pageSize') || 20;
+
     try {
-      await this.refreshData(this.getAttribute('baseUrl') || 'http://localhost:8080/entityTypes/', this.getAttribute('entityTypeName') || 'EntityTypeDefinition', this.getAttribute('whereClause') || '%22Id%22%20%3E%20-2', this.getAttribute('sortClause') || '%22Ordinal%22%20ASC', this.getAttribute('pageSize') || 20, this.getAttribute('pageNumber') || 1);
+      await this.refreshData(this.getAttribute('baseUrl') || 'http://localhost:8080/entityTypes/', this.getAttribute('entityTypeName') || 'EntityTypeDefinition', this.getAttribute('whereClause') || '%22Id%22%20%3E%20-2', this.getAttribute('sortClause') || '%22Ordinal%22%20ASC', this.pageSize, this.currentPageNumber);
     //   //TODO: Check if data is empty and handle it accordingly
     }
     catch (error) {
     //   //TODO: Display error message in the table
     }
 
-    const definitionsEvent = new CustomEvent('entityTablePopulated', {
+    const populatedEvent = new CustomEvent('entityTablePopulated', {
       detail: {
         tableId: this.getAttribute('id')
       },
     });
 
-    document.dispatchEvent(definitionsEvent);
+    document.dispatchEvent(populatedEvent);
   }
 
   async refreshData(baseUrl, entityTypeName, whereClause, sortClause, pageSize, pageNumber) {
@@ -49,7 +55,8 @@ class EntityTable extends HTMLElement {
     try {
       const data = await this.fetchData(baseUrl, entityTypeName, whereClause, sortClause, pageSize, pageNumber);
       //TODO: Check if data is empty and handle it accordingly
-      this.displayData(data, table, this.getAttribute('includeColumns') || ['Id', 'EntitySubtypeId', 'TextKey'], this.getAttribute('zeroWidthColumns') || []);
+      // this.displayData(data, table, this.getAttribute('includeColumns') || ['Id', 'EntitySubtypeId', 'TextKey'], this.getAttribute('zeroWidthColumns') || []);
+      this.displayData(data, table, this.getAttribute('columnConfiguration') || [['Id', 'Id', '0'], ['EntitySubtypeId', 'Subtype', '50'], ['TextKey', 'TextKey', '50']]);
     }
     catch (error) {
       console.error('Error fetching data:', error);
@@ -78,19 +85,25 @@ class EntityTable extends HTMLElement {
     return responseJson;
   }
 
-  displayData(data, table, includeColumns, zeroWidthColumns) {
+  displayData(data, table, columnConfiguration) {
     const caption = data.EntityType;
     table.createCaption().textContent = caption;
 
     const firstItem = data.EntityData[0];
     const headerRow = table.createTHead().insertRow();
-    Object.keys(firstItem).forEach(attributeName => {
-      if (includeColumns.includes(attributeName)) {
-        const headerCell = headerRow.insertCell();
-        headerCell.textContent = attributeName;
-        headerCell.width = '33%';
 
-        if (zeroWidthColumns.includes(attributeName)) {
+    const validJsonString = columnConfiguration.replace(/'/g, '"');
+    const configurationArray = JSON.parse(validJsonString);
+    let elementIndex = -1;
+
+    Object.keys(firstItem).forEach(attributeName => {
+      if (configurationArray.map(item => item[0]).includes(attributeName)) {
+        const headerCell = headerRow.insertCell();
+        elementIndex = configurationArray.map(item => item[0]).indexOf(attributeName);
+        headerCell.textContent = configurationArray[elementIndex][1];
+        headerCell.style.cssText = "width: " + configurationArray[elementIndex][2] + "%";
+
+        if (configurationArray[elementIndex][2] === '0') {
           headerCell.style.display = 'none';
         }
       }
@@ -98,15 +111,17 @@ class EntityTable extends HTMLElement {
 
     const body = table.createTBody()
 
-    data.EntityData.forEach(item => {
+    data.EntityData.forEach(record => {
       const bodyRow = body.insertRow();
-      Object.entries(item).forEach(([key, value]) => {
-        if (includeColumns.includes(key)) {
-          const bodyCell = bodyRow.insertCell();
-          bodyCell.textContent = value;
-          bodyCell.width = '33%';
 
-          if (zeroWidthColumns.includes(key)) {
+      Object.entries(record).forEach(attribute => {
+        if (configurationArray.map(item => item[0]).includes(attribute[0])) {
+          const bodyCell = bodyRow.insertCell();
+          elementIndex = configurationArray.map(item => item[0]).indexOf(attribute[0]);
+          bodyCell.textContent = attribute[1];
+          bodyCell.style.cssText = "width: " + configurationArray[elementIndex][2] + "%";
+
+          if (configurationArray[elementIndex][2] === '0') {
             bodyCell.style.display = 'none';
           }
         }
@@ -116,7 +131,69 @@ class EntityTable extends HTMLElement {
     const footerRow = table.createTFoot().insertRow();
     const footerCell = footerRow.insertCell();
     footerCell.colSpan = Object.keys(firstItem).length;
-    footerCell.textContent = `Records: ${data.TotalRows}`;
+
+    let firstPageLink = document.createElement('a');
+    firstPageLink.id = 'firstPageLink';
+    firstPageLink.href = '#';
+    firstPageLink.textContent = '<<';
+    firstPageLink.onclick = function() {
+      this.currentPageNumber = 1;
+      this.refreshData(this.getAttribute('baseUrl') || 'http://localhost:8080/entityTypes/', this.getAttribute('entityTypeName') || 'EntityTypeDefinition', this.getAttribute('whereClause') || '%22Id%22%20%3E%20-2', this.getAttribute('sortClause') || '%22Ordinal%22%20ASC', this.pageSize, this.currentPageNumber);
+      return false;
+    }.bind(this)
+    footerCell.appendChild(firstPageLink);
+
+    let previousPageLink = document.createElement('a');
+    previousPageLink.id = 'previousPageLink';
+    previousPageLink.href = '#';
+    previousPageLink.textContent = '|<';
+    previousPageLink.onclick = function() {
+      if (this.currentPageNumber > 1) {
+        this.currentPageNumber--;
+        this.refreshData(this.getAttribute('baseUrl') || 'http://localhost:8080/entityTypes/', this.getAttribute('entityTypeName') || 'EntityTypeDefinition', this.getAttribute('whereClause') || '%22Id%22%20%3E%20-2', this.getAttribute('sortClause') || '%22Ordinal%22%20ASC', this.pageSize, this.currentPageNumber);
+        return false;
+      }
+    }.bind(this)
+    footerCell.appendChild(previousPageLink);
+
+    let currentPageNumberDisplay = document.createElement('span');
+    currentPageNumberDisplay.id = 'currentPageNumber';
+    currentPageNumberDisplay.textContent = `Page: ${this.currentPageNumber} `;
+    footerCell.appendChild(currentPageNumberDisplay);
+
+    let nextPageLink = document.createElement('a');
+    nextPageLink.id = 'nextPageLink';
+    nextPageLink.href = '#';
+    nextPageLink.textContent = '>|';
+    nextPageLink.onclick = function() {
+      if (this.currentPageNumber < Math.ceil(data.TotalRows / this.pageSize)) {
+        this.currentPageNumber++;
+        this.refreshData(this.getAttribute('baseUrl') || 'http://localhost:8080/entityTypes/', this.getAttribute('entityTypeName') || 'EntityTypeDefinition', this.getAttribute('whereClause') || '%22Id%22%20%3E%20-2', this.getAttribute('sortClause') || '%22Ordinal%22%20ASC', this.pageSize, this.currentPageNumber);
+        return false;
+      }
+    }.bind(this);
+    footerCell.appendChild(nextPageLink);
+
+    let lastPageLink = document.createElement('a');
+    lastPageLink.id = 'lastPageLink';
+    lastPageLink.href = '#';
+    lastPageLink.textContent = '>>';
+    lastPageLink.onclick = async function() {
+      this.currentPageNumber = Math.ceil(data.TotalRows / this.pageSize);
+      await this.refreshData(this.getAttribute('baseUrl') || 'http://localhost:8080/entityTypes/', this.getAttribute('entityTypeName') || 'EntityTypeDefinition', this.getAttribute('whereClause') || '%22Id%22%20%3E%20-2', this.getAttribute('sortClause') || '%22Ordinal%22%20ASC', this.pageSize, this.currentPageNumber);
+      return false;
+    }.bind(this)
+    footerCell.appendChild(lastPageLink);
+
+    let pageSizeDisplay = document.createElement('span');
+    pageSizeDisplay.id = 'pageSize';
+    pageSizeDisplay.textContent = `Page Size: ${this.pageSize} `;
+    footerCell.appendChild(pageSizeDisplay);
+
+    let totalRecordsDisplay = document.createElement('span');
+    totalRecordsDisplay.id = 'totalRecords';
+    totalRecordsDisplay.textContent = `Total Records: ${data.TotalRows} `;
+    footerCell.appendChild(totalRecordsDisplay);
   }
 }
 

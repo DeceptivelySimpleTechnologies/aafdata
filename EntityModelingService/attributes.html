@@ -54,14 +54,15 @@
   </nav>
 
   <main>
-    <input type="hidden" id="selectedEntityTypeDefinitionId" value="0">
-    <input type="hidden" id="selectedEntityTypeAttributeId" value="0">
-    <input type="hidden" id="entityTypeDefinitionPageNumber" value="1">
-
     <section id="attributes">
-      <entity-table id="entitytypeattribute" baseUrl="http://localhost:8080/entityTypes/" entityTypeName="EntityTypeAttribute" pageNumber="1" pageSize="20" includeColumns="['Id', 'EntitySubtypeId', 'LocalizedName', 'LocalizedDescription', 'LocalizedAbbreviation', 'IsLocalizable', 'IsToBeAssociatedWithEachEntityTypeDefinition', 'GeneralizedDataTypeEntitySubtypeId', 'DataSizeOrMaximumLengthInBytesOrCharacters', 'Ordinal', 'IsActive']" zeroWidthColumns="['Id']" eventListener="entityTableRowClicked"></entity-table>
+      <entity-table id="entitytypeattribute" baseUrl="http://localhost:8080/entityTypes/" entityTypeName="EntityTypeAttribute" pageNumber="1" pageSize="20" columnConfiguration="[['Id', 'Id', '0'], ['EntitySubtypeId', 'Subtype', '10'], ['LocalizedName', 'Name', '10'], ['LocalizedDescription', 'Descr', '10'], ['LocalizedAbbreviation', 'Abbrv', '10'], ['IsLocalizable', 'IsLoc', '10'], ['IsToBeAssociatedWithEachEntityTypeDefinition', 'IsCom', '10'], ['GeneralizedDataTypeEntitySubtypeId', 'Data Type', '10'], ['DataSizeOrMaximumLengthInBytesOrCharacters', 'Max Size', '10'], ['Ordinal', 'Ord', '10'], ['IsActive', 'IsAct', '10']]" eventListener="entityTableRowClicked"></entity-table>
+    </section>
 
+    <section id="attributeform">
       <form id="newattributedata">
+        <input type="hidden" id="selectedEntityTypeDefinitionId" value="0">
+        <input type="hidden" id="selectedEntityTypeAttributeId" value="0">
+
         <fieldset>
           <legend>Create New or Clone Existing EntityAttribute </legend>
 
@@ -80,6 +81,12 @@
         <button id="create">Create New</button>
         <button id="clone">Clone Existing</button>
         <!-- <button id="publish">Publish</button> -->
+      </menu>
+    </section>
+
+    <section id="definitionmenu">
+      <menu style="text-align: center">
+        <button id="associate">Associate</button>
       </menu>
     </section>
   </main>
