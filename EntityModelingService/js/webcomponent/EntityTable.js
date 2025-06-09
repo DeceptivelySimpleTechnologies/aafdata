@@ -185,15 +185,15 @@ class EntityTable extends HTMLElement {
     }.bind(this)
     footerCell.appendChild(lastPageLink);
 
-    let pageSizeDisplay = document.createElement('span');
-    pageSizeDisplay.id = 'pageSize';
-    pageSizeDisplay.textContent = `Page Size: ${this.pageSize} `;
-    footerCell.appendChild(pageSizeDisplay);
-
     let totalRecordsDisplay = document.createElement('span');
     totalRecordsDisplay.id = 'totalRecords';
     totalRecordsDisplay.textContent = `Total Records: ${data.TotalRows} `;
     footerCell.appendChild(totalRecordsDisplay);
+
+    let pageSizeDisplay = document.createElement('span');
+    pageSizeDisplay.id = 'pageSize';
+    pageSizeDisplay.textContent = `Page Size: ${this.pageSize} `;
+    footerCell.appendChild(pageSizeDisplay);
   }
 }
 

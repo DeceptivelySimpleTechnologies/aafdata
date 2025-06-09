@@ -413,10 +413,10 @@ footer {
   font-weight: bold;
 }
 
-#currentPageNumberDisplay, #pageSizeDisplay, #totalRecordsDisplay {
+#currentPageNumberDisplay, #totalRecordsDisplay, #pageSizeDisplay {
   font-weight: bold;
 }
 
-#previousPageLink, #currentPageNumberDisplay, #lastPageLink, #pageSizeDisplay, #totalRecordsDisplay {
+#previousPageLink, #currentPageNumberDisplay, #lastPageLink, #totalRecordsDisplay, #pageSizeDisplay {
   margin-right: 0.50em;
 }

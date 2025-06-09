@@ -1,0 +1,40 @@
+/* #NOTE: Copyright © 2003-2025 Deceptively Simple Technologies Inc. Some rights reserved. Please see the aafdata/LICENSE.txt file for details. */
+
+/* ==========================================================================
+   NOTE: AAF Data Modeler-specific styles
+   ========================================================================== */
+h3 {
+  font-family: "Inter", sans-serif;
+  font-size: 1.25em;
+}
+
+h2 {
+  font-family: "Inter", sans-serif;
+  font-size: 1.00em;
+}
+
+#definitions, #attributes, #associations, #data {
+  width: 24.50%;
+  display: inline-table;
+  text-align: center;
+
+  font-family: "Inter", sans-serif;
+  font-size: 1.25em;
+
+  border: 1px solid #222222;
+  border-radius:5px;
+}
+
+.published-caption {
+  font-family: "Inter", sans-serif;
+  font-size: 1.00em;
+  font-weight: normal;
+  color: #04AA6D;
+}
+
+.unpublished-caption {
+  font-family: "Inter", sans-serif;
+  font-size: 1.00em;
+  font-weight: normal;
+  color: #FF0000;
+}

@@ -572,8 +572,7 @@ public class BusinessEntityController
 
             if (entityData == null)
             {
-                //TODO: AAF-81 Improve this error output???
-                entityData = "{[]}";
+                entityData = "{\"EntityType\" : \"" + bodyJwtPayload.get("body").get("LocalizedName").asText() + "\", \"TotalRows\": -1, \"EntityData\": [], \"Code\": 500, \"Message\": \"No data returned from CallableStatement\"}";
             }
 
             //TODO: If "origin" entity
@@ -586,8 +585,7 @@ public class BusinessEntityController
         catch (Exception e)
         {
             logger.error("PostBusinessEntity() failed due to: " + e);
-            //TODO: AAF-81 Improve this error output???
-            return new ResponseEntity<String>("{[]}", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<String>("{\"EntityType\" : \"" + bodyJwtPayload.get("body").get("LocalizedName").asText() + "\", \"TotalRows\": -1, \"EntityData\": [], \"Code\": 500, \"Message\": \"" + e.toString() + "\"}", HttpStatus.INTERNAL_SERVER_ERROR);
         }
         finally
         {
@@ -916,8 +914,7 @@ public class BusinessEntityController
 
                 if (entityData == null)
                 {
-                    //TODO: AAF-81 Improve this error output???
-                    entityData = "{[]}";
+                    entityData = "{\"EntityType\" : \"" + entityTypeName + "\", \"TotalRows\": -1, \"EntityData\": [], \"Code\": 500, \"Message\": \"No data returned by CallableStatement\"}";
                 }
                 //TODO: ENVIRONMENT_JWT_SHARED_SECRET
 
@@ -928,8 +925,7 @@ public class BusinessEntityController
         catch (Exception e)
         {
             logger.error("GetBusinessEntities() failed due to: " + e);
-            //TODO: AAF-81 Improve this error output???
-            return new ResponseEntity<String>("{[]}", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<String>("{\"EntityType\" : \"" + entityTypeName + "\", \"TotalRows\": -1, \"EntityData\": [], \"Code\": 500, \"Message\": \"" + e.toString() + "\"}", HttpStatus.INTERNAL_SERVER_ERROR);
         }
         finally
         {
@@ -1254,8 +1250,7 @@ public class BusinessEntityController
 
                 if (entityData == null)
                 {
-                    //TODO: AAF-81 Improve this error output???
-                    entityData = "{[]}";
+                    entityData = "{\"EntityType\" : \"" + entityTypeName + "\", \"TotalRows\": -1, \"EntityData\": [], \"Code\": 500, \"Message\": \"No data returned from CallableStatement\"}";
                 }
                 else
                 {
@@ -1285,8 +1280,7 @@ public class BusinessEntityController
         catch (Exception e)
         {
             logger.error("UpdateBusinessEntity() failed due to: " + e);
-            //TODO: AAF-81 Improve this error output???
-            return new ResponseEntity<String>("{[]}", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<String>("{\"EntityType\" : \"" + bodyJwtPayload.get("body").get("LocalizedName").asText() + "\", \"TotalRows\": -1, \"EntityData\": [], \"Code\": 500, \"Message\": \"" + e.toString() + "\"}", HttpStatus.INTERNAL_SERVER_ERROR);
         }
         finally
         {
@@ -1576,8 +1570,7 @@ public class BusinessEntityController
 
                 if (entityData == null)
                 {
-                    //TODO: AAF-81 Improve this error output???
-                    entityData = "{[]}";
+                    entityData = "{\"EntityType\" : \"" + entityTypeName + "\", \"TotalRows\": -1, \"EntityData\": [], \"Code\": 500, \"Message\": \"No data returned from CallableStatement\"}";
                 }
 
                 //TODO: If "origin" entity
@@ -1591,8 +1584,7 @@ public class BusinessEntityController
         catch (Exception e)
         {
             logger.error("DeleteBusinessEntity() failed due to: " + e);
-            //TODO: AAF-81 Improve this error output???
-            return new ResponseEntity<String>("{[]}", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<String>("{\"EntityType\" : \"" + bodyJwtPayload.get("body").get("LocalizedName").asText() + "\", \"TotalRows\": -1, \"EntityData\": [], \"Code\": 500, \"Message\": \"" + e.toString() + "\"}", HttpStatus.INTERNAL_SERVER_ERROR);
         }
         finally
         {

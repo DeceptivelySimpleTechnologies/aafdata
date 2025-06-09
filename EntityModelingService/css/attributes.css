@@ -3,7 +3,7 @@
 /* ==========================================================================
    NOTE: AAF Data Modeler-specific styles
    ========================================================================== */
-#attributeform, #definitionmenu {
-  width: 49.5%;
+#attributeform, #definitionmenu, #associationform {
+  width: 33.00%;
   display: inline-table;
 }

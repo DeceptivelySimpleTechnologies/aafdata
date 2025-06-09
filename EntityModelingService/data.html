@@ -1,0 +1,67 @@
+<!-- #NOTE: Copyright © 2003-2025 Deceptively Simple Technologies Inc. Some rights reserved. Please see the aafdata/LICENSE.txt file for details. -->
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AAF Entity Modeler</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/attributes.css">
+  <meta name="description" content="">
+
+  <meta property="og:title" content="">
+  <meta property="og:type" content="">
+  <meta property="og:url" content="">
+  <meta property="og:image" content="">
+  <meta property="og:image:alt" content="">
+
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Open+Sans:400&amp;lang=en" />
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Inter:600&amp;lang=en" />
+
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon.png">
+
+  <link rel="manifest" href="site.webmanifest">
+
+  <!-- NOTE: https://stackoverflow.com/questions/436411/where-should-i-put-script-tags-in-html-markup -->
+  <!-- <script src="js/attributes.js"></script> -->
+  <script src="js/webcomponent/EntityTable.js"></script>
+
+  <meta name="theme-color" content="#fafafa">
+</head>
+
+<body>
+
+  <title>Entity Data Modeler | EntityTypeAttributes</title>
+
+  <header>
+    <h1 id="product" style="text-align: center; font-family: 'Inter', sans-serif; font-size: 1.00em;">Adaptív Application Foundation Data Layer (AAF Data) | Delivering Foundational Business Agility</h1>
+    <h2 id="service" style="text-align: center; font-family: 'Inter', sans-serif; font-size: 2.00em;">Business Entity Modeler</h2>
+    <h2 id="page" style="text-align: center; font-family: 'Inter', sans-serif; font-size: 1.25em;">Manage EntityType Attributes</h2>
+  </header>
+
+  <nav>
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="diagrams.html">Entity-Relationship Diagrams (ERDs)</a></li>
+      <!-- <li><a href="https://d2lang.com/tour/intro">D2 Diagrams?</a></li> -->
+      <li><a href="requests.html">Entity Request Bodies</a></li>
+      <li><a href="definitions.html">Manage Entity Definitions</a></li>
+      <li><a href="attributes.html">Manage Entity Attributes</a></li>
+      <li><a href="data.html">Manage Scripted Data</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <section id="data">
+      <entity-table id="scripteddata" baseUrl="http://localhost:8080/entityTypes/" entityTypeName="EntitySubtype" whereClause="%22Id%22%20%3E%20-2" sortClause="%22Ordinal%22%20ASC" pageNumber="1" pageSize="20" columnConfiguration="[['Id', 'Id', '5'], ['TextKey', 'TextKey', '35'], ['LocalizedName', 'Name', '20'], ['LocalizedDescription', 'Description', '40']]" eventListener="entityTableCreated"></entity-table>
+    </section>
+  </main>
+
+  <footer style="text-align: center">Copyright © 2003-2025 Deceptively Simple Technologies Inc. Some rights reserved.</footer>
+
+</body>
+
+</html>

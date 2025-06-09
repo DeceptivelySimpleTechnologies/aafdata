@@ -27,6 +27,7 @@
 
   <!-- NOTE: https://stackoverflow.com/questions/436411/where-should-i-put-script-tags-in-html-markup -->
   <!-- <script src="js/attributes.js"></script> -->
+  <script src="js/attributes.js" defer></script>
   <script src="js/webcomponent/EntityTable.js"></script>
 
   <meta name="theme-color" content="#fafafa">
@@ -45,17 +46,18 @@
   <nav>
     <ul>
       <li><a href="index.html">Home</a></li>
-      <li><a href="#">Entity-Relationship Diagrams (ERDs)</a></li>
-      <li><a href="#">Entity Request Bodies</a></li>
+      <li><a href="diagrams.html">Entity-Relationship Diagrams (ERDs)</a></li>
+      <!-- <li><a href="https://d2lang.com/tour/intro">D2 Diagrams?</a></li> -->
+      <li><a href="requests.html">Entity Request Bodies</a></li>
       <li><a href="definitions.html">Manage Entity Definitions</a></li>
       <li><a href="attributes.html">Manage Entity Attributes</a></li>
-      <li><a href="#">Manage Scripted Data</a></li>
+      <li><a href="data.html">Manage Scripted Data</a></li>
     </ul>
   </nav>
 
   <main>
     <section id="attributes">
-      <entity-table id="entitytypeattribute" baseUrl="http://localhost:8080/entityTypes/" entityTypeName="EntityTypeAttribute" pageNumber="1" pageSize="20" columnConfiguration="[['Id', 'Id', '0'], ['EntitySubtypeId', 'Subtype', '10'], ['LocalizedName', 'Name', '10'], ['LocalizedDescription', 'Descr', '10'], ['LocalizedAbbreviation', 'Abbrv', '10'], ['IsLocalizable', 'IsLoc', '10'], ['IsToBeAssociatedWithEachEntityTypeDefinition', 'IsCom', '10'], ['GeneralizedDataTypeEntitySubtypeId', 'Data Type', '10'], ['DataSizeOrMaximumLengthInBytesOrCharacters', 'Max Size', '10'], ['Ordinal', 'Ord', '10'], ['IsActive', 'IsAct', '10']]" eventListener="entityTableRowClicked"></entity-table>
+      <entity-table id="entitytypeattribute" baseUrl="http://localhost:8080/entityTypes/" entityTypeName="EntityTypeAttribute" pageNumber="1" pageSize="10" columnConfiguration="[['Id', 'Id', '0'], ['EntitySubtypeId', 'Subtype', '4'], ['TextKey', 'TextKey', '0'], ['LocalizedName', 'Name', '10'], ['LocalizedDescription', 'Descr', '10'], ['LocalizedAbbreviation', 'Abbrv', '4'], ['LocalizedInformation', 'Info', '0'], ['LocalizedPlaceholder', 'Placeholder', '0'], ['IsLocalizable', 'Loc', '2'], ['IsToBeAssociatedWithEachEntityTypeDefinition', 'Comm', '2'], ['GeneralizedDataTypeEntitySubtypeId', 'Dat Typ', '4'], ['DataSizeOrMaximumLengthInBytesOrCharacters', 'MaxSiz', '2'], ['DataPrecision', 'Precis', '2'], ['DataScale', 'Scale', '2'], ['KeyTypeEntitySubtypeId', 'Key Typ', '4'], ['RelatedEntityTypeId', 'Rel Ent Typ', '4'], ['RelatedEntityTypeAttributeId', 'Rel Attr', '4'], ['RelatedEntityTypeCardinalityEntitySubtypeId', 'Rel Card', '4'], ['EntitySubtypeGroupKey', 'Grp Key', '4'], ['ValueEntitySubtypeId', 'Val Typ', '4'], ['DefaultValue', 'Def Val', '2'], ['MinimumValue', 'Min', '2'], ['MaximumValue', 'Max', '2'], ['RegExValidationPattern', 'RegEx', '5'], ['StepIncrementValue', 'Incr', '2'], ['RemoteValidationMethodAsAjaxUri', 'Remote Va', '0'], ['IndexEntitySubtypeId', 'Indx', '2'], ['UniquenessEntitySubtypeId', 'Uniq Typ', '4'], ['SensitivityEntitySubtypeId', 'Sensi Typ', '4'], ['Ordinal', 'Ord', '2'], ['IsActive', 'Is Act', '2']]" eventListener="entityTableRowClicked"></entity-table>
     </section>
 
     <section id="attributeform">
@@ -66,25 +68,126 @@
         <fieldset>
           <legend>Create New or Clone Existing EntityAttribute </legend>
 
+          <label for="entitysubtypeid">EntitySubtypeId*:</label>
+          <input type="text" id="entitysubtypeid" required minlength="4" maxlength="50" size="10" />
+
+          <label for="textkey">TextKey*:</label>
+          <input type="text" id="textkey" required minlength="4" maxlength="150" size="10" />
+
           <label for="localizedname">LocalizedName* (4 to 8 characters):</label>
           <input type="text" id="localizedname" required minlength="4" maxlength="50" size="10" />
 
           <label for="localizeddescription">LocalizedDescription* (4 to 8 characters):</label>
-          <textarea id="localizeddescription" required minlength="4" maxlength="50" rows="5" cols="30"></textarea>
+          <textarea id="localizeddescription" required minlength="4" maxlength="2000" rows="5" cols="30"></textarea>
 
           <label for="localizedabbreviation">LocalizedAbbreviation* (4 to 8 characters):</label>
           <input type="text" id="localizedabbreviation" required minlength="4" maxlength="50" size="10" />
+
+          <label for="localizedinformation">LocalizedInformation* (4 to 8 characters):</label>
+          <textarea id="localizedinformation" required minlength="4" maxlength="50" rows="5" cols="30"></textarea>
+
+          <label for="localizedplaceholder">LocalizedPlaceholder* (4 to 8 characters):</label>
+          <input type="text" id="localizedplaceholder" required minlength="4" maxlength="50" size="10" />
+
+          <label for="islocalizable">IsLocalizable*:</label>
+          <select id="islocalizable" required>
+            <option value="true">True</option>
+            <option value="false">False</option>
+          </select>
+
+          <label for="istobeassociatedwitheachentitytypedefinition">IsToBeAssociatedWithEachEntityTypeDefinition*:</label>
+          <select id="istobeassociatedwitheachentitytypedefinition" required>
+            <option value="true">True</option>
+            <option value="false">False</option>
+          </select>
+
+          <label for="generalizeddatatypeentitysubtypeid">GeneralizedDataTypeEntitySubtypeId*:</label>
+          <input type="text" id="generalizeddatatypeentitysubtypeid" required minlength="4" maxlength="50" size="10" />
+
+          <label for="datasizeormaximumlengthinbytesorcharacters">DataSizeOrMaximumLengthInBytesOrCharacters*:</label>
+          <input type="text" id="datasizeormaximumlengthinbytesorcharacters" required minlength="4" maxlength="50" size="10" />
+
+          <label for="dataprecision">DataPrecision*:</label>
+          <input type="text" id="dataprecision" required minlength="4" maxlength="50" size="10" />
+
+          <label for="datascale">DataScale*:</label>
+          <input type="text" id="datascale" required minlength="4" maxlength="50" size="10" />
+
+          <label for="keytypeentitysubtypeid">KeyTypeEntitySubtypeId*:</label>
+          <input type="text" id="keytypeentitysubtypeid" required minlength="4" maxlength="50" size="10" />
+
+          <label for="relatedentitytypeid">RelatedEntityTypeId*:</label>
+          <input type="text" id="relatedentitytypeid" required minlength="4" maxlength="50" size="10" />
+
+          <label for="relatedentitytypeattributeid">RelatedEntityTypeAttributeId*:</label>
+          <input type="text" id="relatedentitytypeattributeid" required minlength="4" maxlength="50" size="10" />
+
+          <label for="relatedentitytypecardinalityentitysubtypeid">RelatedEntityTypeCardinalityEntitySubtypeId*:</label>
+          <input type="text" id="relatedentitytypecardinalityentitysubtypeid" required minlength="4" maxlength="50" size="10" />
+
+          <label for="entitysubtypegroupkey">EntitySubtypeGroupKey*:</label>
+          <input type="text" id="entitysubtypegroupkey" required minlength="4" maxlength="50" size="10" />
+
+          <label for="valueentitysubtypeid">ValueEntitySubtypeId*:</label>
+          <input type="text" id="valueentitysubtypeid" required minlength="4" maxlength="50" size="10" />
+
+          <label for="defaultvalue">DefaultValue*:</label>
+          <input type="text" id="defaultvalue" required minlength="4" maxlength="50" size="10" />
+
+          <label for="minimumvalue">MinimumValue*:</label>
+          <input type="text" id="minimumvalue" required minlength="4" maxlength="50" size="10" />
+
+          <label for="maximumvalue">MaximumValue*:</label>
+          <input type="text" id="maximumvalue" required minlength="4" maxlength="50" size="10" />
+
+          <label for="regexvalidationpattern">RegExValidationPattern*:</label>
+          <input type="text" id="regexvalidationpattern" required minlength="4" maxlength="50" size="10" />
+
+          <label for="stepincrementvalue">StepIncrementValue*:</label>
+          <input type="text" id="stepincrementvalue" required minlength="4" maxlength="50" size="10" />
+
+          <!-- NOTE: RemoteValidationMethodAsAjaxUri skipped for now -->
+
+          <label for="indexentitysubtypeid">IndexEntitySubtypeId*:</label>
+          <input type="text" id="indexentitysubtypeid" required minlength="4" maxlength="50" size="10" />
+
+          <label for="uniquenessentitysubtypeid">UniquenessEntitySubtypeId*:</label>
+          <input type="text" id="uniquenessentitysubtypeid" required minlength="4" maxlength="50" size="10" />
+
+          <label for="sensitivityentitysubtypeid">SensitivityEntitySubtypeId*:</label>
+          <input type="text" id="sensitivityentitysubtypeid" required minlength="4" maxlength="50" size="10" />
+
+          <label for="ordinal">Ordinal*:</label>
+          <input type="text" id="ordinal" required minlength="4" maxlength="50" size="10" />
         </fieldset>
       </form>
 
       <menu style="text-align: center">
         <button id="create">Create New</button>
         <button id="clone">Clone Existing</button>
-        <!-- <button id="publish">Publish</button> -->
       </menu>
+
+      <span id="status"></span>
     </section>
 
     <section id="definitionmenu">
+      <menu style="text-align: center">
+        <entity-table id="entitytypedefinition" baseUrl="http://localhost:8080/entityTypes/" entityTypeName="EntityTypeDefinition" whereClause="%22Id%22%20%3E%200" sortClause="%22Ordinal%22%20ASC" pageNumber="1" pageSize="10" columnConfiguration="[['Id', 'Id', '0'], ['LocalizedName', 'Name', '40'], ['LocalizedDescription', 'Description', '60']]" eventListener="entityTableCreated"></entity-table>
+      </menu>
+    </section>
+
+    <section id="associationform">
+      <entity-table id="entitytypeassociation" baseUrl="http://localhost:8080/entityTypes/" entityTypeName="EntityTypeDefinitionEntityTypeAttributeAssociation" whereClause="%22Id%22%20%3E%200" sortClause="%22Ordinal%22%20ASC" pageNumber="1" pageSize="10" columnConfiguration="[['Id', 'Id', '0'], ['EntityTypeDefinitionId', 'EntityTypeDefinitionId', '45'], ['EntityTypeAttributeId', 'EntityTypeAttributeId', '45'], ['Ordinal', 'Ord', '10']]" eventListener="entityTableCreated"></entity-table>
+
+      <form id="newassociationdata">
+        <fieldset>
+          <legend>Associate Selected EntityDefinition & EntityAttribute </legend>
+
+          <label for="ordinal">Ordinal*:</label>
+          <input type="text" id="ordinal" required minlength="4" maxlength="50" size="10" />
+        </fieldset>
+      </form>
+
       <menu style="text-align: center">
         <button id="associate">Associate</button>
       </menu>

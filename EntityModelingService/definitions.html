@@ -26,7 +26,7 @@
   <link rel="manifest" href="site.webmanifest">
 
   <!-- NOTE: https://stackoverflow.com/questions/436411/where-should-i-put-script-tags-in-html-markup -->
-  <script src="js/definitions.js"></script>
+  <script src="js/definitions.js" defer></script>
   <script src="js/webcomponent/EntityTable.js"></script>
 
   <meta name="theme-color" content="#fafafa">
@@ -45,17 +45,18 @@
   <nav>
     <ul>
       <li><a href="index.html">Home</a></li>
-      <li><a href="#">Entity-Relationship Diagrams (ERDs)</a></li>
-      <li><a href="#">Entity Request Bodies</a></li>
+      <li><a href="diagrams.html">Entity-Relationship Diagrams (ERDs)</a></li>
+      <!-- <li><a href="https://d2lang.com/tour/intro">D2 Diagrams?</a></li> -->
+      <li><a href="requests.html">Entity Request Bodies</a></li>
       <li><a href="definitions.html">Manage Entity Definitions</a></li>
       <li><a href="attributes.html">Manage Entity Attributes</a></li>
-      <li><a href="#">Manage Scripted Data</a></li>
+      <li><a href="data.html">Manage Scripted Data</a></li>
     </ul>
   </nav>
 
   <main>
     <section id="definitions">
-      <entity-table id="entitytypedefinition" baseUrl="http://localhost:8080/entityTypes/" entityTypeName="EntityTypeDefinition" whereClause="%22Id%22%20%3E%200" sortClause="%22Ordinal%22%20ASC" pageNumber="1" pageSize="20" columnConfiguration="[['Id', 'Id', '0'], ['LocalizedName', 'Name', '30'], ['LocalizedDescription', 'Description', '60'], ['LocalizedAbbreviation', 'Abbrev', '10']]" eventListener="entityTableCreated"></entity-table>
+      <entity-table id="entitytypedefinition" baseUrl="http://localhost:8080/entityTypes/" entityTypeName="EntityTypeDefinition" whereClause="%22Id%22%20%3E%200" sortClause="%22Ordinal%22%20ASC" pageNumber="1" pageSize="10" columnConfiguration="[['Id', 'Id', '0'], ['EntitySubtypeId', 'Subtype', '0'], ['TextKey', 'TextKey', '0'], ['LocalizedName', 'Name', '30'], ['LocalizedDescription', 'Description', '60'], ['LocalizedAbbreviation', 'Abbrev', '10'], ['Ordinal', 'Ordinal', '0']]" eventListener="entityTableCreated"></entity-table>
 
       <form id="newentitydata">
         <input type="hidden" id="selectedEntityTypeDefinitionId" value="0">
@@ -64,26 +65,36 @@
         <fieldset>
           <legend>Create New or Clone Existing EntityDefinition </legend>
 
+          <label for="entitysubtypeid">EntitySubtypeId*:</label>
+          <input type="text" id="entitysubtypeid" required minlength="4" maxlength="50" size="10" />
+
+          <label for="textkey">TextKey* (4 to 8 characters):</label>
+          <input type="text" id="textkey" required minlength="4" maxlength="150" size="10" />
+
           <label for="localizedname">LocalizedName* (4 to 8 characters):</label>
           <input type="text" id="localizedname" required minlength="4" maxlength="50" size="10" />
 
           <label for="localizeddescription">LocalizedDescription* (4 to 8 characters):</label>
-          <textarea id="localizeddescription" required minlength="4" maxlength="50" rows="5" cols="30"></textarea>
+          <textarea id="localizeddescription" required minlength="4" maxlength="2000" rows="5" cols="30"></textarea>
 
           <label for="localizedabbreviation">LocalizedAbbreviation* (4 to 8 characters):</label>
-          <input type="text" id="localizedabbreviation" required minlength="4" maxlength="50" size="10" />
+          <input type="text" id="localizedabbreviation" required minlength="4" maxlength="15" size="10" />
+
+          <label for="ordinal">Ordinal*:</label>
+          <input type="text" id="ordinal" required minlength="4" maxlength="50" size="10" />
         </fieldset>
       </form>
 
       <menu style="text-align: center">
         <button id="create">Create New</button>
         <button id="clone">Clone Existing</button>
-        <!-- <button id="publish">Publish</button> -->
       </menu>
+
+      <span id="status"></span>
     </section>
 
     <section id="attributes">
-      <entity-table id="entitytypeattribute" baseUrl="http://localhost:8080/entityTypes/" entityTypeName="EntityTypeAttribute" pageNumber="1" pageSize="20" columnConfiguration="[['Id', 'Id', '0'], ['LocalizedName', 'Name', '30'], ['LocalizedDescription', 'Description', '60'], ['LocalizedAbbreviation', 'Abbrev', '10']]" eventListener="entityTableRowClicked"></entity-table>
+      <entity-table id="entitytypeattribute" baseUrl="http://localhost:8080/entityTypes/" entityTypeName="EntityTypeAttribute" pageNumber="1" pageSize="10" columnConfiguration="[['Id', 'Id', '0'], ['EntitySubtypeId', 'Subtype', '0'], ['TextKey', 'TextKey', '0'], ['LocalizedName', 'Name', '30'], ['LocalizedDescription', 'Description', '60'], ['LocalizedAbbreviation', 'Abbrev', '10'], ['Ordinal', 'Ordinal', '0']]" eventListener="entityTableRowClicked"></entity-table>
 
       <menu style="text-align: center">
         <!-- <button id="associate">Associate</button> -->

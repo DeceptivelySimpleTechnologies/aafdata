@@ -528,8 +528,7 @@ public class BusinessEntityController
         catch (Exception e)
         {
             logger.error("CreateNewBusinessEntity() failed due to: " + e);
-            //TODO: AAF-81 Improve this error output???
-            return new ResponseEntity<String>("{[]}", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<String>("{\"EntityType\" : \"" + bodyJwtPayload.get("body").get("LocalizedName").asText() + "\", \"TotalRows\": -1, \"EntityData\": [], \"Code\": 500, \"Message\": \"" + e.toString() + "\"}", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         logger.info("CreateNewBusinessEntity() succeeded");
@@ -835,8 +834,7 @@ public class BusinessEntityController
         catch (Exception e)
         {
             logger.error("CloneExistingBusinessEntity() failed due to: " + e);
-            //TODO: * AAF-81 output???
-            return new ResponseEntity<String>("{[]}", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<String>("{\"EntityType\" : \"" + bodyJwtPayload.get("body").get("LocalizedName").asText() + "\", \"TotalRows\": -1, \"EntityData\": [], \"Code\": 500, \"Message\": \"" + e.toString() + "\"}", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         logger.info("CloneExistingBusinessEntity() succeeded");
@@ -1138,8 +1136,7 @@ public class BusinessEntityController
         catch (Exception e)
         {
             logger.error("CloneExistingEntityAttribute() failed due to: " + e);
-            //TODO: * AAF-81 output???
-            return new ResponseEntity<String>("{[]}", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<String>("{\"EntityType\" : \"" + bodyJwtPayload.get("body").get("LocalizedName").asText() + "\", \"TotalRows\": -1, \"EntityData\": [], \"Code\": 500, \"Message\": \"" + e.toString() + "\"}", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         logger.info("CloneExistingEntityAttribute() succeeded");
@@ -1668,8 +1665,7 @@ public class BusinessEntityController
         catch (Exception e)
         {
             logger.error("PublishBusinessEntitys() for " + databaseName + " failed due to: " + e);
-            //TODO: AAF-81 Improve this error output???
-            return new ResponseEntity<String>("{[]}", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<String>("{\"EntityType\" : \"" + bodyJwtPayload.get("body").get("LocalizedName").asText() + "\", \"TotalRows\": -1, \"EntityData\": [], \"Code\": 500, \"Message\": \"" + e.toString() + "\"}", HttpStatus.INTERNAL_SERVER_ERROR);
         }
         finally
         {
@@ -1774,8 +1770,7 @@ public class BusinessEntityController
         catch (Exception e)
         {
             logger.error("UpdatePublishedEntity() failed due to: " + e);
-            //TODO: AAF-81 Improve this error output???
-            return new ResponseEntity<String>("{[]}", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<String>("{\"EntityType\" : \"" + entityTypeName + "\", \"TotalRows\": -1, \"EntityData\": [], \"Code\": 500, \"Message\": \"" + e.toString() + "\"}", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         logger.debug("UpdatePublishedEntity() succeeded");
