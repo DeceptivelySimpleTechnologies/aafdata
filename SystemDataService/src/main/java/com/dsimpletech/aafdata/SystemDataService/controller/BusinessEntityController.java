@@ -56,19 +56,12 @@ public class BusinessEntityController
     @Autowired
     private Environment environment;
 
-    private ResultSet resultSet = null;
-
-    private DatabaseConnection databaseConnection = null;
-
     private String DB_DRIVER_CLASS = "";
     private String DB_URL = "";
     private String DB_USERNAME = "";
     private String DB_PASSWORD = "";
 
-    private Connection connection = null;
-
-    private CallableStatement callableStatement = null;
-    private PreparedStatement preparedStatement = null;
+    //NOTE: https://medium.com/@AlexanderObregon/how-to-use-connection-pooling-for-faster-database-access-in-spring-boot-a352f672dfe3
 
     private ArrayList<EntityTypeDefinition> entityTypeDefinitions = null;
     private ArrayList<EntityTypeAttribute> entityTypeAttributes = null;
@@ -90,13 +83,19 @@ public class BusinessEntityController
     @PostConstruct
     private void CacheEntityData()
     {
+        DatabaseConnection databaseConnection = null;
+
+        Connection connection = null;
+        CallableStatement callableStatement = null;
+        ResultSet resultSet = null;
+
         try {
             logger.info("Attempting to CacheEntityData()");
 
             DB_DRIVER_CLASS = "postgresql";
-            DB_URL = environment.getProperty("spring.jdbc.url");
-            DB_USERNAME = environment.getProperty("spring.jdbc.username");
-            DB_PASSWORD = environment.getProperty("spring.jdbc.password");
+            DB_URL = environment.getProperty("spring.datasource.url");
+            DB_USERNAME = environment.getProperty("spring.datasource.username");
+            DB_PASSWORD = environment.getProperty("spring.datasource.password");
 
             databaseConnection = new DatabaseConnection();
             connection = databaseConnection.GetDatabaseConnection(DB_DRIVER_CLASS, DB_URL, DB_USERNAME, DB_PASSWORD);
@@ -228,7 +227,7 @@ public class BusinessEntityController
 //    }
 //
 
-    @Operation(summary = "Create new, unpublished business entity data in the AafCore database, following all AAF rules and conventions.", description = "Create new, unpublished business entity data in the AafCore database, following all AAF rules and conventions, by providing the valid, required data and any valid, optional data as a JSON Web Token (JWT, please see https://jwt.io/) in the HTTP request body")
+    @Operation(summary = "Create a new, unpublished business entity definition in the AafCore database, following all AAF rules and conventions.", description = "Create a new, unpublished business entity definition in the AafCore database, following all AAF rules and conventions, by providing the valid, required data and any valid, optional data as a JSON Web Token (JWT, please see https://jwt.io/) in the HTTP request body")
     @Parameter(in = ParameterIn.HEADER, description = "API key", name = "ApiKey", content = @Content(schema = @Schema(type = "string")))
     @Parameter(in = ParameterIn.HEADER, description = "Correlation UUID", name = "CorrelationUuid", content = @Content(schema = @Schema(type = "string")), required = false)
     @Parameter(in = ParameterIn.COOKIE, description = "JWT Authentication token", name = "Authentication", content = @Content(schema = @Schema(type = "string")))
@@ -239,6 +238,7 @@ public class BusinessEntityController
             @ApiResponse(responseCode = "422", description = "Unprocessable Entity", content = @Content(schema = @Schema(type = "string"))),
             @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
     })
+    @CrossOrigin(originPatterns = "http://*:[*],https://*:[*]", methods = RequestMethod.POST, allowCredentials = "true")
     @PostMapping(value = "/entityTypeDefinitions", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> CreateNewBusinessEntity(@RequestParam(defaultValue = "#{T(java.time.Instant).now()}") Instant asOfDateTimeUtc, @RequestBody String requestBody, ServerWebExchange exchange) throws Exception
     {
@@ -290,7 +290,7 @@ public class BusinessEntityController
 
             request = exchange.getRequest();
 
-            //NOTE: No database structure changes are necessary for this operation, which calls the EDM PostBusinessEntity method, etc, so no database connection is required
+            //NOTE: No direct database structure changes are necessary for this operation, which calls the EDM PostBusinessEntity method, etc, so no database connection is required
 
             ENVIRONMENT_JWT_SHARED_SECRET = environment.getProperty("environmentJwtSharedSecret");
 
@@ -528,15 +528,14 @@ public class BusinessEntityController
         catch (Exception e)
         {
             logger.error("CreateNewBusinessEntity() failed due to: " + e);
-            //TODO: AAF-81 Improve this error output???
-            return new ResponseEntity<String>("{[]}", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<String>("{\"EntityType\" : \"" + bodyJwtPayload.get("body").get("LocalizedName").asText() + "\", \"TotalRows\": -1, \"EntityData\": [], \"Code\": 500, \"Message\": \"" + e.toString() + "\"}", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         logger.info("CreateNewBusinessEntity() succeeded");
         return new ResponseEntity<String>(entityData, HttpStatus.CREATED);
     }
 
-    @Operation(summary = "Clone an existing business entity as the starting point for new, unpublished business entity data in the AafCore database, following all AAF rules and conventions.", description = "Clone existing business entity data in the AafCore database, following all AAF rules and conventions, by providing the valid, required data and any valid, optional data as a JSON Web Token (JWT, please see https://jwt.io/) in the HTTP request body")
+    @Operation(summary = "Clone an existing business entity definition as the starting point for a new, unpublished business entity definition in the AafCore database, following all AAF rules and conventions.", description = "Clone an existing business entity definition in the AafCore database, following all AAF rules and conventions, by providing the valid, required data and any valid, optional data as a JSON Web Token (JWT, please see https://jwt.io/) in the HTTP request body")
     @Parameter(in = ParameterIn.HEADER, description = "API key", name = "ApiKey", content = @Content(schema = @Schema(type = "string")))
     @Parameter(in = ParameterIn.HEADER, description = "Correlation UUID", name = "CorrelationUuid", content = @Content(schema = @Schema(type = "string")), required = false)
     @Parameter(in = ParameterIn.COOKIE, description = "JWT Authentication token", name = "Authentication", content = @Content(schema = @Schema(type = "string")))
@@ -548,6 +547,7 @@ public class BusinessEntityController
             @ApiResponse(responseCode = "422", description = "Unprocessable Entity", content = @Content(schema = @Schema(type = "string"))),
             @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
     })
+    @CrossOrigin(originPatterns = "http://*:[*],https://*:[*]", methods = RequestMethod.POST, allowCredentials = "true")
     @PostMapping(value = "/entityTypeDefinitions/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> CloneExistingBusinessEntity(@PathVariable("id") Long id, @RequestParam(defaultValue = "#{T(java.time.Instant).now()}") Instant asOfDateTimeUtc, @RequestBody String requestBody, ServerWebExchange exchange) throws Exception
     {
@@ -599,7 +599,7 @@ public class BusinessEntityController
 
             request = exchange.getRequest();
 
-            //NOTE: No database structure changes are necessary for this operation, which calls the EDM PostBusinessEntity method, etc, so no database connection is required
+            //NOTE: No direct database structure changes are necessary for this operation, which calls the EDM PostBusinessEntity method, etc, so no database connection is required
 
             ENVIRONMENT_JWT_SHARED_SECRET = environment.getProperty("environmentJwtSharedSecret");
 
@@ -834,15 +834,316 @@ public class BusinessEntityController
         catch (Exception e)
         {
             logger.error("CloneExistingBusinessEntity() failed due to: " + e);
-            //TODO: * AAF-81 output???
-            return new ResponseEntity<String>("{[]}", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<String>("{\"EntityType\" : \"" + bodyJwtPayload.get("body").get("LocalizedName").asText() + "\", \"TotalRows\": -1, \"EntityData\": [], \"Code\": 500, \"Message\": \"" + e.toString() + "\"}", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         logger.info("CloneExistingBusinessEntity() succeeded");
         return new ResponseEntity<String>(entityData, HttpStatus.CREATED);
     }
 
-    @Operation(summary = "Create or alter the internal structure of the AafCore database, including its schemas, entity models (tables), functions, and system/lookup data, e.g. EntityTypeDefinition, EntityTypeAttribute, EntityType, EntitySubtype, etc, that has been defined/scripted by the AafCoreModeler role.", description = "Create or alter the internal structure of the database by providing the valid, required data and any valid, optional data as a JSON Web Token (JWT, please see https://jwt.io/) in the HTTP request body")
+    @Operation(summary = "Clone an existing business entity attribute as the starting point for a new, unpublished business entity attribute in the AafCore database, following all AAF rules and conventions.", description = "Clone an existing business entity attribute in the AafCore database, following all AAF rules and conventions, by providing the valid, required data and any valid, optional data as a JSON Web Token (JWT, please see https://jwt.io/) in the HTTP request body")
+    @Parameter(in = ParameterIn.HEADER, description = "API key", name = "ApiKey", content = @Content(schema = @Schema(type = "string")))
+    @Parameter(in = ParameterIn.HEADER, description = "Correlation UUID", name = "CorrelationUuid", content = @Content(schema = @Schema(type = "string")), required = false)
+    @Parameter(in = ParameterIn.COOKIE, description = "JWT Authentication token", name = "Authentication", content = @Content(schema = @Schema(type = "string")))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Created", content = @Content(schema = @Schema(type = "string"))),
+            @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content(schema = @Schema(type = "string"))),
+            @ApiResponse(responseCode = "401", description = "Unauthenticated", content = @Content(schema = @Schema(type = "string"))),
+            @ApiResponse(responseCode = "404", description = "Not Found", content = @Content(schema = @Schema(type = "string"))),
+            @ApiResponse(responseCode = "422", description = "Unprocessable Entity", content = @Content(schema = @Schema(type = "string"))),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
+    })
+    @CrossOrigin(originPatterns = "http://*:[*],https://*:[*]", methods = RequestMethod.POST, allowCredentials = "true")
+    @PostMapping(value = "/entityTypeAttributes/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> CloneExistingEntityAttribute(@PathVariable("id") Long id, @RequestParam(defaultValue = "#{T(java.time.Instant).now()}") Instant asOfDateTimeUtc, @RequestBody String requestBody, ServerWebExchange exchange) throws Exception
+    {
+        ServerHttpRequest request = null;
+
+        String[] sqlBlacklistValues = null;
+        String errorValues = "";
+
+        String apiKey = "";
+        String correlationUuid = "";
+
+        ObjectMapper objectMapper = null;
+
+        HttpCookie authenticationJwt = null;
+        Base64.Decoder decoderBase64 = Base64.getUrlDecoder();
+        String[] authenticationJwtSections = null;
+        JsonNode authenticationJwtHeader = null;
+        JsonNode authenticationJwtPayload = null;
+        Long userId = -1L;
+
+        String[] bodyJwtSections = null;
+        JsonNode bodyJwtHeader = null;
+        JsonNode bodyJwtPayload = null;
+
+        String textKey = "";
+        Long ordinal = -1L;
+        Boolean isActive = false;
+
+        HttpHeaders headers = null;
+        EntityTypeAttribute cachedEntityTypeAttribute = null;
+        String cloneActionRequestBody = "";
+        HttpComponentsClientHttpRequestFactory requestFactory = null;
+//        RestTemplateBuilder restTemplateBuilder = null;
+        RestTemplate restTemplate = null;
+        HttpEntity<String> entity = null;
+        ResponseEntity<String> cloneActionResponseBody = null;
+
+        int entityIdStart = -1;
+        int entityIdEnd = -1;
+        Long entityId = -1L;
+
+        JsonNode jsonResponseBody = null;
+        String entityData = "";
+
+        try
+        {
+            //NOTE: Essentially validate existingBusinessEntityId in local cache
+            logger.info("Attempting to CloneExistingEntityAttribute() for " + id + " (" + GetCachedEntityTypeAttributeById(id).getLocalizedName() + ")");
+
+            request = exchange.getRequest();
+
+            //NOTE: No direct database structure changes are necessary for this operation, which calls the EDM PostBusinessEntity method, etc, so no database connection is required
+
+            ENVIRONMENT_JWT_SHARED_SECRET = environment.getProperty("environmentJwtSharedSecret");
+
+            apiKey = exchange.getRequest().getHeaders().getFirst("ApiKey");
+
+            if ((apiKey == null) || (apiKey.length() < 1))
+            {
+                throw new Exception("No 'ApiKey' header included in the request");
+            }
+            else
+            {
+                //TODO: AAF-66 Validate API key by looking it up in the database, ensuring that it is not disabled, checking its associated permissions extent, and (later) checking that it is associated with the authenticated user's OrganizationalUnit
+                logger.info(("ApiKey header '" + apiKey + "' included in the request"));
+            }
+
+            correlationUuid = exchange.getRequest().getHeaders().getFirst("CorrelationUuid");
+
+            if ((correlationUuid == null) || (correlationUuid.length() < 1))
+            {
+                correlationUuid = UUID.randomUUID().toString();
+                logger.info(("CorrelationUuid '" + correlationUuid + "' generated for the request"));
+            }
+            else
+            {
+                //TODO: AAF-66 Validate API key by looking it up in the database, ensuring that it is not disabled, checking its associated permissions extent, and (later) checking that it is associated with the authenticated user's OrganizationalUnit
+                logger.info(("CorrelationUuid '" + correlationUuid + "' included in the request"));
+            }
+
+            objectMapper = new ObjectMapper();
+
+            //TODO: AAF-67 Validate JWT
+            authenticationJwt = request.getCookies().getFirst("Authentication");
+            authenticationJwtSections = authenticationJwt.getValue().split("\\.");
+            authenticationJwtHeader = objectMapper.readTree(decoderBase64.decode(authenticationJwtSections[0]));
+            authenticationJwtPayload = objectMapper.readTree(decoderBase64.decode(authenticationJwtSections[1]));
+            //TODO: Validate JWT signature per https://www.baeldung.com/java-jwt-token-decode
+
+            if ((authenticationJwtHeader != null) && (authenticationJwtPayload != null))
+            {
+                logger.info(("Requested by '" + authenticationJwtPayload.get("body").get("EmailAddress").asText() + "' using key '" + authenticationJwtHeader.get("kid").asText() + "'"));
+            }
+            else
+            {
+                throw new Exception("Missing or invalid 'Authentication' cookie included with the request");
+            }
+
+            //TODO: AAF-68 Look up InformationSystemUser.Id using the authenticated user's EmailAddress in the Authentication JWT payload, and assign it below
+            userId = -100L;
+
+            //TODO: AAF-69 Check user's role(s) and permissions for this operation
+
+            //NOTE: Example request http://localhost:8080/Person with "Authentication" JWT and JWT request body
+            //NOTE: https://learning.postman.com/docs/sending-requests/response-data/cookies/
+//            ApiKey: ???
+//            Authentication JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IkF1dGhlbnRpY2F0ZWQiLCJhdWQiOiJBQUZEYXRhLUVudGl0eURhdGFNaWNyb3NlcnZpY2UiLCJleHAiOjE3MjM4MTY5MjAsImlhdCI6MTcyMzgxNjgwMCwibmJmIjoxNzIzODE2Nzg5LCJqdGkiOiJlZjRhZjRlMy1lNzM2LTQyNWEtYWFmZi1lY2EwM2I3YjliMjgiLCJib2R5Ijp7IkVtYWlsQWRkcmVzcyI6ImFteS5hbmRlcnNvbkBhbXlzYWNjb3VudGluZy5jb20ifX0.Djq5LYPEK1QFgBk9aN5Vei37K6Cb8TxNH3ADWDcUaHs
+//            Request JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IlBPU1QgL0VudGl0eVR5cGUiLCJhdWQiOiJBQUZEYXRhLUVudGl0eURhdGFNaWNyb3NlcnZpY2UiLCJleHAiOjE3MjM4MTY5MjAsImlhdCI6MTcyMzgxNjgwMCwibmJmIjoxNzIzODE2Nzg5LCJqdGkiOiI4NzUyZjIzYi0xYTliLTQyMmEtOGIyNi0zNzQyNDM0ZGY0NzYiLCJib2R5Ijp7IkVudGl0eVN1YnR5cGVJZCI6LTEsIlRleHRLZXkiOiJwZXJzb24tbm9uZS1iaWxsLWJha2VyIiwiTGVnYWxHaXZlbk5hbWUiOiJCaWxsIiwiTGVnYWxTdXJuYW1lIjoiQmFrZXIiLCJCb3JuQXREYXRlVGltZVV0YyI6IjIwMDItMDItMDMgMTE6MTI6MTMuMTIzIiwiTGVnYWxDaXRpemVuT2ZDb3VudHJ5R2VvZ3JhcGhpY1VuaXRJZCI6MSwiTG9jYWxlSWQiOjEsIk9yZGluYWwiOi0xLCJJc0FjdGl2ZSI6dHJ1ZX19.rWNowmEoPkF8N0Q5KC5-W83g3hMqIf9TV8KHzLgNbio
+
+            //TODO: AAF-67 Validate JWT
+//            bodyJwtSections = requestBody.split("\\.");
+//            bodyJwtHeader = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[0]));
+//            bodyJwtPayload = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[1]));
+            //TODO: Validate JWT signature per https://www.baeldung.com/java-jwt-token-decode
+            bodyJwtPayload = objectMapper.readTree(requestBody);
+
+            if (bodyJwtPayload != null)
+            {
+                if (bodyJwtPayload.has("body"))
+                {
+                    //NOTE: Contains a JWT request body
+                    logger.info(("Request from '" + bodyJwtPayload.get("iss").asText() + "' for '" + bodyJwtPayload.get("aud").asText() + "' using key '" + authenticationJwtHeader.get("kid").asText() + "'"));
+                }
+                else
+                {
+                    //NOTE: Create a JWT request body from the simple JSON request body
+                    bodyJwtPayload = objectMapper.createObjectNode();
+                    ((ObjectNode) bodyJwtPayload).put("iss", "AAFData-TBD");
+                    ((ObjectNode) bodyJwtPayload).put("sub", "TBD");
+                    ((ObjectNode) bodyJwtPayload).put("aud", "AAFData-TBD");
+                    ((ObjectNode) bodyJwtPayload).put("exp", "1723816920");
+                    ((ObjectNode) bodyJwtPayload).put("iat", "1723816800");
+                    ((ObjectNode) bodyJwtPayload).put("nbf", "1723816789");
+                    ((ObjectNode) bodyJwtPayload).put("jti", correlationUuid);
+                    ((ObjectNode) bodyJwtPayload).put("body", objectMapper.readTree(requestBody));
+
+                    logger.info(("Request from '" + bodyJwtPayload.get("iss").asText() + "' for '" + bodyJwtPayload.get("aud").asText() + "' using key '" + authenticationJwtHeader.get("kid").asText() + "'"));
+                }
+            }
+            else
+            {
+                throw new Exception("Missing or invalid request body");
+            }
+
+//            sqlBlacklistValues = environment.getProperty("sqlNotToAllow").toLowerCase().split(",");
+            //TODO: AAF-84 Only check request body for SQL injection
+//            errorValues = GuardAgainstSqlIssues(bodyJwtPayload.toString(), sqlBlacklistValues);
+
+            if (errorValues.length() == 0) {
+                //NOTE: Validate newBusinessEntityName in request body
+                if (!IsValidEntityOrAttributeName(bodyJwtPayload.get("body").get("LocalizedName").asText()))
+                {
+                    throw new Exception("Invalid EntityTypeDefinition name '" + bodyJwtPayload.get("body").get("LocalizedName").asText() + "'");
+                }
+
+                //NOTE: Optimistically (and consistently) not checking maximum length of newEntityAttributeName, newEntityAttributeDescription, or newEntityAttributeAbbreviation because the database constraints will catch it
+
+                cachedEntityTypeAttribute = GetCachedEntityTypeAttributeById(id);
+
+                //NOTE: Validate optional newBusinessEntityTextKey in request body or generate TextKey
+                if (bodyJwtPayload.get("body").has("TextKey"))
+                {
+                        if (!IsValidTextKey(bodyJwtPayload.get("body").get("TextKey").asText()))
+                    {
+                        throw new Exception("Invalid TextKey value '" + bodyJwtPayload.get("body").get("TextKey").asText() + "'");
+                    }
+                    else
+                    {
+                        textKey = bodyJwtPayload.get("body").get("TextKey").asText();
+                    }
+                }
+                else
+                {
+                    //TODO: AAF-78 Add a method to generate a valid TextKey value for any EntityTypeDefinition, and call it here
+                    textKey = "entitytypeattribute-" + GetCachedEntitySubtypeById(bodyJwtPayload.get("body").get("EntitySubtypeId").asLong()).getLocalizedName().toLowerCase() + "-" + bodyJwtPayload.get("body").get("LocalizedName").asText().toLowerCase() + "-" + GenerateRandomLowercaseAlphanumericString(5);
+                }
+
+                //NOTE: Get optional Ordinal value in request body or supply default value
+                if (bodyJwtPayload.get("body").has("Ordinal"))
+                {
+                    ordinal = bodyJwtPayload.get("body").get("Ordinal").asLong();
+                }
+                else
+                {
+                    //TODO: Determine a safe default value for Ordinal that places it last and that will not conflict with existing values
+                    ordinal = 1000L;
+                }
+
+                //NOTE: Get optional IsActive value in request body or supply default value
+                if (bodyJwtPayload.get("body").has("IsActive"))
+                {
+                    isActive = bodyJwtPayload.get("body").get("IsActive").asBoolean();
+                }
+                else
+                {
+                    isActive = true;
+                }
+
+                //NOTE: Insert new, unpublished EntityTypeDefinition, and get Id value
+                headers = new HttpHeaders();
+                headers.add("ApiKey", apiKey);
+                headers.add("CorrelationUuid", correlationUuid);
+                headers.add("Cookie", authenticationJwt.toString());
+
+                cloneActionRequestBody = "{\n" +
+                        "    \"EntitySubtypeId\": " + cachedEntityTypeAttribute.getEntitySubtypeId() + ",\n" +
+                        "    \"TextKey\": \"" + textKey + "\",\n" +
+                        "    \"LocalizedName\": \"" + bodyJwtPayload.get("body").get("LocalizedName").asText() + "\",\n" +
+                        "    \"LocalizedDescription\": \"" + bodyJwtPayload.get("body").get("LocalizedDescription").asText() + "\",\n" +
+                        "    \"LocalizedAbbreviation\": \"" + bodyJwtPayload.get("body").get("LocalizedAbbreviation").asText() + "\",\n" +
+                        "    \"LocalizedInformation\": \"" + bodyJwtPayload.get("body").get("LocalizedInformation").asText() + "\",\n" +
+                        "    \"LocalizedPlaceholder\": \"" + bodyJwtPayload.get("body").get("LocalizedPlaceholder").asText() + "\",\n" +
+                        "    \"IsLocalizable\": " + cachedEntityTypeAttribute.isIsLocalizable() + ",\n" +
+                        "    \"IsToBeAssociatedWithEachEntityTypeDefinition\": " + cachedEntityTypeAttribute.isIsToBeAssociatedWithEachEntityTypeDefinition() + ",\n" +
+                        "    \"GeneralizedDataTypeEntitySubtypeId\": " + cachedEntityTypeAttribute.getGeneralizedDataTypeEntitySubtypeId() + ",\n" +
+                        "    \"DataSizeOrMaximumLengthInBytesOrCharacters\": " + cachedEntityTypeAttribute.getDataSizeOrMaximumLengthInBytesOrCharacters() + ",\n" +
+                        "    \"DataPrecision\": " + cachedEntityTypeAttribute.getDataPrecision() + ",\n" +
+                        "    \"DataScale\": " + cachedEntityTypeAttribute.getDataScale() + ",\n" +
+                        "    \"KeyTypeEntitySubtypeId\": " + cachedEntityTypeAttribute.getKeyTypeEntitySubtypeId() + ",\n" +
+                        "    \"RelatedEntityTypeId\": " + cachedEntityTypeAttribute.getRelatedEntityTypeId() + ",\n" +
+                        "    \"RelatedEntityTypeAttributeId\": " + cachedEntityTypeAttribute.getRelatedEntityTypeAttributeId() + ",\n" +
+                        "    \"RelatedEntityTypeCardinalityEntitySubtypeId\": " + cachedEntityTypeAttribute.getRelatedEntityTypeCardinalityEntitySubtypeId() + ",\n" +
+                        "    \"EntitySubtypeGroupKey\": \"" + cachedEntityTypeAttribute.getEntitySubtypeGroupKey() + "\",\n" +
+                        "    \"ValueEntitySubtypeId\": " + cachedEntityTypeAttribute.getValueEntitySubtypeId() + ",\n" +
+                        "    \"DefaultValue\": \"" + cachedEntityTypeAttribute.getDefaultValue() + "\",\n" +
+                        "    \"MinimumValue\": \"" + cachedEntityTypeAttribute.getMinimumValue() + "\",\n" +
+                        "    \"MaximumValue\": \"" + cachedEntityTypeAttribute.getMaximumValue() + "\",\n" +
+                        "    \"RegExValidationPattern\": \"" + cachedEntityTypeAttribute.getRegExValidationPattern() + "\",\n" +
+                        "    \"StepIncrementValue\": " + cachedEntityTypeAttribute.getStepIncrementValue() + ",\n" +
+                        "    \"RemoteValidationMethodAsAjaxUri\": \"" + cachedEntityTypeAttribute.getRemoteValidationMethodAsAjaxUri() + "\",\n" +
+                        "    \"IndexEntitySubtypeId\": " + cachedEntityTypeAttribute.getIndexEntitySubtypeId() + ",\n" +
+                        "    \"UniquenessEntitySubtypeId\": " + cachedEntityTypeAttribute.getUniquenessEntitySubtypeId() + ",\n" +
+                        "    \"SensitivityEntitySubtypeId\": " + cachedEntityTypeAttribute.getSensitivityEntitySubtypeId() + ",\n" +
+                        "    \"PublishedAtDateTimeUtc\": \"9999-12-31T23:59:59.999Z\",\n" +
+                        "    \"PublishedByInformationSystemUserId\": " + "-1" + ",\n" +
+                        //NOTE: Cloning existing Ordinal and IsActive values could lead to confusion since existing sort order might not be appropriate for the newly cloned entity and entities cloned from inactive entities would not be visible by default, so they are specified or defaulted, not copied.
+                        "    \"Ordinal\": " + ordinal + ",\n" +
+                        "    \"IsActive\": " + isActive + ",\n" +
+                        "    \"CorrelationUuid\": \"" + correlationUuid + "\"\n" +
+                        "  }";
+
+                entity = new HttpEntity<String>(cloneActionRequestBody, headers);
+
+                //TODO: AAF-87 Implement fixes for RestTemplateBuilder
+//                restTemplateBuilder = new RestTemplateBuilder();
+//                restTemplate = restTemplate;
+
+                restTemplate = new RestTemplate();
+                requestFactory = new HttpComponentsClientHttpRequestFactory();
+//                requestFactory.setConnectTimeout(TIMEOUT);
+//                requestFactory.setReadTimeout(TIMEOUT);
+                restTemplate.setRequestFactory(requestFactory);
+
+                cloneActionResponseBody = restTemplate.postForEntity("http://localhost:8080/entityTypes/EntityTypeAttribute", entity, String.class);
+
+                //TODO: AAF-88 Check response body for success and to get Id instead of all the parsing below
+
+                entityIdStart = cloneActionResponseBody.getBody().indexOf("\"Id\":") + 5;
+                System.out.println("entityIdStart: " + entityIdStart);
+
+                entityIdEnd = cloneActionResponseBody.getBody().indexOf(",", entityIdStart);
+                System.out.println("entityIdEnd: " + entityIdEnd);
+
+                entityId = Long.parseLong(cloneActionResponseBody.getBody().substring(entityIdStart, entityIdEnd));
+                System.out.println("entityId: " + entityId);
+
+                //TODO: AAF-89 Add AsOfDataTimeUtc and result text to standard response structure here and in EDM
+                //TODO: AAF-82 Echo input parameters in Postgres function return JSON
+                entityData = objectMapper.readTree(cloneActionResponseBody.getBody()).toString();
+
+                //TODO: AAF-91 Confirm all required EntityTypeAttributes are associated with the new EntityTypeDefinition
+                UncacheEntityData();
+                CacheEntityData();
+                //TODO: AAF-92 Re-cache EDM data
+
+                //TODO: AAF-93 Consider converting this to a BPMN process when possible
+            }
+            //TODO: Else/exception here (and in EDM?) if dangerous SQL found???
+        }
+        catch (Exception e)
+        {
+            logger.error("CloneExistingEntityAttribute() failed due to: " + e);
+            return new ResponseEntity<String>("{\"EntityType\" : \"" + bodyJwtPayload.get("body").get("LocalizedName").asText() + "\", \"TotalRows\": -1, \"EntityData\": [], \"Code\": 500, \"Message\": \"" + e.toString() + "\"}", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        logger.info("CloneExistingEntityAttribute() succeeded");
+        return new ResponseEntity<String>(entityData, HttpStatus.CREATED);
+    }
+
+    @Operation(summary = "Create or alter the structure of the AafCore database, including its schemas, entity models (tables), functions, and scripted system/lookup data, e.g. EntityTypeDefinition, EntityTypeAttribute, EntityType, EntitySubtype, etc, that has been defined/scripted by the AafCoreModeler role.", description = "Create or alter the structure of the database by providing the valid, required data and any valid, optional data as a JSON Web Token (JWT, please see https://jwt.io/) in the HTTP request body")
     @Parameter(in = ParameterIn.HEADER, description = "API key", name = "ApiKey", content = @Content(schema = @Schema(type = "string")))
     @Parameter(in = ParameterIn.HEADER, description = "Correlation UUID", name = "CorrelationUuid", content = @Content(schema = @Schema(type = "string")), required = false)
     @Parameter(in = ParameterIn.COOKIE, description = "JWT Authentication token", name = "Authentication", content = @Content(schema = @Schema(type = "string")))
@@ -853,6 +1154,7 @@ public class BusinessEntityController
             @ApiResponse(responseCode = "422", description = "Unprocessable Entity", content = @Content(schema = @Schema(type = "string"))),
             @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
     })
+    @CrossOrigin(originPatterns = "http://*:[*],https://*:[*]", methods = RequestMethod.POST, allowCredentials = "true")
     @PostMapping(value = "/databases/{databaseName}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> PublishBusinessEntitys(@PathVariable("databaseName") String databaseName, @RequestParam(defaultValue = "#{T(java.time.Instant).now()}") Instant asOfDateTimeUtc, @RequestBody String requestBody, ServerWebExchange exchange) throws Exception
     {
@@ -890,6 +1192,13 @@ public class BusinessEntityController
 
         String preparedStatementSql = "";
 
+        DatabaseConnection databaseConnection = null;
+
+        Connection connection = null;
+        CallableStatement callableStatement = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+
         EntityTypeDefinitionEntityTypeAttributeAssociation cachedEntityAssociation = null;
         EntityTypeAttribute cachedEntityTypeAttribute = null;
 
@@ -916,9 +1225,9 @@ public class BusinessEntityController
             CacheEntityData();
 
             DB_DRIVER_CLASS = "postgresql";
-            DB_URL = environment.getProperty("spring.jdbc.url");
-            DB_USERNAME = environment.getProperty("spring.jdbc.username");
-            DB_PASSWORD = environment.getProperty("spring.jdbc.password");
+            DB_URL = environment.getProperty("spring.datasource.url");
+            DB_USERNAME = environment.getProperty("spring.datasource.username");
+            DB_PASSWORD = environment.getProperty("spring.datasource.password");
 
             databaseConnection = new DatabaseConnection();
             connection = databaseConnection.GetDatabaseConnection(DB_DRIVER_CLASS, DB_URL, DB_USERNAME, DB_PASSWORD);
@@ -1356,8 +1665,7 @@ public class BusinessEntityController
         catch (Exception e)
         {
             logger.error("PublishBusinessEntitys() for " + databaseName + " failed due to: " + e);
-            //TODO: AAF-81 Improve this error output???
-            return new ResponseEntity<String>("{[]}", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<String>("{\"EntityType\" : \"" + bodyJwtPayload.get("body").get("LocalizedName").asText() + "\", \"TotalRows\": -1, \"EntityData\": [], \"Code\": 500, \"Message\": \"" + e.toString() + "\"}", HttpStatus.INTERNAL_SERVER_ERROR);
         }
         finally
         {
@@ -1462,8 +1770,7 @@ public class BusinessEntityController
         catch (Exception e)
         {
             logger.error("UpdatePublishedEntity() failed due to: " + e);
-            //TODO: AAF-81 Improve this error output???
-            return new ResponseEntity<String>("{[]}", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<String>("{\"EntityType\" : \"" + entityTypeName + "\", \"TotalRows\": -1, \"EntityData\": [], \"Code\": 500, \"Message\": \"" + e.toString() + "\"}", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         logger.debug("UpdatePublishedEntity() succeeded");

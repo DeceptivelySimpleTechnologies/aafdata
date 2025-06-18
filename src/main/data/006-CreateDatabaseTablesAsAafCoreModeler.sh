@@ -29,6 +29,9 @@ psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresData
 echo "Adding EntitySubtype table to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
 psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/004-model/004-EntitySubtype.sql
 
+echo "Adding EntitySubtypeHierarchy table to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
+psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/004-model/006-EntitySubtypeHierarchy.sql
+
 echo "Adding GeographicUnit table to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
 psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/004-model/007-GeographicUnit.sql
 
@@ -40,6 +43,15 @@ psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresData
 
 echo "Adding Locale table to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
 psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/004-model/010-Locale.sql
+
+echo "Adding Currency table to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
+psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/004-model/011-Currency.sql
+
+echo "Adding Periodicity table to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
+psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/004-model/012-Periodicity.sql
+
+echo "Adding PostalAddress table to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
+psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/004-model/013-PostalAddress.sql
 
 echo "Adding Person table to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
 psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/004-model/014-Person.sql

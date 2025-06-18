@@ -41,6 +41,9 @@ psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresData
 echo "Adding Locale data to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
 psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/006-data/010-Locale.sql
 
+echo "Adding Currency data to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
+psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/006-data/011-Currency.sql
+
 echo "Adding Person data to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
 psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/006-data/014-Person.sql
 

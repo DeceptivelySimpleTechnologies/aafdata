@@ -34,7 +34,7 @@ CREATE TABLE "LegalEntity"."LegalEntity"
     CONSTRAINT "LegalEntity_CHK_LocalizedName" CHECK ("LocalizedName" ~* '^[A-Za-z,\.,!?\/ ]+$'),
 
     CONSTRAINT "LegalEntity_UQ1_TextKey_DeletedAtDateTimeUtc" UNIQUE ("TextKey", "DeletedAtDateTimeUtc"),
-    CONSTRAINT "LegalEntity_UQ1_OrganizationalUnitId_PersonId_DeletedAtDateTimeUtc" UNIQUE ("OrganizationalUnitId", "PersonId", "DeletedAtDateTimeUtc"),
+    CONSTRAINT "LegalEntity_UQ1_OrgUntId_PersonId_DeletedAtDateTimeUtc" UNIQUE ("OrganizationalUnitId", "PersonId", "DeletedAtDateTimeUtc"),
     CONSTRAINT "LegalEntity_UQ1_LocalizedName_DeletedAtDateTimeUtc" UNIQUE ("LocalizedName", "DeletedAtDateTimeUtc"),
 
     CONSTRAINT "LegalEntity_FK_EntitySubtypeId" FOREIGN KEY ("EntitySubtypeId") REFERENCES "EntitySubtype"."EntitySubtype"("Id"),

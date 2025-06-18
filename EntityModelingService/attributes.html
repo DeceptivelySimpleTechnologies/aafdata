@@ -1,0 +1,216 @@
+<!-- #NOTE: Copyright © 2003-2025 Deceptively Simple Technologies Inc. Some rights reserved. Please see the aafdata/LICENSE.txt file for details. -->
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AAF Entity Modeler</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/attributes.css">
+  <meta name="description" content="">
+
+  <meta property="og:title" content="">
+  <meta property="og:type" content="">
+  <meta property="og:url" content="">
+  <meta property="og:image" content="">
+  <meta property="og:image:alt" content="">
+
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Open+Sans:400&amp;lang=en" />
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Inter:600&amp;lang=en" />
+
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon.png">
+
+  <link rel="manifest" href="site.webmanifest">
+
+  <!-- NOTE: https://stackoverflow.com/questions/436411/where-should-i-put-script-tags-in-html-markup -->
+  <!-- <script src="js/attributes.js"></script> -->
+  <script src="js/attributes.js" defer></script>
+  <script src="js/webcomponent/EntityTable.js"></script>
+
+  <meta name="theme-color" content="#fafafa">
+</head>
+
+<body>
+
+  <title>Entity Data Modeler | EntityTypeAttributes</title>
+
+  <header>
+    <h1 id="product" style="text-align: center; font-family: 'Inter', sans-serif; font-size: 1.00em;">Adaptív Application Foundation Data Layer (AAF Data) | Delivering Foundational Business Agility</h1>
+    <h2 id="service" style="text-align: center; font-family: 'Inter', sans-serif; font-size: 2.00em;">Business Entity Modeler</h2>
+    <h2 id="page" style="text-align: center; font-family: 'Inter', sans-serif; font-size: 1.25em;">Manage EntityType Attributes</h2>
+  </header>
+
+  <nav>
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="diagrams.html">Entity-Relationship Diagrams (ERDs)</a></li>
+      <!-- <li><a href="https://d2lang.com/tour/intro">D2 Diagrams?</a></li> -->
+      <li><a href="requests.html">Entity Request Bodies</a></li>
+      <li><a href="definitions.html">Manage Entity Definitions</a></li>
+      <li><a href="attributes.html">Manage Entity Attributes</a></li>
+      <li><a href="data.html">Manage Scripted Data</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <section id="attributes">
+      <entity-table id="entitytypeattribute" baseUrl="http://localhost:8080/entityTypes/" entityTypeName="EntityTypeAttribute" pageNumber="1" pageSize="10" columnConfiguration="[['Id', 'Id', '0'], ['EntitySubtypeId', 'Subtype', '4'], ['TextKey', 'TextKey', '0'], ['LocalizedName', 'Name', '10'], ['LocalizedDescription', 'Descr', '10'], ['LocalizedAbbreviation', 'Abbrv', '4'], ['LocalizedInformation', 'Info', '0'], ['LocalizedPlaceholder', 'Placeholder', '0'], ['IsLocalizable', 'Loc', '2'], ['IsToBeAssociatedWithEachEntityTypeDefinition', 'Comm', '2'], ['GeneralizedDataTypeEntitySubtypeId', 'Dat Typ', '4'], ['DataSizeOrMaximumLengthInBytesOrCharacters', 'MaxSiz', '2'], ['DataPrecision', 'Precis', '2'], ['DataScale', 'Scale', '2'], ['KeyTypeEntitySubtypeId', 'Key Typ', '4'], ['RelatedEntityTypeId', 'Rel Ent Typ', '4'], ['RelatedEntityTypeAttributeId', 'Rel Attr', '4'], ['RelatedEntityTypeCardinalityEntitySubtypeId', 'Rel Card', '4'], ['EntitySubtypeGroupKey', 'Grp Key', '4'], ['ValueEntitySubtypeId', 'Val Typ', '4'], ['DefaultValue', 'Def Val', '2'], ['MinimumValue', 'Min', '2'], ['MaximumValue', 'Max', '2'], ['RegExValidationPattern', 'RegEx', '5'], ['StepIncrementValue', 'Incr', '2'], ['RemoteValidationMethodAsAjaxUri', 'Remote Va', '0'], ['IndexEntitySubtypeId', 'Indx', '2'], ['UniquenessEntitySubtypeId', 'Uniq Typ', '4'], ['SensitivityEntitySubtypeId', 'Sensi Typ', '4'], ['Ordinal', 'Ord', '2'], ['IsActive', 'Is Act', '2']]" eventListener="entityTableRowClicked"></entity-table>
+    </section>
+
+    <section id="attributeform">
+      <form id="newattributedata">
+        <input type="hidden" id="selectedEntityTypeAttributeId" value="0">
+
+        <fieldset>
+          <legend>Create New or Clone Existing EntityAttribute </legend>
+
+          <label for="entitysubtypeidattribute">EntitySubtypeId*:</label>
+          <input type="text" id="entitysubtypeidattribute" required minlength="4" maxlength="50" size="10" />
+
+          <label for="textkeyattribute">TextKey*:</label>
+          <input type="text" id="textkeyattribute" required minlength="4" maxlength="150" size="10" />
+
+          <label for="localizedname">LocalizedName* (4 to 8 characters):</label>
+          <input type="text" id="localizedname" required minlength="4" maxlength="50" size="10" />
+
+          <label for="localizeddescription">LocalizedDescription* (4 to 8 characters):</label>
+          <textarea id="localizeddescription" required minlength="4" maxlength="2000" rows="5" cols="30"></textarea>
+
+          <label for="localizedabbreviation">LocalizedAbbreviation* (4 to 8 characters):</label>
+          <input type="text" id="localizedabbreviation" required minlength="4" maxlength="50" size="10" />
+
+          <label for="localizedinformation">LocalizedInformation* (4 to 8 characters):</label>
+          <textarea id="localizedinformation" required minlength="4" maxlength="50" rows="5" cols="30"></textarea>
+
+          <label for="localizedplaceholder">LocalizedPlaceholder* (4 to 8 characters):</label>
+          <input type="text" id="localizedplaceholder" required minlength="4" maxlength="50" size="10" />
+
+          <label for="islocalizable">IsLocalizable*:</label>
+          <select id="islocalizable" required>
+            <option value="true">True</option>
+            <option value="false">False</option>
+          </select>
+
+          <label for="istobeassociatedwitheachentitytypedefinition">IsToBeAssociatedWithEachEntityTypeDefinition*:</label>
+          <select id="istobeassociatedwitheachentitytypedefinition" required>
+            <option value="true">True</option>
+            <option value="false">False</option>
+          </select>
+
+          <label for="generalizeddatatypeentitysubtypeid">GeneralizedDataTypeEntitySubtypeId*:</label>
+          <input type="text" id="generalizeddatatypeentitysubtypeid" required minlength="4" maxlength="50" size="10" />
+
+          <label for="datasizeormaximumlengthinbytesorcharacters">DataSizeOrMaximumLengthInBytesOrCharacters*:</label>
+          <input type="text" id="datasizeormaximumlengthinbytesorcharacters" required minlength="4" maxlength="50" size="10" />
+
+          <label for="dataprecision">DataPrecision*:</label>
+          <input type="text" id="dataprecision" required minlength="4" maxlength="50" size="10" />
+
+          <label for="datascale">DataScale*:</label>
+          <input type="text" id="datascale" required minlength="4" maxlength="50" size="10" />
+
+          <label for="keytypeentitysubtypeid">KeyTypeEntitySubtypeId*:</label>
+          <input type="text" id="keytypeentitysubtypeid" required minlength="4" maxlength="50" size="10" />
+
+          <label for="relatedentitytypeid">RelatedEntityTypeId*:</label>
+          <input type="text" id="relatedentitytypeid" required minlength="4" maxlength="50" size="10" />
+
+          <label for="relatedentitytypeattributeid">RelatedEntityTypeAttributeId*:</label>
+          <input type="text" id="relatedentitytypeattributeid" required minlength="4" maxlength="50" size="10" />
+
+          <label for="relatedentitytypecardinalityentitysubtypeid">RelatedEntityTypeCardinalityEntitySubtypeId*:</label>
+          <input type="text" id="relatedentitytypecardinalityentitysubtypeid" required minlength="4" maxlength="50" size="10" />
+
+          <label for="entitysubtypegroupkey">EntitySubtypeGroupKey*:</label>
+          <input type="text" id="entitysubtypegroupkey" required minlength="4" maxlength="50" size="10" />
+
+          <label for="valueentitysubtypeid">ValueEntitySubtypeId*:</label>
+          <input type="text" id="valueentitysubtypeid" required minlength="4" maxlength="50" size="10" />
+
+          <label for="defaultvalue">DefaultValue*:</label>
+          <input type="text" id="defaultvalue" required minlength="4" maxlength="50" size="10" />
+
+          <label for="minimumvalue">MinimumValue*:</label>
+          <input type="text" id="minimumvalue" required minlength="4" maxlength="50" size="10" />
+
+          <label for="maximumvalue">MaximumValue*:</label>
+          <input type="text" id="maximumvalue" required minlength="4" maxlength="50" size="10" />
+
+          <label for="regexvalidationpattern">RegExValidationPattern*:</label>
+          <input type="text" id="regexvalidationpattern" required minlength="4" maxlength="50" size="10" />
+
+          <label for="stepincrementvalue">StepIncrementValue*:</label>
+          <input type="text" id="stepincrementvalue" required minlength="4" maxlength="50" size="10" />
+
+          <!-- NOTE: RemoteValidationMethodAsAjaxUri skipped for now -->
+
+          <label for="indexentitysubtypeid">IndexEntitySubtypeId*:</label>
+          <input type="text" id="indexentitysubtypeid" required minlength="4" maxlength="50" size="10" />
+
+          <label for="uniquenessentitysubtypeid">UniquenessEntitySubtypeId*:</label>
+          <input type="text" id="uniquenessentitysubtypeid" required minlength="4" maxlength="50" size="10" />
+
+          <label for="sensitivityentitysubtypeid">SensitivityEntitySubtypeId*:</label>
+          <input type="text" id="sensitivityentitysubtypeid" required minlength="4" maxlength="50" size="10" />
+
+          <label for="ordinalAttribute">Ordinal*:</label>
+          <input type="text" id="ordinalAttribute" required minlength="4" maxlength="50" size="10" />
+        </fieldset>
+      </form>
+
+      <menu style="text-align: center">
+        <button id="create">Create New</button>
+        <button id="clone">Clone Existing</button>
+      </menu>
+
+      <span id="statusAttribute"></span>
+    </section>
+
+    <section id="definitionmenu">
+      <menu style="text-align: center">
+        <entity-table id="entitytypedefinition" baseUrl="http://localhost:8080/entityTypes/" entityTypeName="EntityTypeDefinition" whereClause="%22Id%22%20%3E%200" sortClause="%22Ordinal%22%20ASC" pageNumber="1" pageSize="10" columnConfiguration="[['Id', 'Id', '0'], ['LocalizedName', 'Name', '40'], ['LocalizedDescription', 'Description', '60']]" eventListener="entityTableCreated"></entity-table>
+      </menu>
+    </section>
+
+    <section id="associationform">
+      <entity-table id="entitytypeassociation" baseUrl="http://localhost:8080/entityTypes/" entityTypeName="EntityTypeDefinitionEntityTypeAttributeAssociation" whereClause="%22Id%22%20%3E%200" sortClause="%22Ordinal%22%20ASC" pageNumber="1" pageSize="10" columnConfiguration="[['Id', 'Id', '0'], ['EntityTypeDefinitionId', 'EntityTypeDefinitionId', '45'], ['EntityTypeAttributeId', 'EntityTypeAttributeId', '45'], ['Ordinal', 'Ord', '10']]" eventListener="entityTableCreated"></entity-table>
+
+      <form id="newassociationdata">
+        <input type="hidden" id="selectedEntityTypeDefinitionId" value="0">
+
+        <fieldset>
+          <legend>Associate Selected EntityAttribute with Selected EntityDefinition</legend>
+
+          <label for="entitysubtypeidassociation">EntitySubtypeId*:</label>
+          <input type="text" id="entitysubtypeidassociation" required disabled minlength="4" maxlength="50" size="10" />
+
+          <label for="textkeyassociation">TextKey*:</label>
+          <input type="text" id="textkeyassociation" required minlength="4" maxlength="150" size="10" />
+
+          <label for="entityTypeAttributeId">Selected EntityTypeAttribute Id*:</label>
+          <input type="text" id="entityTypeAttributeId" required disabled minlength="4" maxlength="50" size="10" />
+
+          <label for="entityTypeDefinitionId">Selected EntityTypeDefinition Id*:</label>
+          <input type="text" id="entityTypeDefinitionId" required disabled minlength="4" maxlength="50" size="10" />
+
+          <label for="ordinalAssociation">Ordinal*:</label>
+          <input type="text" id="ordinalAssociation" required minlength="4" maxlength="50" size="10" />
+        </fieldset>
+      </form>
+
+      <menu style="text-align: center">
+        <button id="associate">Associate</button>
+      </menu>
+
+      <span id="statusAssociation"></span>
+    </section>
+  </main>
+
+  <footer style="text-align: center">Copyright © 2003-2025 Deceptively Simple Technologies Inc. Some rights reserved.</footer>
+
+</body>
+
+</html>

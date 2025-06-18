@@ -72,8 +72,8 @@ public class BusinessEntityControllerTest
             String requestBody = "{\n" +
                     "    \"EntitySubtypeId\": -1,\n" +
                     "    \"TextKey\": \"person-none-bill-baker\",\n" +
-                    "    \"LegalGivenName\": \"Bill\",\n" +
-                    "    \"LegalSurname\": \"Baker\",\n" +
+                    "    \"LegalGivenName1\": \"Bill\",\n" +
+                    "    \"LegalSurname1\": \"Baker\",\n" +
                     "    \"BornAtDateTimeUtc\": \"2002-02-03 11:12:13.123\",\n" +
                     "    \"LegalCitizenOfCountryGeographicUnitId\": 1,\n" +
                     "    \"LocaleId\": 1,\n" +
@@ -126,7 +126,7 @@ public class BusinessEntityControllerTest
 //            String whereClause = "%22Id%22%20%3E%200";    //NOTE: URL-encoded '"Id" > 0'
 //
 //            //NOTE: Create sort by (ORDER BY) clause
-//            String sortClause = "%22LegalSurname%22%20ASC%2C%20%22LegalGivenName%22%20ASC%2C%20%22BornAtDateTimeUtc%22%20ASC";  //NOTE: URL-encoded '"LegalSurname" ASC, "LegalGivenName" ASC, "BornAtDateTimeUtc" ASC'
+//            String sortClause = "%22LegalSurname1%22%20ASC%2C%20%22LegalGivenName1%22%20ASC%2C%20%22BornAtDateTimeUtc%22%20ASC";  //NOTE: URL-encoded '"LegalSurname1" ASC, "LegalGivenName1" ASC, "BornAtDateTimeUtc" ASC'
 //
 //            //NOTE: Create request body
 //            String requestBody = "";    //NOTE: HTTP GET requests should not have a request body (ignored if present)

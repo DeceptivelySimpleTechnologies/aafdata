@@ -1,0 +1,103 @@
+<!-- #NOTE: Copyright © 2003-2025 Deceptively Simple Technologies Inc. Some rights reserved. Please see the aafdata/LICENSE.txt file for details. -->
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AAF Entity Modeler</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/index.css">
+  <meta name="description" content="">
+
+  <meta property="og:title" content="">
+  <meta property="og:type" content="">
+  <meta property="og:url" content="">
+  <meta property="og:image" content="">
+  <meta property="og:image:alt" content="">
+
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Open+Sans:400&amp;lang=en" />
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Inter:600&amp;lang=en" />
+
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon.png">
+
+  <link rel="manifest" href="site.webmanifest">
+
+  <!-- NOTE: https://stackoverflow.com/questions/436411/where-should-i-put-script-tags-in-html-markup -->
+  <!-- <script src="js/index.js"></script> -->
+  <script src="js/index.js" defer></script>
+  <script src="js/webcomponent/EntityTable.js"></script>
+
+  <meta name="theme-color" content="#fafafa">
+</head>
+
+<body>
+
+  <title>Entity Data Modeler | EntityTypeDefinitions & Associated EntityTypeAttributes</title>
+
+  <header>
+    <h1 id="product" style="text-align: center; font-family: 'Inter', sans-serif; font-size: 1.00em;">Adaptív Application Foundation Data Layer (AAF Data) | Delivering Foundational Business Agility</h1>
+    <h2 id="service" style="text-align: center; font-family: 'Inter', sans-serif; font-size: 2.00em;">Business Entity Modeler</h2>
+    <h2 id="page" style="text-align: center; font-family: 'Inter', sans-serif; font-size: 1.25em;">Home | Orientation & Getting Started</h2>
+  </header>
+
+  <nav>
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="diagrams.html">Entity-Relationship Diagrams (ERDs)</a></li>
+      <!-- <li><a href="https://d2lang.com/tour/intro">D2 Diagrams?</a></li> -->
+      <li><a href="requests.html">Entity Request Bodies</a></li>
+      <li><a href="definitions.html">Manage Entity Definitions</a></li>
+      <li><a href="attributes.html">Manage Entity Attributes</a></li>
+      <li><a href="data.html">Manage Scripted Data</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <h3>Welcome!</h3>
+      <h2>The Business Entity Modeler is part of the
+        <a target="_blank" rel="noopener noreferrer" href="https://deceptivelysimpletechnologies.com/tools/adaptiv-application-foundation-aaf/aaf-data/">AAF Data</a>
+        product from Deceptively Simple Technologies.
+        The modeler is provided to help AafCoreModelers to create new and to clone existing and to publish
+        EntityTypeDefinitions and EntityTypeAttributes, to associate EntityTypeAttributes with and dissociate
+        them from EntityTypeDefinitions, and to publish these, creating corresponding new database schemas,
+        tables, constraints, indexes, etc</h2>
+    <h3>System Status</h3>
+      <section id="definitions">
+        <span>EntityTypeDefinitions: </span><span id="definitions-total"></span><br>
+        <span class="published-caption">Published: </span><span id="definitions-published">999</span><br>
+        <span class="unpublished-caption">Unpublished: </span><span id="definitions-unpublished">999</span>
+      </section>
+      <section id="attributes">
+        <span>EntityTypeAttributes: </span><span id="attributes-total"></span><br>
+        <span class="published-caption">Published: </span><span id="attributes-published">999</span><br>
+        <span class="unpublished-caption">Unpublished: </span><span id="attributes-unpublished">999</span>
+      </section>
+      <section id="associations">
+        <span>EntityTypeDefinition EntityTypeAttribute Associations: </span><span id="associations-total"></span><br>
+        <span class="published-caption">Published: </span><span id="associations-published">999</span><br>
+        <span class="unpublished-caption">Unpublished: </span><span id="associations-unpublished">999</span>
+      </section>
+      <section id="data">
+        <span>Scripted Entity Data: </span><span id="data-total"></span><br>
+        <span class="published-caption">Published: </span><span id="data-published">999</span><br>
+        <span class="unpublished-caption">Unpublished: </span><span id="data-unpublished">999</span>
+      </section>
+      <menu style="text-align: center">
+        <button id="publish">Publish</button>
+      </menu>
+      <span id="status"></span>
+    <h3>A Career in Modeling</h3>
+    <h3>Importance</h3>
+    <h3>Benefits</h3>
+    <h3>Approach</h3>
+    <h3>Current Statistics, Including Pending Publish</h3>
+  </main>
+
+  <footer style="text-align: center">Copyright © 2003-2025 Deceptively Simple Technologies Inc. Some rights reserved.</footer>
+
+</body>
+
+</html>

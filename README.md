@@ -34,18 +34,21 @@
   - Generalized **business entity models**, e.g. Person, Organization, OrganizationalUnit, Employee, etc,
   - **Database creation scripts** for roles, schemas, tables, constraints, indexes, functions, and
   - **Scripted lookup/reference data**, e.g. EntityType (Person, Organization, OrganizationalUnit, Employee, etc), EntitySubtype (Organization - C Corp, S Corp, LLC, etc, OrganizationalUnit - Region, Division, Department, etc), etc,
-- A Dockerized, **REST**ful **business entity microservice** (BEM) providing
+- A Dockerized, **REST**ful **entity data microservice** (EDM) providing
   - **C**reate,
   - **R**ead,
   - **U**pdate, and
-  - **D**elete (**CRUD**) operations,
+  - **D**elete (**CRUD**) operations for each of these business entity models,
 - A Dockerized, **REST**ful **system data service** (SDS) providing the capability to
-    - Create **N**ew business entity definition,
-    - **C**lone Existing business entity definition,
-    - Create New business entity **A**ttribute,
-    - **A**ssociate business entity attribute with business entity definition(s),
+    - Create **N**ew business entity definitions,
+    - **C**lone Existing business entity definitions,
+    - Create **N**ew business entity attributes,
+    - **Clone** Existing business entity attributes,
+    - **A**ssociate business entity attributes with business entity definition(s),
     - **P**ublish entities, attributes, and associations, thereby creating corresponding new database schemas, tables, constraints, indexes, etc, and
     - **U**pdate the published status of entities, attributes, and associations,
+- A lightweight, modern Progressive Web Application (PWA) business **entity modeling service** (EMS) for extending or modifying these models using the EDM and SDS services,
+- Our first custom HTML5 Web Component (`HtmlElement`) EntityTable demonstrating how to quickly and easily display business entity data on a web page,
 - And **SwaggerDoc** **OpenAPI** application programming interface (API) **documentation**.
 
 
@@ -60,20 +63,26 @@
 **Features**
   - Containerized. Services run in Docker containers, available from DockerHub.
 <!-- -->
-  - The business entity microservice (**BEM**):
+  - The entity data microservice (**EDM**):
     - **Will validate each HTTP request** (near future) using a JSON Web Token (**JWT**) mechanism with optional cryptographic signing and encryption capabilities,
     - **Persists and retrieves business entity data** via its **API**, which calls low-level `POST`, `GET`, `PATCH`, and “soft” DELETE database functions to ensure data integrity and performance -- **NO direct table access**,
     - **Consistently follows RESTful style and best practices**,
     - **Returns standard and appropriate HTTP response codes**, e.g. `200 OK`, `201 Created`, `400 Bad Request`, `401 Unauthorized`, `404 Not Found`, `422 Unprocessable Entity`, `500 Internal Server Error`, etc
     - **Accepts and returns structured JSON resource/entity data** in HTTP request/response bodies as specified for each business entity, and 
-<!--     - **Includes** `entities` **in the request URL**, e.g. `/entities/organization/1234`, to partition low-level resource/entity operations from future high-level process invocation, e.g. `/processes/InformationSystem/RegisterInformationSystemUser/` -->
+<!--     - **Includes** `entityTypes` **in the request URL**, e.g. `/entityTypes/Organization/1234`, to partition low-level resource/entity operations from future high-level process invocation, e.g. `/processes/InformationSystem/RegisterInformationSystemUser/` -->
 - The system data service (**SDS**):
     - **Will validate each HTTP request** (near future) using a JSON Web Token (**JWT**) mechanism with optional cryptographic signing and encryption capabilities,
-    - **Enables authorized entity Modelers and Publishers** to define new EntityTypeDefinitions, EntityTypeAttribtues, and EntityTypeDefinitionEntityTypeAttributeAssociations via its **API**, which calls high-level process `POST` and low-level entity `POST`, `PATCH`, and “soft” DELETE database functions to add (or "publish") these new entities, attributes, and associations to the database, resulting in new model-driven data structures, e.g. SCHEMAs, TABLEs, COLUMNs, CONSTRAINTs, INDEXs, etc,
+    - **Enables authorized entity Modelers and Publishers** to define new EntityTypeDefinitions, EntityTypeAttribtues, and EntityTypeDefinitionEntityTypeAttributeAssociations via its **API**, which calls high-level process `POST` and low-level entity `POST`, `PATCH`, and “soft” DELETE database functions to add (or "publish") these new entity definitions, attributes, and associations to the database, resulting in new model-driven data structures, e.g. SCHEMAs, TABLEs, COLUMNs, CONSTRAINTs, INDEXs, etc,
     - **Consistently follows RESTful style and best practices**,
     - **Returns standard and appropriate HTTP response codes**, e.g. `200 OK`, `201 Created`, `400 Bad Request`, `401 Unauthenticated`, `404 Not Found`, `422 Unprocessable Entity`, 500 Internal Server Error`, etc
     - **Accepts and returns structured JSON resource/entity data** in HTTP request/response bodies as specified for each business entity, and
 <!--     - **Includes** `processes` **in the request URL**, e.g. `/processes/organization/1234`, to partition low-level resource/entity operations from future high-level process invocation, e.g. `/processes/InformationSystem/RegisterInformationSystemUser/` -->
+- The entity modeling service (**EMS**):
+    - **Will validate each HTTP request** (near future) using a JSON Web Token (**JWT**) mechanism with optional cryptographic signing and encryption capabilities,
+    - **Helps authorized entity Modelers and Publishers** to define new AAF Data-compliant EntityTypeDefinitions and  EntityTypeAttribtues, associate them, and publish them via its **API**, which results in new model-driven data structures, e.g. SCHEMAs, TABLEs, COLUMNs, CONSTRAINTs, INDEXs, etc,
+    - **Consistently follows RESTful style and best practices**,
+    - **Returns standard and appropriate HTTP response codes**, e.g. `200 OK`, `201 Created`, `400 Bad Request`, `401 Unauthenticated`, `404 Not Found`, `422 Unprocessable Entity`, 500 Internal Server Error`, etc
+    - **Accepts and returns structured JSON resource/entity data** in HTTP request/response bodies as specified for each business entity, and
 
 
 **Rules**
@@ -82,12 +91,16 @@
   - *`EntityTypeDefinition`
   - *`EntityTypeAttribute`
   - *`EntityTypeDefinitionEntityTypeAttributeAssociation`
-  - `EntityType`
   - `EntitySubtype`
+  - `EntitySubtypeHierarchy`
+  - `EntityType`
   - `Language`
   - `Locale`
   - `GeographicUnit`
   - `GeographicUnitHierarchy`
+  - `Currency`
+  - `Periodicity`
+  - `PostalAddress`
   - `Organization`
   - `OrganizationalUnit`
   - `OrganizationalUnitHierarchy`
@@ -123,9 +136,10 @@
 
 
 Soon **AAF Data will also include**:
+- A complete, basic set of sixty (60) business entity models, built with the AAF Data Modeler, including InformationSystem and ProductAndService domains:
+  - `InformationSystemUser`, `InformationSystemRole`, `DigitalFile`, `DigitalFileFolder`, `Product`, `Service`, `Subscription`, `ContentItem`, etc
 - **Terraform scripts** for creating AWS infrastruture and deploying the AAF Data services to the cloud,
 - **JWT helper functions** (encode/decode),
-- A **business entity modeler** web application and service for extending or modifying these models and their scripted data,
 - A **structure service** for conforming the entity data structures to the model, and
 - **CRUD** operation **event publishing**.
 
@@ -133,11 +147,11 @@ Soon **AAF Data will also include**:
 <!-- GETTING STARTED -->
 ## Getting Started
 
-This is the second AAF Data release, and it supports very simple local (LOC) and minimal (MIN) environments, primarily to demonstrate its purpose and basic capabilities.
+This is the third AAF Data release, and it supports very simple local (LOC) and minimal (MIN) environments, primarily to demonstrate its purpose and basic capabilities.
 
 Please bear in mind that this is a work in progress.  There are many more features and capabilities to come, and features are often "layered", 
 meaning that they have dependencies on other features that must be implemented first.  A good example of this is data validation, which is implemented 
-with database column constraints in the data layer but which is enhanced with code-based validation in the servic layer and which will be further enhanced in the presentation layer. 
+with database column constraints in the data layer but which is enhanced with code-based validation in the service layer and which will be further enhanced in the presentation layer, using the same data types and constraints defined in the business entity attribute model and used to generate the corresponding database tables when published. 
 
 
 ### Prerequisites
@@ -149,7 +163,7 @@ You will need:
 
 ### Installation
 
-Before running the EntityDataMicroservice, you must:
+Before running the EntityDataMicroservice, you **must**:
 
 1. Change directory (`cd`) to `aafdata/src/main/data/`, make executable (`chmod +x <fileName>`), and run the eight (8) BASH command line scripts in `aafdata/src/main/data/` in your PostgreSQL database server in the specified order and with the specified roles (changing the `postgres` role's password if necessary) to create the necessary roles, schemas, tables, functions, and data:
    1. `./001-CreateDatabaseServer.sh PostgreSQL 14 localhost 5432 postgres postgres postgres`
@@ -161,9 +175,9 @@ Before running the EntityDataMicroservice, you must:
    1. `./007-CreateDatabaseFunctionsAsAafCoreModeler.sh PostgreSQL 14 localhost 5432 AafCoreModeler AafCore M0d3l3rCl13nt!`
    1. `./008-CreateDatabaseDataAsAafCoreModeler.sh PostgreSQL 14 localhost 5432 AafCoreModeler AafCore M0d3l3rCl13nt!`
 
-Please **note** that **this second AAF Data release is primarily for demonstration and evaluation purposes**.  It supports very simple local (LOC) and minimal (MIN) remote/cloud environments and **is not intended to be used in a production environment**.  **Later releases** will support shared, remote/cloud development (DEV), staging (STG), and production (PRD) environments and **will utilize secrets management and other security best practices**.  Crawl, walk, run.
+Please **note** that **this third AAF Data release is primarily for demonstration and evaluation purposes**.  It supports very simple local (LOC) and minimal (MIN) remote/cloud environments and **is not intended to be used in a production environment**.  **Later releases** will support shared, remote/cloud development (DEV), staging (STG), and production (PRD) environments and **will utilize secrets management and other security best practices**.  Crawl, walk, run.
 
-2. **Run the EntityDataMicroservice**:
+1. **Run the Java/Springboot-based EntityDataMicroservice**:
    1. **Locally** in IDE:
       1. **Open** the `aafdata` project in **IntelliJ IDEA**.
       1. **Run** the `EntityDataMicroservice` class.
@@ -184,14 +198,14 @@ Please **note** that **this second AAF Data release is primarily for demonstrati
       1. -OR-
       1. **Pull** the Docker image from DockerHub:
          ```sh
-         docker pull deceptivelysimpletechnologies/aafdata-entitydatamicroservice:20241106_143503
+         docker pull deceptivelysimpletechnologies/aafdata-entitydatamicroservice:20250618_164418
          ```
       1. **Run** the Docker container:
          ```sh
          docker run -d --name aafdata-edm-min -e spring_profiles_active=min -p 8080:8080 -t deceptivelysimpletechnologies/aafdata-entitydatamicroservice:latest
          ```
 
-3. **Run the SystemDataService**:
+2. **Run the Java/Springboot-based SystemDataService**:
     1. **Locally** in IDE:
         1. **Open** the `aafdata` project in **IntelliJ IDEA**.
         1. **Run** the `SystemDataService` class.
@@ -212,13 +226,23 @@ Please **note** that **this second AAF Data release is primarily for demonstrati
         1. -OR-
         1. **Pull** the Docker image from DockerHub:
            ```sh
-           docker pull deceptivelysimpletechnologies/aafdata-systemdataservice:20250130_154029
+           docker pull deceptivelysimpletechnologies/aafdata-systemdataservice:20250618_165337
            ```
         1. **Run** the Docker container:
            ```sh
            docker run -d --name aafdata-sds-min -e spring_profiles_active=min -p 8081:8081 -t deceptivelysimpletechnologies/aafdata-systemdataservice:latest
            ```
 
+4. **Run the Progessive Web Application (PWA) EntityModelingService**:
+    1. **In Docker**:
+        1. **Change directory** (`cd`) to `aafdata/EntityModelingService/`.
+        1. **Build** a Docker image with `docker build -t deceptivelysimpletechnologies/aafdata-entitymodelingservice:$(date +%Y%m%d_%H%M%S) .`
+        1. **Run** the Docker container:
+           ```sh
+           docker run -d --name EntityModelingService -e spring_profiles_active=min -p 8082:80 -v ~/Documents/Project/dst/aafdata/EntityModelingService:/usr/share/nginx/html:ro deceptivelysimpletechnologies/aafdata-entitymodelingservice:20250618_170134
+           ```
+        1. **Open a web browser** and navigate to `http://localhost:8082/` to view the EntityModelingService.
+<!--         1. Set the profile environment variable with `export spring_profiles_active=min` (NOTE: Remove it with `unset spring_profiles_active`) -->
 
 
 <p align="right">(<a href="#top">back to top</a>)</p>
@@ -229,6 +253,13 @@ Please **note** that **this second AAF Data release is primarily for demonstrati
 ## Usage
 
 A complete set of Postman requests for both EDM and SDS services is included with the source code at `aafdata/client/DST AAF Data.postman_collection.json`.
+
+**Note**: Each AAF Data API request requires a JWT-encoded cookie, which must be added to the Postman client manually since it will not export with the request collection 
+for security reasons.  The cookie must be name "Authentication" and is for the moment hard-coded with the following structure and content: 
+
+```jwt
+Authentication=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImxvYyJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IkF1dGhlbnRpY2F0aW9uIiwiYXVkIjoiQUFGRGF0YS1FbnRpdHlEYXRhTWljcm9zZXJ2aWNlIiwiZXhwIjoxNzIzODE2OTIwLCJpYXQiOjE3MjM4MTY4MDAsIm5iZiI6MTcyMzgxNjc4OSwianRpIjoiZWY0YWY0ZTMtZTczNi00MjVhLWFhZmYtZWNhMDNiN2I5YjI4IiwiYm9keSI6eyJFbWFpbEFkZHJlc3MiOiJhbXkuYW5kZXJzb25AYW15c2FjY291bnRpbmcuY29tIn19.a5UdLPgo4CzMyK1_JuWbQQQEMYz-rBcLu5uH0sZElqw; Path=/; Domain=localhost; HttpOnly; Expires=Mon, 18 Aug 2025 12:07:49 GMT;
+```
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -340,21 +371,24 @@ In an effort to deliver significant value in the shortest possible timeframe, th
 
 Today, AAF Data is:
 - A standalone set of
-    - Generalized **business entity models**,
-    - **Database creation scripts** for roles, schemas, tables, functions, and
-    - **Scripted lookup/reference data**,
-- A Dockerized, **REST**ful **business entity microservice** (BEM) providing
+    - Generalized **business entity models**, e.g. Person, Organization, OrganizationalUnit, Employee, etc,
+    - **Database creation scripts** for roles, schemas, tables, constraints, indexes, functions, and
+    - **Scripted lookup/reference data**, e.g. EntityType (Person, Organization, OrganizationalUnit, Employee, etc), EntitySubtype (Organization - C Corp, S Corp, LLC, etc, OrganizationalUnit - Region, Division, Department, etc), etc,
+- A Dockerized, **REST**ful **entity data microservice** (EDM) providing
     - **C**reate,
     - **R**ead,
     - **U**pdate, and
-    - **D**elete (**CRUD**) operations,
-- A Dockerized, **REST**ful **system data service** (SDS) providing
-    - Create **N**ew business entity definition,
-    - **C**lone Existing business entity definition,
-    - Create New business entity **A**ttribute,
-    - **A**ssociate business entity attribute with business entity definition(s),
+    - **D**elete (**CRUD**) operations for each of these business entity models,
+- A Dockerized, **REST**ful **system data service** (SDS) providing the capability to
+    - Create **N**ew business entity definitions,
+    - **C**lone Existing business entity definitions,
+    - Create **N**ew business entity attributes,
+    - **Clone** Existing business entity attributes,
+    - **A**ssociate business entity attributes with business entity definition(s),
     - **P**ublish entities, attributes, and associations, thereby creating corresponding new database schemas, tables, constraints, indexes, etc, and
     - **U**pdate the published status of entities, attributes, and associations,
+- A lightweight, modern Progressive Web Application (PWA) business **entity modeling service** (EMS) for extending or modifying these models using the EDM and SDS services,
+- Our first custom HTML5 Web Component (`HtmlElement`) EntityTable demonstrating how to quickly and easily display business entity data on a web page,
 - And **SwaggerDoc** **OpenAPI** application programming interface (API) **documentation**.
 
 
@@ -373,6 +407,13 @@ EntitySubtype structure and data
 
 #### System Data Service
 
+Create new or clone existing EntityTypeDefinitions and EntityTypeAttributes.
+
+Associate or dissociate EntityTypeAttributes with EntityTypeDefinitions.
+
+Publish all unpublished EntityTypeDefinitions, EntityTypeAttributes, and EntityTypeDefinitionEntityTypeAttributeAssociations, resulting in corresponding new database schemas, tables, constraints, indexes, etc.
+
+<!-- 
 TODO: Define LegalEntity, Environment, EnvironmentOwner, Domain, DomainOwner, Entity, EntityOwner, Database, DatabaseOwner, DatabaseSchemaOwner, DatabaseSchemaDataReadOnly, DatabaseSchemaDataReadWrite, DatabaseSchemaDataDelete
 
 System data service logic:
@@ -386,6 +427,24 @@ System data service logic:
 - Are the given business entity's data structures up to date in the given environment?
 - Does the standard, scripted business entity data exist as expected in the given environment?
 - Create the standard, scripted business entity data in the given environment.
+-->
+
+
+#### Entity Modeling Service (EMS)
+
+How many total, published, and unpublished EntityTypeDefinitions, EntityTypeAttributes, EntityTypeDefinitionEntityTypeAttributeAssociations, and scripted EntitySubtypes exist in the database?
+
+List all EntityTypeDefinitions and the EntityTypeAttributes associated with each EntityTypeDefinition.
+
+Create new or clone existing EntityTypeDefinitions and EntityTypeAttributes.
+
+Associate or dissociate EntityTypeAttributes with EntityTypeDefinitions.
+
+List all EntitySubtypes
+
+Publish all unpublished EntityTypeDefinitions, EntityTypeAttributes, and EntityTypeDefinitionEntityTypeAttributeAssociations, resulting in corresponding new database schemas, tables, constraints, indexes, etc.
+
+Features our first custom HTML5 Web Component (`HtmlElement`) EntityTable demonstrating how to quickly and easily display business entity data on a web page
 
 
 ### How Will the AAF Models Be Represented in the Service Layer?
@@ -395,9 +454,9 @@ Out-of-the-box, ready-to-run BPMN process and DMN decision definitions
 
 
 ### How Will the AAF Models Be Represented in the Presentation Layer?
-Coming soon
+Please see our first custom HTML5 Web Component (`HtmlElement`) EntityTable (above).
 
-Model-based web user interface (UI) components
+Coming soon: Other model-based web user interface (UI) components
 
 
 ## Version History
@@ -410,6 +469,10 @@ Model-based web user interface (UI) components
     * Initial Release of SDS and related EDM changes
     * Various bug fixes and optimizations
     * See [commit change](https://github.com/DeceptivelySimpleTechnologies/aafdata/graphs/commit-activity) or See [release history]()
+* 2.0
+    * Initial Release of EMS and related SDS changes
+    * Various bug fixes and optimizations
+    * See [commit change](
 
 
 ## Built With
@@ -436,6 +499,8 @@ Model-based web user interface (UI) components
 - [x] LOC environment setup (with profiles, etc)
 - [ ] Dockerfile with AWS CloudFront logging driver, etc
 - [x] Add EDM image to DockerHub
+- [x] Add SDS image to DockerHub
+- [x] Add EMS image to DockerHub
 - [.] Unit testing
 - [ ] Security testing (database table direct access, etc)
 - [ ] Integration testingSet up Terraform Remote Backend With AWS Using A Bash Script

@@ -58,18 +58,12 @@ public class BusinessEntityController
     @Autowired
     private Environment environment;
 
-    private ResultSet resultSet = null;
-
-    private DatabaseConnection databaseConnection = null;
-
     private String DB_DRIVER_CLASS = "";
     private String DB_URL = "";
     private String DB_USERNAME = "";
     private String DB_PASSWORD = "";
 
-    private Connection connection = null;
-
-    private CallableStatement statement = null;
+    //NOTE: https://medium.com/@AlexanderObregon/how-to-use-connection-pooling-for-faster-database-access-in-spring-boot-a352f672dfe3
 
     private ArrayList<EntityTypeDefinition> entityTypeDefinitions = null;
     private ArrayList<EntityTypeAttribute> entityTypeAttributes = null;
@@ -85,13 +79,19 @@ public class BusinessEntityController
     @PostConstruct
     private void CacheEntityData() {
 
+        DatabaseConnection databaseConnection = null;
+
+        Connection connection = null;
+        CallableStatement statement = null;
+        ResultSet resultSet = null;
+
         try {
             logger.info("Attempting to CacheEntityData()");
 
             DB_DRIVER_CLASS = "postgresql";
-            DB_URL = environment.getProperty("spring.jdbc.url");
-            DB_USERNAME = environment.getProperty("spring.jdbc.username");
-            DB_PASSWORD = environment.getProperty("spring.jdbc.password");
+            DB_URL = environment.getProperty("spring.datasource.url");
+            DB_USERNAME = environment.getProperty("spring.datasource.username");
+            DB_PASSWORD = environment.getProperty("spring.datasource.password");
 
             databaseConnection = new DatabaseConnection();
             connection = databaseConnection.GetDatabaseConnection(DB_DRIVER_CLASS, DB_URL, DB_USERNAME, DB_PASSWORD);
@@ -229,6 +229,7 @@ public class BusinessEntityController
         @ApiResponse(responseCode = "201", description = "Created", content = @Content(schema = @Schema(type = "string"))),
         @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
     })
+    @CrossOrigin(originPatterns = "http://*:[*],https://*:[*]", methods = RequestMethod.POST, allowCredentials = "true")
     @PostMapping(value = "/entityTypes/{entityTypeName}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> PostBusinessEntity(@PathVariable("entityTypeName") String entityTypeName, @RequestBody String requestBody, ServerWebExchange exchange) throws Exception
     {
@@ -258,6 +259,12 @@ public class BusinessEntityController
 
         String[] entityTypeAttributesNeverToReturn = null;
 
+        DatabaseConnection databaseConnection = null;
+
+        Connection connection = null;
+        CallableStatement statement = null;
+        ResultSet resultSet = null;
+
         String insertClause = "";
         String insertValues = "";
 
@@ -275,9 +282,9 @@ public class BusinessEntityController
             request = exchange.getRequest();
 
             DB_DRIVER_CLASS = "postgresql";
-            DB_URL = environment.getProperty("spring.jdbc.url");
-            DB_USERNAME = environment.getProperty("spring.jdbc.username");
-            DB_PASSWORD = environment.getProperty("spring.jdbc.password");
+            DB_URL = environment.getProperty("spring.datasource.url");
+            DB_USERNAME = environment.getProperty("spring.datasource.username");
+            DB_PASSWORD = environment.getProperty("spring.datasource.password");
 
             databaseConnection = new DatabaseConnection();
             connection = databaseConnection.GetDatabaseConnection(DB_DRIVER_CLASS, DB_URL, DB_USERNAME, DB_PASSWORD);
@@ -565,8 +572,7 @@ public class BusinessEntityController
 
             if (entityData == null)
             {
-                //TODO: AAF-81 Improve this error output???
-                entityData = "{[]}";
+                entityData = "{\"EntityType\" : \"" + bodyJwtPayload.get("body").get("LocalizedName").asText() + "\", \"TotalRows\": -1, \"EntityData\": [], \"Code\": 500, \"Message\": \"No data returned from CallableStatement\"}";
             }
 
             //TODO: If "origin" entity
@@ -579,8 +585,7 @@ public class BusinessEntityController
         catch (Exception e)
         {
             logger.error("PostBusinessEntity() failed due to: " + e);
-            //TODO: AAF-81 Improve this error output???
-            return new ResponseEntity<String>("{[]}", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<String>("{\"EntityType\" : \"" + bodyJwtPayload.get("body").get("LocalizedName").asText() + "\", \"TotalRows\": -1, \"EntityData\": [], \"Code\": 500, \"Message\": \"" + e.toString() + "\"}", HttpStatus.INTERNAL_SERVER_ERROR);
         }
         finally
         {
@@ -622,6 +627,7 @@ public class BusinessEntityController
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(type = "string"))),
             @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
     })
+    @CrossOrigin(originPatterns = "http://*:[*],https://*:[*]", methods = RequestMethod.GET, allowCredentials = "true")
     @GetMapping(value = "/entityTypes/{entityTypeName}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity<String> GetBusinessEntities(@PathVariable("entityTypeName") String entityTypeName, @RequestParam(defaultValue = "") String whereClause, @RequestParam(defaultValue = "") String sortClause, @RequestParam(defaultValue = "#{T(java.time.Instant).now()}") Instant asOfDateTimeUtc, @RequestParam(defaultValue = "1") long graphDepthLimit, @RequestParam(defaultValue = "1") long pageNumber, @RequestParam(defaultValue = "20") long pageSize, ServerWebExchange exchange) throws Exception
@@ -649,6 +655,12 @@ public class BusinessEntityController
 
         String[] entityTypeAttributesNeverToReturn = null;
 
+        DatabaseConnection databaseConnection = null;
+
+        Connection connection = null;
+        CallableStatement statement = null;
+        ResultSet resultSet = null;
+
         String selectClause = "";
 
         String entityData = "";
@@ -664,9 +676,9 @@ public class BusinessEntityController
             queryParams = request.getQueryParams();
 
             DB_DRIVER_CLASS = "postgresql";
-            DB_URL = environment.getProperty("spring.jdbc.url");
-            DB_USERNAME = environment.getProperty("spring.jdbc.username");
-            DB_PASSWORD = environment.getProperty("spring.jdbc.password");
+            DB_URL = environment.getProperty("spring.datasource.url");
+            DB_USERNAME = environment.getProperty("spring.datasource.username");
+            DB_PASSWORD = environment.getProperty("spring.datasource.password");
 
             databaseConnection = new DatabaseConnection();
             connection = databaseConnection.GetDatabaseConnection(DB_DRIVER_CLASS, DB_URL, DB_USERNAME, DB_PASSWORD);
@@ -902,8 +914,7 @@ public class BusinessEntityController
 
                 if (entityData == null)
                 {
-                    //TODO: AAF-81 Improve this error output???
-                    entityData = "{[]}";
+                    entityData = "{\"EntityType\" : \"" + entityTypeName + "\", \"TotalRows\": -1, \"EntityData\": [], \"Code\": 500, \"Message\": \"No data returned by CallableStatement\"}";
                 }
                 //TODO: ENVIRONMENT_JWT_SHARED_SECRET
 
@@ -914,8 +925,7 @@ public class BusinessEntityController
         catch (Exception e)
         {
             logger.error("GetBusinessEntities() failed due to: " + e);
-            //TODO: AAF-81 Improve this error output???
-            return new ResponseEntity<String>("{[]}", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<String>("{\"EntityType\" : \"" + entityTypeName + "\", \"TotalRows\": -1, \"EntityData\": [], \"Code\": 500, \"Message\": \"" + e.toString() + "\"}", HttpStatus.INTERNAL_SERVER_ERROR);
         }
         finally
         {
@@ -957,6 +967,7 @@ public class BusinessEntityController
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(type = "string"))),
             @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
     })
+    @CrossOrigin(originPatterns = "http://*:[*],https://*:[*]", methods = RequestMethod.PATCH, allowCredentials = "true")
     @PatchMapping(value = "/entityTypes/{entityTypeName}/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> UpdateBusinessEntity(@PathVariable("entityTypeName") String entityTypeName, @PathVariable("id") Long id, @RequestBody String requestBody, ServerWebExchange exchange) throws Exception
     {
@@ -992,6 +1003,12 @@ public class BusinessEntityController
 
         String[] entityTypeAttributesNeverToReturn = null;
 
+        DatabaseConnection databaseConnection = null;
+
+        Connection connection = null;
+        CallableStatement statement = null;
+        ResultSet resultSet = null;
+
         String updateClause = "";
 
         String selectClause = "";
@@ -1019,9 +1036,9 @@ public class BusinessEntityController
             existingEntityData = GetBusinessEntities(entityTypeName, URLEncoder.encode("\"Id\" = " + id, StandardCharsets.UTF_8), "", Instant.now(), 1, 1, 1, exchange);
 
             DB_DRIVER_CLASS = "postgresql";
-            DB_URL = environment.getProperty("spring.jdbc.url");
-            DB_USERNAME = environment.getProperty("spring.jdbc.username");
-            DB_PASSWORD = environment.getProperty("spring.jdbc.password");
+            DB_URL = environment.getProperty("spring.datasource.url");
+            DB_USERNAME = environment.getProperty("spring.datasource.username");
+            DB_PASSWORD = environment.getProperty("spring.datasource.password");
 
             databaseConnection = new DatabaseConnection();
             connection = databaseConnection.GetDatabaseConnection(DB_DRIVER_CLASS, DB_URL, DB_USERNAME, DB_PASSWORD);
@@ -1233,8 +1250,7 @@ public class BusinessEntityController
 
                 if (entityData == null)
                 {
-                    //TODO: AAF-81 Improve this error output???
-                    entityData = "{[]}";
+                    entityData = "{\"EntityType\" : \"" + entityTypeName + "\", \"TotalRows\": -1, \"EntityData\": [], \"Code\": 500, \"Message\": \"No data returned from CallableStatement\"}";
                 }
                 else
                 {
@@ -1264,8 +1280,7 @@ public class BusinessEntityController
         catch (Exception e)
         {
             logger.error("UpdateBusinessEntity() failed due to: " + e);
-            //TODO: AAF-81 Improve this error output???
-            return new ResponseEntity<String>("{[]}", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<String>("{\"EntityType\" : \"" + bodyJwtPayload.get("body").get("LocalizedName").asText() + "\", \"TotalRows\": -1, \"EntityData\": [], \"Code\": 500, \"Message\": \"" + e.toString() + "\"}", HttpStatus.INTERNAL_SERVER_ERROR);
         }
         finally
         {
@@ -1307,6 +1322,7 @@ public class BusinessEntityController
             @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(type = "string"))),
             @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
     })
+    @CrossOrigin(originPatterns = "http://*:[*],https://*:[*]", methods = RequestMethod.DELETE, allowCredentials = "true")
     @DeleteMapping(value = "/entityTypes/{entityTypeName}/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> DeleteBusinessEntity(@PathVariable("entityTypeName") String entityTypeName, @PathVariable("id") Long id, @RequestBody String requestBody, ServerWebExchange exchange) throws Exception
     {
@@ -1340,6 +1356,12 @@ public class BusinessEntityController
 
         String[] entityTypeAttributesNeverToReturn = null;
 
+        DatabaseConnection databaseConnection = null;
+
+        Connection connection = null;
+        CallableStatement statement = null;
+        ResultSet resultSet = null;
+
         String selectClause = "";
 
         String entityData = "";
@@ -1355,9 +1377,9 @@ public class BusinessEntityController
             queryParams = request.getQueryParams();
 
             DB_DRIVER_CLASS = "postgresql";
-            DB_URL = environment.getProperty("spring.jdbc.url");
-            DB_USERNAME = environment.getProperty("spring.jdbc.username");
-            DB_PASSWORD = environment.getProperty("spring.jdbc.password");
+            DB_URL = environment.getProperty("spring.datasource.url");
+            DB_USERNAME = environment.getProperty("spring.datasource.username");
+            DB_PASSWORD = environment.getProperty("spring.datasource.password");
 
             databaseConnection = new DatabaseConnection();
             connection = databaseConnection.GetDatabaseConnection(DB_DRIVER_CLASS, DB_URL, DB_USERNAME, DB_PASSWORD);
@@ -1548,8 +1570,7 @@ public class BusinessEntityController
 
                 if (entityData == null)
                 {
-                    //TODO: AAF-81 Improve this error output???
-                    entityData = "{[]}";
+                    entityData = "{\"EntityType\" : \"" + entityTypeName + "\", \"TotalRows\": -1, \"EntityData\": [], \"Code\": 500, \"Message\": \"No data returned from CallableStatement\"}";
                 }
 
                 //TODO: If "origin" entity
@@ -1563,8 +1584,7 @@ public class BusinessEntityController
         catch (Exception e)
         {
             logger.error("DeleteBusinessEntity() failed due to: " + e);
-            //TODO: AAF-81 Improve this error output???
-            return new ResponseEntity<String>("{[]}", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<String>("{\"EntityType\" : \"" + bodyJwtPayload.get("body").get("LocalizedName").asText() + "\", \"TotalRows\": -1, \"EntityData\": [], \"Code\": 500, \"Message\": \"" + e.toString() + "\"}", HttpStatus.INTERNAL_SERVER_ERROR);
         }
         finally
         {
