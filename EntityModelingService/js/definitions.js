@@ -98,7 +98,7 @@ function handleEntityTableDefinitionRowSelected(event) {
   });
   event.detail.row.setAttribute('class', 'selected');
 
-  const associatedAttributes = fetchData(entityTableDefinitions.getAttribute('baseUrl') || 'http://localhost:8080/entityTypes/', 'EntityTypeDefinitionEntityTypeAttributeAssociation', '%22EntityTypeDefinitionId%22%20%3D%20' + event.detail.row.querySelectorAll('td')[0].innerText, entityTableDefinitions.getAttribute('sortClause') || '%22Ordinal%22%20ASC', 200, 1).then((data) => {
+  const associatedAttributes = fetchData(entityTableDefinitions.getAttribute('baseUrl') || 'http://localhost:8080/entityTypes/', 'EntityTypeDefinitionEntityTypeAttributeAssociation', '%22EntityTypeDefinitionId%22%20%3D%20' + event.detail.row.querySelectorAll('td')[0].innerText, entityTableDefinitions.getAttribute('sortClause') || '%22Ordinal%22%20ASC', 10, 1).then((data) => {
     let associatedAttributeIds = "";
 
     //NOTE: Produce a URL-encoded, comma-separated list of EntityTypeAttribute Ids to pass as a whereClause to refresh the second EntityTable
@@ -107,7 +107,7 @@ function handleEntityTableDefinitionRowSelected(event) {
     }
 
     associatedAttributeIds = associatedAttributeIds.slice(0, -3);
-    entityTableAttributes.refreshData(entityTableAttributes.getAttribute('baseUrl') || 'http://localhost:8080/entityTypeAttributes/', entityTableAttributes.getAttribute('entityTypeName') || 'EntityTypeAttribute', '%22EntityTypeAttribute%22.%22Id%22%20IN%20%28' + associatedAttributeIds + '%29', entityTableAttributes.getAttribute('sortClause') || '%22Ordinal%22%20ASC', 200, entityTableAttributes.getAttribute('pageNumber') || 1);
+    entityTableAttributes.refreshData(entityTableAttributes.getAttribute('baseUrl') || 'http://localhost:8080/entityTypeAttributes/', entityTableAttributes.getAttribute('entityTypeName') || 'EntityTypeAttribute', '%22EntityTypeAttribute%22.%22Id%22%20IN%20%28' + associatedAttributeIds + '%29', entityTableAttributes.getAttribute('sortClause') || '%22Ordinal%22%20ASC', 10, entityTableAttributes.getAttribute('pageNumber') || 1);
   });
 
   selectedEntityTypeDefinitionId.value = event.detail.row.querySelectorAll('td')[0].innerText;

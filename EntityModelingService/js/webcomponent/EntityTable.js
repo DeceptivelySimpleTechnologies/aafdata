@@ -41,31 +41,37 @@ class EntityTable extends HTMLElement {
   }
 
   async refreshData(baseUrl, entityTypeName, whereClause, sortClause, pageSize, pageNumber) {
-    let table = this.shadowRoot.querySelector('table');
+    let tableNew = document.createElement('table');
 
-    if (table) {
-      table.remove();
-    }
-
-    table = document.createElement('table');
-
-    table.setAttribute('id', this.getAttribute('id') || 'entitytypedefinition-' + Math.floor(Math.random() * (99999 - 10000 + 1)) + 10000);
-    table.setAttribute('class', 'entity-table');
+    tableNew.setAttribute('id', this.getAttribute('id') || 'entitytypedefinition-' + Math.floor(Math.random() * (99999 - 10000 + 1)) + 10000);
+    tableNew.setAttribute('class', 'entity-table');
 
     try {
       const data = await this.fetchData(baseUrl, entityTypeName, whereClause, sortClause, pageSize, pageNumber);
       //TODO: Check if data is empty and handle it accordingly
-      // this.displayData(data, table, this.getAttribute('includeColumns') || ['Id', 'EntitySubtypeId', 'TextKey'], this.getAttribute('zeroWidthColumns') || []);
-      this.displayData(data, table, this.getAttribute('columnConfiguration') || [['Id', 'Id', '0'], ['EntitySubtypeId', 'Subtype', '50'], ['TextKey', 'TextKey', '50']]);
+
+      this.displayData(data, tableNew, this.getAttribute('columnConfiguration') || [['Id', 'Id', '0'], ['EntitySubtypeId', 'Subtype', '50'], ['TextKey', 'TextKey', '50']]);
     }
     catch (error) {
       console.error('Error fetching data:', error);
       //TODO: Display error message in the table
     }
 
-    this.shadowRoot.appendChild(table);
-    //
-    // this.connectedCallback();
+    let tableOld = this.shadowRoot.querySelector('table');
+
+    if (tableOld) {
+      tableOld.remove();
+    }
+
+    this.shadowRoot.appendChild(tableNew);
+
+    const populatedEvent = new CustomEvent('entityTablePopulated', {
+      detail: {
+        tableId: tableNew.getAttribute('id')
+      },
+    });
+
+    document.dispatchEvent(populatedEvent);
   }
 
   async fetchData(baseUrl, entityTypeName, whereClause, sortClause, pageSize, pageNumber) {

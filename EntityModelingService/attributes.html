@@ -62,17 +62,16 @@
 
     <section id="attributeform">
       <form id="newattributedata">
-        <input type="hidden" id="selectedEntityTypeDefinitionId" value="0">
         <input type="hidden" id="selectedEntityTypeAttributeId" value="0">
 
         <fieldset>
           <legend>Create New or Clone Existing EntityAttribute </legend>
 
-          <label for="entitysubtypeid">EntitySubtypeId*:</label>
-          <input type="text" id="entitysubtypeid" required minlength="4" maxlength="50" size="10" />
+          <label for="entitysubtypeidattribute">EntitySubtypeId*:</label>
+          <input type="text" id="entitysubtypeidattribute" required minlength="4" maxlength="50" size="10" />
 
-          <label for="textkey">TextKey*:</label>
-          <input type="text" id="textkey" required minlength="4" maxlength="150" size="10" />
+          <label for="textkeyattribute">TextKey*:</label>
+          <input type="text" id="textkeyattribute" required minlength="4" maxlength="150" size="10" />
 
           <label for="localizedname">LocalizedName* (4 to 8 characters):</label>
           <input type="text" id="localizedname" required minlength="4" maxlength="50" size="10" />
@@ -157,8 +156,8 @@
           <label for="sensitivityentitysubtypeid">SensitivityEntitySubtypeId*:</label>
           <input type="text" id="sensitivityentitysubtypeid" required minlength="4" maxlength="50" size="10" />
 
-          <label for="ordinal">Ordinal*:</label>
-          <input type="text" id="ordinal" required minlength="4" maxlength="50" size="10" />
+          <label for="ordinalAttribute">Ordinal*:</label>
+          <input type="text" id="ordinalAttribute" required minlength="4" maxlength="50" size="10" />
         </fieldset>
       </form>
 
@@ -167,7 +166,7 @@
         <button id="clone">Clone Existing</button>
       </menu>
 
-      <span id="status"></span>
+      <span id="statusAttribute"></span>
     </section>
 
     <section id="definitionmenu">
@@ -180,17 +179,33 @@
       <entity-table id="entitytypeassociation" baseUrl="http://localhost:8080/entityTypes/" entityTypeName="EntityTypeDefinitionEntityTypeAttributeAssociation" whereClause="%22Id%22%20%3E%200" sortClause="%22Ordinal%22%20ASC" pageNumber="1" pageSize="10" columnConfiguration="[['Id', 'Id', '0'], ['EntityTypeDefinitionId', 'EntityTypeDefinitionId', '45'], ['EntityTypeAttributeId', 'EntityTypeAttributeId', '45'], ['Ordinal', 'Ord', '10']]" eventListener="entityTableCreated"></entity-table>
 
       <form id="newassociationdata">
-        <fieldset>
-          <legend>Associate Selected EntityDefinition & EntityAttribute </legend>
+        <input type="hidden" id="selectedEntityTypeDefinitionId" value="0">
 
-          <label for="ordinal">Ordinal*:</label>
-          <input type="text" id="ordinal" required minlength="4" maxlength="50" size="10" />
+        <fieldset>
+          <legend>Associate Selected EntityAttribute with Selected EntityDefinition</legend>
+
+          <label for="entitysubtypeidassociation">EntitySubtypeId*:</label>
+          <input type="text" id="entitysubtypeidassociation" required disabled minlength="4" maxlength="50" size="10" />
+
+          <label for="textkeyassociation">TextKey*:</label>
+          <input type="text" id="textkeyassociation" required minlength="4" maxlength="150" size="10" />
+
+          <label for="entityTypeAttributeId">Selected EntityTypeAttribute Id*:</label>
+          <input type="text" id="entityTypeAttributeId" required disabled minlength="4" maxlength="50" size="10" />
+
+          <label for="entityTypeDefinitionId">Selected EntityTypeDefinition Id*:</label>
+          <input type="text" id="entityTypeDefinitionId" required disabled minlength="4" maxlength="50" size="10" />
+
+          <label for="ordinalAssociation">Ordinal*:</label>
+          <input type="text" id="ordinalAssociation" required minlength="4" maxlength="50" size="10" />
         </fieldset>
       </form>
 
       <menu style="text-align: center">
         <button id="associate">Associate</button>
       </menu>
+
+      <span id="statusAssociation"></span>
     </section>
   </main>
 

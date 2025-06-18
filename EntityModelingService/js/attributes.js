@@ -5,11 +5,13 @@ document.cookie = "Authentication=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im
 
 //NOTE: "Wire up" the two EntityTables so that when a row is clicked in the first EntityTable, the data is sent to the second EntityTable
 document.addEventListener('entityTablePopulated', handleEntityTablePopulated);
+
 document.addEventListener('entityTableDefinitionRowSelected', handleEntityTableDefinitionRowSelected);
 document.addEventListener('entityTableAttributeRowSelected', handleEntityTableAttributeRowSelected);
 
 document.addEventListener('createButtonClicked', handleCreateButtonClicked);
 document.addEventListener('cloneButtonClicked', handleCloneButtonClicked);
+document.addEventListener('associateButtonClicked', handleAssociateButtonClicked);
 
 function handleEntityTablePopulated(event) {
   const entityTableDefinitions = document.getElementById('entitytypedefinition');
@@ -39,7 +41,7 @@ function handleEntityTablePopulated(event) {
     });
     document.dispatchEvent(rowClickedEvent);
   }
-  else {
+  else if (event.detail.tableId === 'entitytypeattribute') {
     let rows = entityTableAttributes.shadowRoot.getElementById("entitytypeattribute").getElementsByTagName("tr");
 
     //NOTE: Add a click event listener to each row in the EntityTable that sends the selected row
@@ -77,47 +79,40 @@ function handleEntityTablePopulated(event) {
     });
     document.dispatchEvent(cloneButtonClickedEvent);
   };
+
+  const inputEntitySubtypeIdAssociation = document.getElementById('entitysubtypeidassociation');
+  //NOTE: EntityTypeDefinitionEntityTypeAttributeAssociation has no subtype
+  inputEntitySubtypeIdAssociation.value = '0';
+
+  const inputTextKeyAssociation = document.getElementById('textkeyassociation');
+  inputTextKeyAssociation.value = 'entitytypedefinitionentitytypeattributeassociation-';
+
+  const buttonAssociate = document.getElementById('associate');
+  buttonAssociate.onclick = function () {
+    const associateButtonClickedEvent = new CustomEvent('associateButtonClicked', {
+    });
+    document.dispatchEvent(associateButtonClickedEvent);
+  };
+
 }
 
 function handleEntityTableDefinitionRowSelected(event) {
-  // const entityTableDefinitions = document.getElementById('entitytypedefinition');
-  // const entityTableAttributes = document.getElementById('entitytypeattribute');
-  //
-  // const selectedEntityTypeDefinitionId = document.getElementById('selectedEntityTypeDefinitionId');
-  // // const selectedEntityTypeAttributeId = document.getElementById('selectedEntityTypeAttributeId');
-  //
-  // const inputEntitySubtypeId = document.getElementById('entitysubtypeid');
-  // const inputTextKey = document.getElementById('textkey');
-  // const inputLocalizedName = document.getElementById('localizedname');
-  // const inputLocalizedDescription = document.getElementById('localizeddescription');
-  // const inputLocalizedAbbreviation = document.getElementById('localizedabbreviation');
-  // const inputOrdinal = document.getElementById('ordinal');
-  //
-  // entityTableDefinitions.shadowRoot.getElementById("entitytypedefinition").querySelectorAll('tr').forEach((tableRow) => {
-  //   tableRow.removeAttribute('class');
-  // });
-  // event.detail.row.setAttribute('class', 'selected');
-  //
-  // const associatedAttributes = fetchData(entityTableDefinitions.getAttribute('baseUrl') || 'http://localhost:8080/entityTypes/', 'EntityTypeDefinitionEntityTypeAttributeAssociation', '%22EntityTypeDefinitionId%22%20%3D%20' + event.detail.row.querySelectorAll('td')[0].innerText, entityTableDefinitions.getAttribute('sortClause') || '%22Ordinal%22%20ASC', 200, 1).then((data) => {
-  //   let associatedAttributeIds = "";
-  //
-  //   //NOTE: Produce a URL-encoded, comma-separated list of EntityTypeAttribute Ids to pass as a whereClause to refresh the second EntityTable
-  //   for (i = 0; i < data.EntityData.length; i++) {
-  //     associatedAttributeIds = associatedAttributeIds + data.EntityData[i].EntityTypeAttributeId + '%2C';
-  //   }
-  //
-  //   associatedAttributeIds = associatedAttributeIds.slice(0, -3);
-  //   entityTableAttributes.refreshData(entityTableAttributes.getAttribute('baseUrl') || 'http://localhost:8080/entityTypeAttributes/', entityTableAttributes.getAttribute('entityTypeName') || 'EntityTypeAttribute', '%22EntityTypeAttribute%22.%22Id%22%20IN%20%28' + associatedAttributeIds + '%29', entityTableAttributes.getAttribute('sortClause') || '%22Ordinal%22%20ASC', 200, entityTableAttributes.getAttribute('pageNumber') || 1);
-  // });
-  //
-  // selectedEntityTypeDefinitionId.value = event.detail.row.querySelectorAll('td')[0].innerText;
-  //
-  // inputEntitySubtypeId.value = event.detail.row.querySelectorAll('td')[1].innerText;
-  // inputTextKey.value = event.detail.row.querySelectorAll('td')[2].innerText;
-  // inputLocalizedName.value = event.detail.row.querySelectorAll('td')[3].innerText;
-  // inputLocalizedDescription.value = event.detail.row.querySelectorAll('td')[4].innerText;
-  // inputLocalizedAbbreviation.value = event.detail.row.querySelectorAll('td')[5].innerText;
-  // inputOrdinal.value = event.detail.row.querySelectorAll('td')[6].innerText;
+  const entityTableDefinitions = document.getElementById('entitytypedefinition');
+  const entityTableAssociations = document.getElementById('entitytypeassociation');
+
+  const selectedEntityTypeDefinitionId = document.getElementById('selectedEntityTypeDefinitionId');
+
+  const inputEntityTypeDefinitionId = document.getElementById('entityTypeDefinitionId');
+
+  entityTableDefinitions.shadowRoot.getElementById("entitytypedefinition").querySelectorAll('tr').forEach((tableRow) => {
+    tableRow.removeAttribute('class');
+  });
+  event.detail.row.setAttribute('class', 'selected');
+
+  selectedEntityTypeDefinitionId.value = event.detail.row.querySelectorAll('td')[0].innerText;
+  entityTableAssociations.refreshData(entityTableAssociations.getAttribute('baseUrl') || 'http://localhost:8080/entityTypes/', entityTableAssociations.getAttribute('entityTypeName') || 'EntityTypeDefinitionEntityTypeAttributeAssociation', '%22EntityTypeDefinitionEntityTypeAttributeAssociation%22.%22EntityTypeDefinitionId%22%20%3D%20' + selectedEntityTypeDefinitionId.value, '%22Ordinal%22%20ASC', 10, 1);
+
+  inputEntityTypeDefinitionId.value = selectedEntityTypeDefinitionId.value;
 };
 
 function handleEntityTableAttributeRowSelected(event) {
@@ -125,8 +120,8 @@ function handleEntityTableAttributeRowSelected(event) {
 
   const selectedEntityTypeAttributeId = document.getElementById('selectedEntityTypeAttributeId');
 
-  const inputEntitySubtypeId = document.getElementById('entitysubtypeid');
-  const inputTextKey = document.getElementById('textkey');
+  const inputEntitySubtypeIdAttribute = document.getElementById('entitysubtypeidattribute');
+  const inputTextKeyAttribute = document.getElementById('textkeyattribute');
   const inputLocalizedName = document.getElementById('localizedname');
   const inputLocalizedDescription = document.getElementById('localizeddescription');
   const inputLocalizedAbbreviation = document.getElementById('localizedabbreviation');
@@ -153,7 +148,9 @@ function handleEntityTableAttributeRowSelected(event) {
   const inputIndexEntitySubtypeId = document.getElementById('indexentitysubtypeid');
   const inputUniquenessEntitySubtypeId = document.getElementById('uniquenessentitysubtypeid');
   const inputSensitivityEntitySubtypeId = document.getElementById('sensitivityentitysubtypeid');
-  const inputOrdinal = document.getElementById('ordinal');
+  const inputOrdinalAttribute = document.getElementById('ordinalAttribute');
+
+  const inputEntityTypeAttributeId = document.getElementById('entityTypeAttributeId');
 
   entityTableAttributes.shadowRoot.getElementById("entitytypeattribute").querySelectorAll('tr').forEach((tableRow) => {
     tableRow.removeAttribute('class');
@@ -162,8 +159,8 @@ function handleEntityTableAttributeRowSelected(event) {
 
   selectedEntityTypeAttributeId.value = event.detail.row.querySelectorAll('td')[0].innerText;
 
-  inputEntitySubtypeId.value = event.detail.row.querySelectorAll('td')[1].innerText;
-  inputTextKey.value = event.detail.row.querySelectorAll('td')[2].innerText;
+  inputEntitySubtypeIdAttribute.value = event.detail.row.querySelectorAll('td')[1].innerText;
+  inputTextKeyAttribute.value = event.detail.row.querySelectorAll('td')[2].innerText;
   inputLocalizedName.value = event.detail.row.querySelectorAll('td')[3].innerText;
   inputLocalizedDescription.value = event.detail.row.querySelectorAll('td')[4].innerText;
   inputLocalizedAbbreviation.value = event.detail.row.querySelectorAll('td')[5].innerText;
@@ -190,12 +187,14 @@ function handleEntityTableAttributeRowSelected(event) {
   inputIndexEntitySubtypeId.value = event.detail.row.querySelectorAll('td')[26].innerText;
   inputUniquenessEntitySubtypeId.value = event.detail.row.querySelectorAll('td')[27].innerText;
   inputSensitivityEntitySubtypeId.value = event.detail.row.querySelectorAll('td')[28].innerText;
-  inputOrdinal.value = event.detail.row.querySelectorAll('td')[29].innerText;
+  inputOrdinalAttribute.value = event.detail.row.querySelectorAll('td')[29].innerText;
+
+  inputEntityTypeAttributeId.value = selectedEntityTypeAttributeId.value;
 };
 
 function handleCreateButtonClicked(event) {
-  const inputEntitySubtypeId = document.getElementById('entitysubtypeid');
-  const inputTextKey = document.getElementById('textkey');
+  const inputEntitySubtypeIdAttribute = document.getElementById('entitysubtypeidattribute');
+  const inputTextKeyAttribute = document.getElementById('textkeyattribute');
   const inputLocalizedName = document.getElementById('localizedname');
   const inputLocalizedDescription = document.getElementById('localizeddescription');
   const inputLocalizedAbbreviation = document.getElementById('localizedabbreviation');
@@ -222,20 +221,20 @@ function handleCreateButtonClicked(event) {
   const inputIndexEntitySubtypeId = document.getElementById('indexentitysubtypeid');
   const inputUniquenessEntitySubtypeId = document.getElementById('uniquenessentitysubtypeid');
   const inputSensitivityEntitySubtypeId = document.getElementById('sensitivityentitysubtypeid');
-  const inputOrdinal = document.getElementById('ordinal');
+  const inputOrdinalAttribute = document.getElementById('ordinalAttribute');
 
-  const status = document.getElementById('status');
+  const statusAttribute = document.getElementById('statusAttribute');
 
   const result = createData('http://localhost:8080/entityTypes/', 'EntityTypeAttribute', 'POST',
-    JSON.stringify({"EntitySubtypeId": Number(inputEntitySubtypeId.value), "TextKey": inputTextKey.value, "LocalizedName": inputLocalizedName.value, "LocalizedDescription": inputLocalizedDescription.value, "LocalizedAbbreviation": inputLocalizedAbbreviation.value, "LocalizedInformation": inputLocalizedInformation.value, "LocalizedPlaceholder": inputLocalizedPlaceholder.value, "IsLocalizable": inputIsLocalizable.value, "IsToBeAssociatedWithEachEntityTypeDefinition": inputIsToBeAssociatedWithEachEntityTypeDefinition.value, "GeneralizedDataTypeEntitySubtypeId": Number(inputGeneralizedDataTypeEntitySubtypeId.value), "DataSizeOrMaximumLengthInBytesOrCharacters": Number(inputDataSizeOrMaximumLengthInBytesOrCharacters.value), "DataPrecision": Number(inputDataPrecision.value), "DataScale": Number(inputDataScale.value), "KeyTypeEntitySubtypeId": Number(inputKeyTypeEntitySubtypeId.value), "RelatedEntityTypeId": Number(inputRelatedEntityTypeId.value), "RelatedEntityTypeAttributeId": Number(inputRelatedEntityTypeAttributeId.value), "RelatedEntityTypeCardinalityEntitySubtypeId": Number(inputRelatedEntityTypeCardinalityEntitySubtypeId.value), "EntitySubtypeGroupKey": inputEntitySubtypeGroupKey.value, "ValueEntitySubtypeId": Number(inputValueEntitySubtypeId.value), "DefaultValue": inputDefaultValue.value, "MinimumValue": inputMinimumValue.value, "MaximumValue": inputMaximumValue.value, "RegExValidationPattern": inputRegExValidationPattern.value, "StepIncrementValue": Number(inputStepIncrementValue.value), "RemoteValidationMethodAsAjaxUri": "", "IndexEntitySubtypeId": Number(inputIndexEntitySubtypeId.value), "UniquenessEntitySubtypeId": Number(inputUniquenessEntitySubtypeId.value), "SensitivityEntitySubtypeId": Number(inputSensitivityEntitySubtypeId.value), "PublishedAtDateTimeUtc": "9999-12-31 23:59:59.999", "PublishedByInformationSystemUserId": Number(-1), "Ordinal": Number(inputOrdinal.value)})
+    JSON.stringify({"EntitySubtypeId": Number(inputEntitySubtypeIdAttribute.value), "TextKey": inputTextKeyAttribute.value, "LocalizedName": inputLocalizedName.value, "LocalizedDescription": inputLocalizedDescription.value, "LocalizedAbbreviation": inputLocalizedAbbreviation.value, "LocalizedInformation": inputLocalizedInformation.value, "LocalizedPlaceholder": inputLocalizedPlaceholder.value, "IsLocalizable": inputIsLocalizable.value, "IsToBeAssociatedWithEachEntityTypeDefinition": inputIsToBeAssociatedWithEachEntityTypeDefinition.value, "GeneralizedDataTypeEntitySubtypeId": Number(inputGeneralizedDataTypeEntitySubtypeId.value), "DataSizeOrMaximumLengthInBytesOrCharacters": Number(inputDataSizeOrMaximumLengthInBytesOrCharacters.value), "DataPrecision": Number(inputDataPrecision.value), "DataScale": Number(inputDataScale.value), "KeyTypeEntitySubtypeId": Number(inputKeyTypeEntitySubtypeId.value), "RelatedEntityTypeId": Number(inputRelatedEntityTypeId.value), "RelatedEntityTypeAttributeId": Number(inputRelatedEntityTypeAttributeId.value), "RelatedEntityTypeCardinalityEntitySubtypeId": Number(inputRelatedEntityTypeCardinalityEntitySubtypeId.value), "EntitySubtypeGroupKey": inputEntitySubtypeGroupKey.value, "ValueEntitySubtypeId": Number(inputValueEntitySubtypeId.value), "DefaultValue": inputDefaultValue.value, "MinimumValue": inputMinimumValue.value, "MaximumValue": inputMaximumValue.value, "RegExValidationPattern": inputRegExValidationPattern.value, "StepIncrementValue": Number(inputStepIncrementValue.value), "RemoteValidationMethodAsAjaxUri": "", "IndexEntitySubtypeId": Number(inputIndexEntitySubtypeId.value), "UniquenessEntitySubtypeId": Number(inputUniquenessEntitySubtypeId.value), "SensitivityEntitySubtypeId": Number(inputSensitivityEntitySubtypeId.value), "PublishedAtDateTimeUtc": "9999-12-31 23:59:59.999", "PublishedByInformationSystemUserId": Number(-1), "Ordinal": Number(inputOrdinalAttribute.value)})
   ).then((data) => {
     if (!data.hasOwnProperty("Code")) {
-      status.color = "green";
-      status.innerText = "Attempt to create new EntityTypeDefinition as '" + inputLocalizedName.value + "' succeeded";
+      statusAttribute.color = "green";
+      statusAttribute.innerText = "Attempt to create new EntityTypeDefinition as '" + inputLocalizedName.value + "' succeeded";
     }
     else {
-      status.color = "red";
-      status.innerText = "Attempt to create new EntityTypeDefinition as '" + inputLocalizedName.value + "' failed: " + data.Message;
+      statusAttribute.color = "red";
+      statusAttribute.innerText = "Attempt to create new EntityTypeDefinition as '" + inputLocalizedName.value + "' failed: " + data.Message;
     }
   });
 }
@@ -276,48 +275,29 @@ function handleCreateButtonClicked(event) {
 // }
 
 function handleCloneButtonClicked(event) {
-  const inputEntitySubtypeId = document.getElementById('entitysubtypeid');
-  const inputTextKey = document.getElementById('textkey');
+  const selectedEntityTypeAttributeId = document.getElementById('selectedEntityTypeAttributeId');
+
+  // const inputEntitySubtypeIdAttribute = document.getElementById('entitysubtypeidattribute');
+  const inputTextKeyAttribute = document.getElementById('textkeyattribute');
   const inputLocalizedName = document.getElementById('localizedname');
   const inputLocalizedDescription = document.getElementById('localizeddescription');
   const inputLocalizedAbbreviation = document.getElementById('localizedabbreviation');
   const inputLocalizedInformation = document.getElementById('localizedinformation');
   const inputLocalizedPlaceholder = document.getElementById('localizedplaceholder');
-  const inputIsLocalizable = document.getElementById('islocalizable');
-  const inputIsToBeAssociatedWithEachEntityTypeDefinition = document.getElementById('istobeassociatedwitheachentitytypedefinition');
-  const inputGeneralizedDataTypeEntitySubtypeId = document.getElementById('generalizeddatatypeentitysubtypeid');
-  const inputDataSizeOrMaximumLengthInBytesOrCharacters = document.getElementById('datasizeormaximumlengthinbytesorcharacters');
-  const inputDataPrecision = document.getElementById('dataprecision');
-  const inputDataScale = document.getElementById('datascale');
-  const inputKeyTypeEntitySubtypeId = document.getElementById('keytypeentitysubtypeid');
-  const inputRelatedEntityTypeId = document.getElementById('relatedentitytypeid');
-  const inputRelatedEntityTypeAttributeId = document.getElementById('relatedentitytypeattributeid');
-  const inputRelatedEntityTypeCardinalityEntitySubtypeId = document.getElementById('relatedentitytypecardinalityentitysubtypeid');
-  const inputEntitySubtypeGroupKey = document.getElementById('entitysubtypegroupkey');
-  const inputValueEntitySubtypeId = document.getElementById('valueentitysubtypeid');
-  const inputDefaultValue = document.getElementById('defaultvalue');
-  const inputMinimumValue = document.getElementById('minimumvalue');
-  const inputMaximumValue = document.getElementById('maximumvalue');
-  const inputRegExValidationPattern = document.getElementById('regexvalidationpattern');
-  const inputStepIncrementValue = document.getElementById('stepincrementvalue');
-  // const inputRemoteValidationMethodAsAjaxUri = document.getElementById('remotevalidationmethodasajaxuri');
-  const inputIndexEntitySubtypeId = document.getElementById('indexentitysubtypeid');
-  const inputUniquenessEntitySubtypeId = document.getElementById('uniquenessentitysubtypeid');
-  const inputSensitivityEntitySubtypeId = document.getElementById('sensitivityentitysubtypeid');
-  const inputOrdinal = document.getElementById('ordinal');
+  const inputOrdinalAttribute = document.getElementById('ordinalAttribute');
 
-  const status = document.getElementById('status');
+  const statusAttribute = document.getElementById('statusAttribute');
 
-  const result = cloneData('http://localhost:8081/', 'entityTypeAttributes/', '62', 'POST',
-    JSON.stringify({"TextKey": inputTextKey.value, "LocalizedName": inputLocalizedName.value, "LocalizedDescription": inputLocalizedDescription.value, "LocalizedAbbreviation": inputLocalizedAbbreviation.value, "LocalizedInformation": inputLocalizedInformation.value, "LocalizedPlaceholder": inputLocalizedPlaceholder.value, "Ordinal": Number(inputOrdinal.value)})
+  const result = cloneData('http://localhost:8081/', 'entityTypeAttributes/', selectedEntityTypeAttributeId.value, 'POST',
+    JSON.stringify({"TextKey": inputTextKeyAttribute.value, "LocalizedName": inputLocalizedName.value, "LocalizedDescription": inputLocalizedDescription.value, "LocalizedAbbreviation": inputLocalizedAbbreviation.value, "LocalizedInformation": inputLocalizedInformation.value, "LocalizedPlaceholder": inputLocalizedPlaceholder.value, "Ordinal": Number(inputOrdinalAttribute.value)})
     ).then((data) => {
       if (!data.hasOwnProperty("Code")) {
-        status.color = "green";
-        status.innerText = "Attempt to clone existing EntityTypeDefinition as '" + inputLocalizedName.value + "' succeeded";
+        statusAttribute.color = "green";
+        statusAttribute.innerText = "Attempt to clone existing EntityTypeDefinition as '" + inputLocalizedName.value + "' succeeded";
       }
       else {
-        status.color = "red";
-        status.innerText = "Attempt to clone existing EntityTypeDefinition as '" + inputLocalizedName.value + "' failed: " + data.Message;
+        statusAttribute.color = "red";
+        statusAttribute.innerText = "Attempt to clone existing EntityTypeDefinition as '" + inputLocalizedName.value + "' failed: " + data.Message;
       }
   });
 }
@@ -330,6 +310,37 @@ function handleCloneButtonClicked(event) {
 //   "LocalizedInformation": "Uniquely identifies this ApiKey''s client InformationSystem",
 //   "LocalizedPlaceholder": "Enter InformationSystem Id",
 //   "Ordinal": 1040
+// }
+
+function handleAssociateButtonClicked(event) {
+  const inputEntitySubtypeIdAssociation = document.getElementById('entitysubtypeidassociation');
+  const inputTextKeyAssociation = document.getElementById('textkeyassociation');
+  const inputEntityTypeDefinitionId = document.getElementById('entityTypeDefinitionId');
+  const inputEntityTypeAttributeId = document.getElementById('entityTypeAttributeId');
+  const inputOrdinalAssociation = document.getElementById('ordinalAssociation');
+
+  const statusAssociation = document.getElementById('statusAssociation');
+
+  const result = associateData('http://localhost:8080/entityTypes/', 'EntityTypeDefinitionEntityTypeAttributeAssociation', 'POST',
+    JSON.stringify({"EntitySubtypeId": Number(inputEntitySubtypeIdAssociation.value), "TextKey": inputTextKeyAssociation.value, "EntityTypeDefinitionId": Number(inputEntityTypeDefinitionId.value), "EntityTypeAttributeId": Number(inputEntityTypeAttributeId.value), "PublishedAtDateTimeUtc": "9999-12-31 23:59:59.999", "PublishedByInformationSystemUserId": Number(-1), "Ordinal": Number(inputOrdinalAssociation.value)})
+  ).then((data) => {
+    if (!data.hasOwnProperty("Code")) {
+      statusAssociation.color = "green";
+      statusAssociation.innerText = "Attempt to associate EntityTypeAttribute with EntityTypeDefinition succeeded";
+    }
+    else {
+      statusAssociation.color = "red";
+      statusAssociation.innerText = "Attempt to associate EntityTypeAttribute with EntityTypeDefinition failed: " + data.Message;
+    }
+  });
+}
+
+// {
+//   "EntitySubtypeId": 0,
+//   "TextKey": "entitytypedefinitionentitytypeattributeassociation-informationsystemprivilege-clientinformationsystemid-3c4d5",
+//   "EntityTypeDefinitionId": 21,
+//   "EntityTypeAttributeId": 88,
+//   "Ordinal": 400
 // }
 
 async function fetchData(baseUrl, entityTypeName, whereClause, sortClause, pageSize, pageNumber) {
@@ -400,3 +411,31 @@ async function cloneData(baseUrl, entityTypeName, entityId, method, data) {
     return responseJson;
   }
 }
+
+async function associateData(baseUrl, entityTypeName, method, data) {
+  let responseJson = null;
+
+  try {
+    const response = await fetch(baseUrl + entityTypeName, {
+      method: method,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': 'http://localhost:8082',
+        'Access-Control-Allow-Credentials': 'true',
+        'ApiKey': '6fdcf7a4-6442-4c1e-a375-9f8064ea34d0',
+        'CorrelationUuid': '83b0361c-108f-4fe6-b95b-fc6f6d645e76'
+      },
+      credentials: 'include', //NOTE: This will include cookies with the request
+      body: data
+    });
+
+    responseJson = await response.json();
+    return responseJson;
+  }
+  catch (error) {
+    responseJson = JSON.stringify({"EntityType": entityTypeName, "TotalRows": Number(-1), "EntityData": [], "Message": error.message});
+    return responseJson;
+  }
+}
+
+
