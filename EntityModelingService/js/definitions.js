@@ -147,16 +147,15 @@ function handleCreateButtonClicked(event) {
     JSON.stringify({"EntitySubtypeId": Number(inputEntitySubtypeId.value), "TextKey": inputTextKey.value, "LocalizedName": inputLocalizedName.value, "LocalizedDescription": inputLocalizedDescription.value, "LocalizedAbbreviation": inputLocalizedAbbreviation.value, "Ordinal": Number(inputOrdinal.value)})
   ).then((data) => {
     if (!data.hasOwnProperty("Code")) {
-      status.color = "green";
-      status.innerText = "Attempt to clone existing EntityTypeDefinition as '" + inputTextKey.value + "' succeeded";
+      status.innerText = "Attempt to create new EntityTypeDefinition as '" + inputLocalizedName.value + "' succeeded";
     }
     else {
-      status.color = "red";
-      status.innerText = "Attempt to clone existing EntityTypeDefinition as '" + inputTextKey.value + "' failed: " + data.Message;
+      status.innerText = "Attempt to create new EntityTypeDefinition as '" + inputLocalizedName.value + "' failed: " + data.Message;
     }
   });
 }
 
+// NOTE: Example of a JSON object to create an EntityTypeDefinition
 // {
 //   "EntitySubtypeId": 1,
 //   "TextKey": "entitytypedefinition-businessentity-informationsystemrole-administrator-1a2b3",
@@ -190,6 +189,7 @@ function handleCloneButtonClicked(event) {
   });
 }
 
+// NOTE: Example of a JSON object to clone an EntityTypeDefinition
 // {
 //   "EntitySubtypeId": 1,
 //   "TextKey": "entitytypedefinition-businessentity-informationsystemprivilege-create-1a2b3",

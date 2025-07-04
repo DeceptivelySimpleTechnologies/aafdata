@@ -62,6 +62,15 @@ psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresData
 echo "Adding LegalEntity data to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
 psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/006-data/019-LegalEntity.sql
 
+echo "Adding InternetDomainLabel data to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
+psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/006-data/020-InternetDomainLabel.sql
+
+echo "Adding InternetDomainLabelHierarchy data to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
+psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/006-data/021-InternetDomainLabelHierarchy.sql
+
+echo "Adding TelephoneNumber data to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
+psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/006-data/022-TelephoneNumber.sql
+
 unset PGPASSWORD
 
 # Log in using custom AafCoreModeler role
