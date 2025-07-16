@@ -1893,12 +1893,12 @@ public class BusinessEntityController
                     }
 
                     //CONSTRAINT
-                    preparedStatementSql = preparedStatementSql + "    CONSTRAINT " + unpublishedEntityTypeDefinitions.get(i).getLocalizedName() + "_PK PRIMARY KEY (\"Id\"),\n" +
-                    "    CONSTRAINT " + unpublishedEntityTypeDefinitions.get(i).getLocalizedName() + "_CHK_TextKey CHECK (\"TextKey\" ~* '^[a-z0-9-]+$'),\n" +
-                    "    CONSTRAINT " + unpublishedEntityTypeDefinitions.get(i).getLocalizedName() + "_UQ1_TextKey_DeletedAtDateTimeUtc UNIQUE (\"TextKey\", \"DeletedAtDateTimeUtc\"),\n" +
+                    preparedStatementSql = preparedStatementSql + "    CONSTRAINT \"" + unpublishedEntityTypeDefinitions.get(i).getLocalizedName() + "_PK\" PRIMARY KEY (\"Id\"),\n\n" +
+                    "    CONSTRAINT \"" + unpublishedEntityTypeDefinitions.get(i).getLocalizedName() + "_CHK_TextKey\" CHECK (\"TextKey\" ~* '^[a-z0-9-]+$'),\n\n" +
+                    "    CONSTRAINT \"" + unpublishedEntityTypeDefinitions.get(i).getLocalizedName() + "_UQ1_TextKey_DeletedAtDateTimeUtc\" UNIQUE (\"TextKey\", \"DeletedAtDateTimeUtc\"),\n\n" +
                     //TODO: AAF-114 Implement entity-specific constraints, e.g. does it have a LocalizedName or other attributes that must be unique???
 //                        "    CONSTRAINT " + unpublishedEntityTypeDefinitions.get(i).getLocalizedName() + "_UQ1_LocalizedName_DeletedAtDateTimeUtc UNIQUE (\"LocalizedName\", \"DeletedAtDateTimeUtc\"),\n" +
-                    "    CONSTRAINT " + unpublishedEntityTypeDefinitions.get(i).getLocalizedName() + "_FK_EntitySubtypeId FOREIGN KEY (\"EntitySubtypeId\") REFERENCES \"EntitySubtype\".\"EntitySubtype\"(\"Id\")\n" +
+                    "    CONSTRAINT \"" + unpublishedEntityTypeDefinitions.get(i).getLocalizedName() + "_FK_EntitySubtypeId\" FOREIGN KEY (\"EntitySubtypeId\") REFERENCES \"EntitySubtype\".\"EntitySubtype\"(\"Id\")\n" +
                     ")\n" +
                     "TABLESPACE pg_default;\n\n";
 
