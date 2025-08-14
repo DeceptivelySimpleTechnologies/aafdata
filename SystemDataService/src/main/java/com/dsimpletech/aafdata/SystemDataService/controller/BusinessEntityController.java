@@ -42,6 +42,9 @@ import org.springframework.web.server.ServerWebExchange;
 
 import java.lang.Exception;
 
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.rmi.ConnectException;
 import java.sql.*;
 import java.time.Instant;
@@ -269,7 +272,7 @@ public class BusinessEntityController
 
         HttpHeaders headers = null;
         EntityTypeDefinition cachedEntityTypeDefinition = null;
-        String cloneActionRequestBody = "";
+        String createActionRequestBody = "";
         HttpComponentsClientHttpRequestFactory requestFactory = null;
 //        RestTemplateBuilder restTemplateBuilder = null;
         RestTemplate restTemplate = null;
@@ -449,7 +452,7 @@ public class BusinessEntityController
                 headers.add("Cookie", authenticationJwt.toString());
 
                 //TODO: AAF-86 Figure out appropriate VersionTag, DataLocationEntitySubtypeId, and DataStructureEntitySubtypeId values
-                cloneActionRequestBody = "{\n" +
+                createActionRequestBody = "{\n" +
                         "    \"EntitySubtypeId\": " + bodyJwtPayload.get("body").get("EntitySubtypeId").asLong() + ",\n" +
                         "    \"TextKey\": \"" + textKey + "\",\n" +
                         "    \"LocalizedName\": \"" + bodyJwtPayload.get("body").get("LocalizedName").asText() + "\",\n" +
@@ -465,7 +468,7 @@ public class BusinessEntityController
                         "    \"CorrelationUuid\": \"" + correlationUuid + "\"\n" +
                         "  }";
 
-                entity = new HttpEntity<String>(cloneActionRequestBody, headers);
+                entity = new HttpEntity<String>(createActionRequestBody, headers);
 
                 //TODO: AAF-87 Implement fixes for RestTemplateBuilder
 //                restTemplateBuilder = new RestTemplateBuilder();
@@ -498,7 +501,7 @@ public class BusinessEntityController
                 {
                     if (GetCachedEntityTypeAttributeById(entityTypeAttributes.get(i).getId()).isIsToBeAssociatedWithEachEntityTypeDefinition())
                     {
-                        cloneActionRequestBody = "{\n" +
+                        createActionRequestBody = "{\n" +
                                 "    \"EntitySubtypeId\": 0,\n" +
                                 "    \"TextKey\": \"entitytypedefinitionentitytypeattributeassociation-" + bodyJwtPayload.get("body").get("LocalizedName").asText().toLowerCase() + "-" + GetCachedEntityTypeAttributeById(entityTypeAttributes.get(i).getId()).getLocalizedName().toLowerCase() + "\",\n" +
                                 "    \"EntityTypeDefinitionId\": " + entityId + ",\n" +
@@ -509,7 +512,7 @@ public class BusinessEntityController
                                 "    \"CorrelationUuid\": \"" + correlationUuid + "\"\n" +
                                 "  }";
 
-                        entity = new HttpEntity<String>(cloneActionRequestBody, headers);
+                        entity = new HttpEntity<String>(createActionRequestBody, headers);
 
                         createActionResponseBody = restTemplate.postForEntity("http://localhost:8080/entityTypes/EntityTypeDefinitionEntityTypeAttributeAssociation", entity, String.class);
                         //TODO: AAF-90 Check response body for success
@@ -1704,6 +1707,469 @@ public class BusinessEntityController
         return new ResponseEntity<String>(entityData, HttpStatus.CREATED);
     }
 
+    @Operation(summary = "Automate the creation of multi-level, composed entity data, e.g. InternetDomainLabel > InternetDomainLabelHierarchy > UniformResourceIdentifier > InformationSystem", description = "Automate the creation of multi-level, composed entity data by creating and linking dependent entity data in order to quickly create a valid structure that can be updated and improved later.")
+    @Parameter(in = ParameterIn.HEADER, description = "API key", name = "ApiKey", content = @Content(schema = @Schema(type = "string")))
+    @Parameter(in = ParameterIn.HEADER, description = "Correlation UUID", name = "CorrelationUuid", content = @Content(schema = @Schema(type = "string")), required = false)
+    @Parameter(in = ParameterIn.COOKIE, description = "JWT Authentication token", name = "Authentication", content = @Content(schema = @Schema(type = "string")))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(type = "string"))),
+            @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content(schema = @Schema(type = "string"))),
+            @ApiResponse(responseCode = "401", description = "Unauthenticated", content = @Content(schema = @Schema(type = "string"))),
+            @ApiResponse(responseCode = "422", description = "Unprocessable Entity", content = @Content(schema = @Schema(type = "string"))),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
+    })
+    @PostMapping(value = "/entityGraphs/{entityTypeName}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> BuildBusinessEntityGraph(@PathVariable("entityTypeName") String entityTypeName, @RequestParam(defaultValue = "#{T(java.time.Instant).now()}") Instant asOfDateTimeUtc, @RequestBody String requestBody, ServerWebExchange exchange) throws Exception
+    {
+        ServerHttpRequest request = null;
+
+        HttpHeaders headers = null;
+
+        String apiKey = "";
+        String correlationUuid = "";
+
+        ObjectMapper objectMapper = null;
+
+        HttpCookie authenticationJwt = null;
+        Base64.Decoder decoderBase64 = Base64.getUrlDecoder();
+        String[] authenticationJwtSections = null;
+        JsonNode authenticationJwtHeader = null;
+        JsonNode authenticationJwtPayload = null;
+        Long userId = -1L;
+
+        String[] bodyJwtSections = null;
+        JsonNode bodyJwtHeader = null;
+        JsonNode bodyJwtPayload = null;
+
+        String localizedName = "";
+        String localizedDescription = "";
+        URL url = null;
+
+        Long internetDomainLabelLevel = -1L;
+        String internetDomainLabelLevelName = "";
+        String[] internetDomainLabels = null;
+        Long[] internetDomainLabelIds = null;
+        Long[] internetDomainLabelHierarchyIds = null;
+        String uniformResourceIdentifierName = "";
+        Long uniformResourceIdentifierId = -1L;
+        Long informationSystemId = -1L;
+
+        String createActionRequestBody = "";
+        ResponseEntity<String> createActionResponseBody = null;
+
+        JsonNode entityData = null;
+
+        //NOTE: In this initial version of this method, we are only supporting the InternetDomainLabel > InternetDomainLabelHierarchy >
+        //NOTE: UniformResourceIdentifier > InformationSystem graph in order to quickly enable data import for WebSpanner.  In subsequent
+        //NOTE: versions, we will support the full graph of published business entities, using a new (thought this was already there???)
+        //NOTE: foreign key property in the EntityTypeAttribute model.
+        try
+        {
+            logger.debug("Attempting to BuildBusinessEntityGraph() for '{}'", entityTypeName);
+
+            request = exchange.getRequest();
+
+            ENVIRONMENT_JWT_SHARED_SECRET = environment.getProperty("environmentJwtSharedSecret");
+
+            apiKey = exchange.getRequest().getHeaders().getFirst("ApiKey");
+
+            if ((apiKey == null) || (apiKey.length() < 1))
+            {
+                throw new Exception("No 'ApiKey' header included in the request");
+            }
+            else
+            {
+                //TODO: AAF-66 Validate API key by looking it up in the database, ensuring that it is not disabled, checking its associated permissions extent, and (later) checking that it is associated with the authenticated user's OrganizationalUnit
+                logger.debug("ApiKey header '{}' included in the request", apiKey);
+            }
+
+            correlationUuid = exchange.getRequest().getHeaders().getFirst("CorrelationUuid");
+
+            if ((correlationUuid == null) || (correlationUuid.length() < 1))
+            {
+                correlationUuid = UUID.randomUUID().toString();
+                logger.debug("CorrelationUuid '{}' generated for the request", correlationUuid);
+            }
+            else
+            {
+                //TODO: AAF-66 Validate API key by looking it up in the database, ensuring that it is not disabled, checking its associated permissions extent, and (later) checking that it is associated with the authenticated user's OrganizationalUnit
+                logger.debug("CorrelationUuid '{}' included in the request", correlationUuid);
+            }
+
+            objectMapper = new ObjectMapper();
+
+            //TODO: AAF-67 Validate JWT
+            authenticationJwt = request.getCookies().getFirst("Authentication");
+            authenticationJwtSections = authenticationJwt.getValue().split("\\.");
+            authenticationJwtHeader = objectMapper.readTree(decoderBase64.decode(authenticationJwtSections[0]));
+            authenticationJwtPayload = objectMapper.readTree(decoderBase64.decode(authenticationJwtSections[1]));
+            //TODO: Validate JWT signature per https://www.baeldung.com/java-jwt-token-decode
+
+            if ((authenticationJwtHeader != null) && (authenticationJwtPayload != null))
+            {
+                logger.debug("Requested by '{}' using key '{}'", authenticationJwtPayload.get("body").get("EmailAddress").asText(), authenticationJwtHeader.get("kid").asText());
+            }
+            else
+            {
+                throw new Exception("Missing or invalid 'Authentication' cookie included with the request");
+            }
+
+            //TODO: AAF-68 Look up InformationSystemUser.Id using the authenticated user's EmailAddress in the Authentication JWT payload, and assign it below
+            userId = -100L;
+
+            //TODO: AAF-69 Check user's role(s) and permissions for this operation
+
+            //NOTE: Example request http://localhost:8080/Person with "Authentication" JWT and JWT request body
+            //NOTE: https://learning.postman.com/docs/sending-requests/response-data/cookies/
+//            Authentication JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IkF1dGhlbnRpY2F0ZWQiLCJhdWQiOiJBQUZEYXRhLUVudGl0eURhdGFNaWNyb3NlcnZpY2UiLCJleHAiOjE3MjM4MTY5MjAsImlhdCI6MTcyMzgxNjgwMCwibmJmIjoxNzIzODE2Nzg5LCJqdGkiOiJlZjRhZjRlMy1lNzM2LTQyNWEtYWFmZi1lY2EwM2I3YjliMjgiLCJib2R5Ijp7IkVtYWlsQWRkcmVzcyI6ImFteS5hbmRlcnNvbkBhbXlzYWNjb3VudGluZy5jb20ifX0.Djq5LYPEK1QFgBk9aN5Vei37K6Cb8TxNH3ADWDcUaHs
+//            Request JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1pbiJ9.eyJpc3MiOiJBQUZEYXRhLUNsaWVudCIsInN1YiI6IlBPU1QgL0VudGl0eVR5cGUiLCJhdWQiOiJBQUZEYXRhLUVudGl0eURhdGFNaWNyb3NlcnZpY2UiLCJleHAiOjE3MjM4MTY5MjAsImlhdCI6MTcyMzgxNjgwMCwibmJmIjoxNzIzODE2Nzg5LCJqdGkiOiI4NzUyZjIzYi0xYTliLTQyMmEtOGIyNi0zNzQyNDM0ZGY0NzYiLCJib2R5Ijp7IkVudGl0eVN1YnR5cGVJZCI6LTEsIlRleHRLZXkiOiJwZXJzb24tbm9uZS1iaWxsLWJha2VyIiwiTGVnYWxHaXZlbk5hbWUiOiJCaWxsIiwiTGVnYWxTdXJuYW1lIjoiQmFrZXIiLCJCb3JuQXREYXRlVGltZVV0YyI6IjIwMDItMDItMDMgMTE6MTI6MTMuMTIzIiwiTGVnYWxDaXRpemVuT2ZDb3VudHJ5R2VvZ3JhcGhpY1VuaXRJZCI6MSwiTG9jYWxlSWQiOjEsIk9yZGluYWwiOi0xLCJJc0FjdGl2ZSI6dHJ1ZX19.rWNowmEoPkF8N0Q5KC5-W83g3hMqIf9TV8KHzLgNbio
+
+            //TODO: AAF-67 Validate JWT
+//            bodyJwtSections = requestBody.split("\\.");
+//            bodyJwtHeader = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[0]));
+//            bodyJwtPayload = objectMapper.readTree(decoderBase64.decode(bodyJwtSections[1]));
+            //TODO: Validate JWT signature per https://www.baeldung.com/java-jwt-token-decode
+            bodyJwtPayload = objectMapper.readTree(requestBody);
+
+            if (bodyJwtPayload != null)
+            {
+                if (bodyJwtPayload.has("body"))
+                {
+                    //NOTE: Contains a JWT request body
+                    logger.debug("Request from '{}' for '{}' using key '{}'", bodyJwtPayload.get("iss").asText(), bodyJwtPayload.get("aud").asText(), authenticationJwtHeader.get("kid").asText());
+                }
+                else
+                {
+                    //NOTE: Create a JWT request body from the simple JSON request body
+                    bodyJwtPayload = objectMapper.createObjectNode();
+                    ((ObjectNode) bodyJwtPayload).put("iss", "AAFData-TBD");
+                    ((ObjectNode) bodyJwtPayload).put("sub", "TBD");
+                    ((ObjectNode) bodyJwtPayload).put("aud", "AAFData-TBD");
+                    ((ObjectNode) bodyJwtPayload).put("exp", "1723816920");
+                    ((ObjectNode) bodyJwtPayload).put("iat", "1723816800");
+                    ((ObjectNode) bodyJwtPayload).put("nbf", "1723816789");
+                    ((ObjectNode) bodyJwtPayload).put("jti", correlationUuid);
+                    ((ObjectNode) bodyJwtPayload).put("body", objectMapper.readTree(requestBody));
+
+                    logger.debug("Request from '{}' for '{}' using key '{}'", bodyJwtPayload.get("iss").asText(), bodyJwtPayload.get("aud").asText(), authenticationJwtHeader.get("kid").asText());
+                }
+            }
+            else
+            {
+                throw new Exception("Missing or invalid request body");
+            }
+
+            //NOTE: Insert new, unpublished InternetDomainLabel, and get resulting Id value
+            headers = new HttpHeaders();
+            headers.add("ApiKey", apiKey);
+            headers.add("CorrelationUuid", correlationUuid);
+            headers.add("Cookie", authenticationJwt.toString());
+
+            //NOTE: Get LocalizedName from request body, e.g. "Example"
+            if ((bodyJwtPayload.get("body").get("LocalizedName").asText() == null) || (bodyJwtPayload.get("body").get("LocalizedName").asText().length() < 1))
+            {
+                throw new Exception("Missing or invalid 'LocalizedName' in the request body");
+            }
+            else
+            {
+                logger.debug("LocalizedName '{}' included in the request body", bodyJwtPayload.get("body").get("LocalizedName").asText());
+            }
+
+            localizedName = bodyJwtPayload.get("body").get("LocalizedName").asText();
+
+            //NOTE: Get LocalizedDescription from request body, e.g. "An example InformationSystem"
+            if ((bodyJwtPayload.get("body").get("LocalizedDescription").asText() == null) || (bodyJwtPayload.get("body").get("LocalizedDescription").asText().length() < 1))
+            {
+                throw new Exception("Missing or invalid 'LocalizedDescription' in the request body");
+            }
+            else
+            {
+                logger.debug("LocalizedDescription '{}' included in the request body", bodyJwtPayload.get("body").get("LocalizedDescription").asText());
+            }
+
+            localizedDescription = bodyJwtPayload.get("body").get("LocalizedDescription").asText();
+
+            //NOTE: Get URL from request body, e.g. "https://www.example.com"
+            if ((bodyJwtPayload.get("body").get("Url").asText() == null) || (bodyJwtPayload.get("body").get("Url").asText().length() < 1))
+            {
+                throw new Exception("Missing or invalid 'Url' in the request body");
+            }
+            else
+            {
+                logger.debug("Url '{}' included in the request body", bodyJwtPayload.get("body").get("Url").asText());
+            }
+
+            url = new URL(bodyJwtPayload.get("body").get("Url").asText());
+
+            //TODO: Check for existing InformationSystem with the same name and URL, and return it if found, i.e. skip the rest of this method
+
+            internetDomainLabels = url.getHost().split("\\.");
+
+            if (internetDomainLabels.length < 2)
+            {
+                throw new Exception("Invalid URL '" + url.toString() + "' in the request body, must contain at least a top-level and second-level domain");
+            }
+            else
+            {
+                logger.debug("InternetDomainLabels found in the URL: {}", (Object) internetDomainLabels);
+            }
+
+//            internetDomainLabels = new String[internetDomainLabels.length];
+            internetDomainLabelIds = new Long[internetDomainLabels.length];
+            internetDomainLabelHierarchyIds = new Long[internetDomainLabels.length];
+
+            //NOTE: Working from right (top-level domain) to left (subdomains), e.g. "com", "example", "www":
+            for (int i = internetDomainLabels.length - 1; i > -1; i--)
+            {
+                //NOTE: GET InternetDomainLabels by name and subtype to see if the label exists at the appropriate level
+                if (i == internetDomainLabels.length - 1) {
+                    internetDomainLabelLevel = (long) 76;   //NOTE: Top-level domain, e.g. "com"
+                    internetDomainLabelLevelName = "topleveldomain";
+                } else if (i == internetDomainLabels.length - 2) {
+                    internetDomainLabelLevel = (long) 77;   //NOTE: Second-level domain, e.g. "example"
+                    internetDomainLabelLevelName = "secondleveldomain";
+                } else {
+                    internetDomainLabelLevel = (long) 78;   //NOTE: Subdomain, e.g. "www", "app", etc
+                    internetDomainLabelLevelName = "subdomain";
+                }
+
+                createActionResponseBody = ReadBusinessEntityData("InternetDomainLabel", asOfDateTimeUtc, headers, apiKey, authenticationJwt, correlationUuid, userId, URLEncoder.encode("LOWER(\"LocalizedName\") = '" + internetDomainLabels[i].toLowerCase() + "' AND \"EntitySubtypeId\" = " + internetDomainLabelLevel, StandardCharsets.UTF_8.toString()).replace("+", "%20"), exchange);
+                entityData = objectMapper.readTree(createActionResponseBody.getBody());
+
+                //NOTE: If not, POST InternetDomainLabel with the name, e.g. "com", "example", "www", and get the resulting Id
+                if (entityData.get("EntityData").size() > 0)
+                {
+                    logger.debug("InternetDomainLabel '{}' found at level '{}'", internetDomainLabels[i], internetDomainLabelLevel);
+
+                    internetDomainLabelIds[i] = entityData.get("EntityData").get(0).get("Id").asLong();
+                    internetDomainLabels[i] = entityData.get("EntityData").get(0).get("LocalizedName").asText();
+                }
+                else
+                {
+                    logger.debug("InternetDomainLabel '{}' not found at level '{}', creating new InternetDomainLabel", internetDomainLabels[i], internetDomainLabelLevel);
+
+                    createActionRequestBody = "{\n" +
+                            "    \"EntitySubtypeId\": " + internetDomainLabelLevel + ",\n" +
+                            "    \"TextKey\": \"internetdomainlabel-" + internetDomainLabelLevelName.toLowerCase() + "-" + internetDomainLabels[i].toLowerCase() + "\",\n" +
+                            "    \"LocalizedName\": \"" + internetDomainLabels[i].toLowerCase() + "\",\n" +
+                            "    \"LocalizedDescription\": \"The ''" + internetDomainLabels[i].toLowerCase() + "'' InternetDomainLabel from the ''" + url.toString().replace("'", "''") + "'' UniformResourceLocator (URL)\",\n" +
+                            "    \"LocalizedAbbreviation\": \"" + internetDomainLabels[i].substring(0, internetDomainLabels[i].length() - 1).format("%1.15s", internetDomainLabels[i]).toLowerCase() + "\",\n" +
+//                    "    \"Ordinal\": " + ordinal + ",\n" +
+//                    "    \"IsActive\": " + isActive + ",\n" +
+                            "    \"CorrelationUuid\": \"" + correlationUuid + "\"\n" +
+                            "  }";
+
+                    createActionResponseBody = WriteBusinessEntityData("InternetDomainLabel", asOfDateTimeUtc, headers, apiKey, authenticationJwt, correlationUuid, userId, createActionRequestBody, exchange);
+                    entityData = objectMapper.readTree(createActionResponseBody.getBody());
+
+                    if (entityData.get("EntityData").size() > 0)
+                    {
+                        logger.debug("InternetDomainLabel '{}' created at level '{}'", internetDomainLabels[i], internetDomainLabelLevel);
+
+                        internetDomainLabelIds[i] = entityData.get("EntityData").get(0).get("Id").asLong();
+                        internetDomainLabels[i] = entityData.get("EntityData").get(0).get("LocalizedName").asText();
+                    }
+                    else
+                    {
+                        throw new Exception("Failed to create InternetDomainLabel '" + internetDomainLabels[i] + "' at level '" + internetDomainLabelLevel);
+                    }
+                }
+
+                //NOTE: POST InternetDomainLabelHierarchy with the Ids of the parent and child InternetDomainLabels
+                if (i == internetDomainLabels.length - 1)       //NOTE: Top-level domain, e.g. "com"
+                {
+                    createActionResponseBody = ReadBusinessEntityData("InternetDomainLabelHierarchy", asOfDateTimeUtc, headers, apiKey, authenticationJwt, correlationUuid, userId, URLEncoder.encode("\"ParentInternetDomainLabelId\" = " + internetDomainLabelIds[i] + " AND \"ChildInternetDomainLabelId\" = " + internetDomainLabelIds[i], StandardCharsets.UTF_8.toString()).replace("+", "%20"), exchange);
+                    entityData = objectMapper.readTree(createActionResponseBody.getBody());
+
+                    //NOTE: If not, POST InternetDomainLabel with the name, e.g. "com", "example", "www", and get the resulting Id
+                    if (entityData.get("EntityData").size() > 0)
+                    {
+                        logger.debug("Top-level InternetDomainLabelHierarchy '{}' found for InternetDomainLabel '{}'", entityData.get("EntityData").get(0).get("Id").asLong(), internetDomainLabels[i]);
+
+                        internetDomainLabelHierarchyIds[i] = entityData.get("EntityData").get(0).get("Id").asLong();
+                        uniformResourceIdentifierName = internetDomainLabels[i].toLowerCase();
+                    }
+                    else
+                    {
+                        logger.debug("Top-level InternetDomainLabelHierarchy not found for InternetDomainLabel '{}', creating new InternetDomainLabelHierarchy", internetDomainLabels[i]);
+
+                        createActionRequestBody = "{\n" +
+                                "    \"EntitySubtypeId\": 0,\n" +
+                                "    \"TextKey\": \"internetdomainlabelhierarchy-" + internetDomainLabels[i].toLowerCase() + "-" + internetDomainLabels[i].toLowerCase() + "\",\n" +
+                                "    \"ParentInternetDomainLabelId\": " + internetDomainLabelIds[i] + ",\n" +
+                                "    \"ChildInternetDomainLabelId\": " + internetDomainLabelIds[i] + ",\n" +
+//                    "    \"Ordinal\": " + ordinal + ",\n" +
+//                    "    \"IsActive\": " + isActive + ",\n" +
+                                "    \"CorrelationUuid\": \"" + correlationUuid + "\"\n" +
+                                "  }";
+
+                        createActionResponseBody = WriteBusinessEntityData("InternetDomainLabelHierarchy", asOfDateTimeUtc, headers, apiKey, authenticationJwt, correlationUuid, userId, createActionRequestBody, exchange);
+                        entityData = objectMapper.readTree(createActionResponseBody.getBody());
+
+                        if (entityData.get("EntityData").size() > 0)
+                        {
+                            logger.debug("InternetDomainLabelHierarchy '{}' created for InternetDomainLabel '{}'", entityData.get("EntityData").get(0).get("Id").asLong(), internetDomainLabels[i]);
+
+                            internetDomainLabelHierarchyIds[i] = entityData.get("EntityData").get(0).get("Id").asLong();
+                            uniformResourceIdentifierName = internetDomainLabels[i].toLowerCase();
+                        }
+                        else
+                        {
+                            throw new Exception("Failed to create InternetDomainLabel '" + internetDomainLabels[i] + "' at level '" + internetDomainLabelLevel);
+                        }
+                    }
+                }
+                else                                            //NOTE: Second-level domain, e.g. "example", or Subdomain, e.g. "www", "app", etc
+                {
+                    createActionResponseBody = ReadBusinessEntityData("InternetDomainLabelHierarchy", asOfDateTimeUtc, headers, apiKey, authenticationJwt, correlationUuid, userId, URLEncoder.encode("\"ParentInternetDomainLabelId\" = " + internetDomainLabelIds[i + 1] + " AND \"ChildInternetDomainLabelId\" = " + internetDomainLabelIds[i], StandardCharsets.UTF_8.toString()).replace("+", "%20"), exchange);
+                    entityData = objectMapper.readTree(createActionResponseBody.getBody());
+
+                    //NOTE: If not, POST InternetDomainLabel with the name, e.g. "com", "example", "www", and get the resulting Id
+                    if (entityData.get("EntityData").size() > 0)
+                    {
+                        logger.debug("InternetDomainLabelHierarchy '{}' found for InternetDomainLabel '{}'", entityData.get("EntityData").get(0).get("Id").asLong(), internetDomainLabels[i]);
+
+                        internetDomainLabelHierarchyIds[i] = entityData.get("EntityData").get(0).get("Id").asLong();
+                        uniformResourceIdentifierName = internetDomainLabels[i + 1].toLowerCase() + "." + uniformResourceIdentifierName;
+                    }
+                    else
+                    {
+                        logger.debug("InternetDomainLabelHierarchy not found for InternetDomainLabel '{}', creating new InternetDomainLabelHierarchy", internetDomainLabels[i]);
+
+                        createActionRequestBody = "{\n" +
+                                "    \"EntitySubtypeId\": 0,\n" +
+                                "    \"TextKey\": \"internetdomainlabelhierarchy-" + internetDomainLabels[i + 1].toLowerCase() + "-" + internetDomainLabels[i].toLowerCase() + "\",\n" +
+                                "    \"ParentInternetDomainLabelId\": " + internetDomainLabelIds[i + 1] + ",\n" +
+                                "    \"ChildInternetDomainLabelId\": " + internetDomainLabelIds[i] + ",\n" +
+//                    "    \"Ordinal\": " + ordinal + ",\n" +
+//                    "    \"IsActive\": " + isActive + ",\n" +
+                                "    \"CorrelationUuid\": \"" + correlationUuid + "\"\n" +
+                                "  }";
+
+                        createActionResponseBody = WriteBusinessEntityData("InternetDomainLabelHierarchy", asOfDateTimeUtc, headers, apiKey, authenticationJwt, correlationUuid, userId, createActionRequestBody, exchange);
+                        entityData = objectMapper.readTree(createActionResponseBody.getBody());
+
+                        if (entityData.get("EntityData").size() > 0)
+                        {
+                            logger.debug("InternetDomainLabelHierarchy '{}' created for InternetDomainLabel '{}'", entityData.get("EntityData").get(0).get("Id").asLong(), internetDomainLabels[i]);
+
+                            internetDomainLabelHierarchyIds[i] = entityData.get("EntityData").get(0).get("Id").asLong();
+                            uniformResourceIdentifierName = internetDomainLabels[i + 1].toLowerCase() + "." + uniformResourceIdentifierName;
+                        }
+                        else
+                        {
+                            throw new Exception("Failed to create InternetDomainLabel '" + internetDomainLabels[i] + "' at level '" + internetDomainLabelLevel);
+                        }
+                    }
+                }
+            }
+
+            //NOTE: POST UniformResourceIdentifier with the Id of the InternetDomainLabelHierarchy and the URL
+            createActionResponseBody = ReadBusinessEntityData("UniformResourceIdentifier", asOfDateTimeUtc, headers, apiKey, authenticationJwt, correlationUuid, userId, URLEncoder.encode("\"LocalizedName\" = '" + localizedName + "' AND \"EntitySubtypeId\" = 84", StandardCharsets.UTF_8.toString()).replace("+", "%20"), exchange);
+            entityData = objectMapper.readTree(createActionResponseBody.getBody());
+
+            if (entityData.get("EntityData").size() > 0)
+            {
+                logger.debug("UniformResourceIdentifier '{}' found for '{}'", entityData.get("EntityData").get(0).get("Id").asLong(), url);
+
+                uniformResourceIdentifierId = entityData.get("EntityData").get(0).get("Id").asLong();
+            }
+            else
+            {
+                logger.debug("UniformResourceIdentifier '{}' not found for '{}', creating new UniformResourceIdentifier", localizedName, url);
+
+                createActionRequestBody = "{\n" +
+                        "    \"EntitySubtypeId\": 84,\n" +
+                        "    \"TextKey\": \"uniformresourceidentifier-uniformresourcelocator-" + localizedName.replace(" ", "").toLowerCase() + "\",\n" +
+                        "    \"LocalizedName\": \"" + localizedName + "\",\n" +
+                        "    \"LocalizedDescription\": \"" + localizedDescription.replace("'", "''") + "\",\n" +
+                        "    \"LocalizedAbbreviation\": \"" + localizedName.substring(0, localizedName.length() - 1).format("%1.15s", localizedName) + "\",\n" +
+                        "    \"Scheme\": \"" + url.getProtocol() + "\",\n" +
+                        "    \"UserInfo\": \"" + Objects.requireNonNullElse(url.getUserInfo(), "") + "\",\n" +
+                        "    \"DomainName\": \"" + url.getHost() + "\",\n" +
+                        "    \"InternetDomainLabelHierarchyId\": " + internetDomainLabelHierarchyIds[0] + ",\n" +
+                        "    \"Port\": \"" + url.getPort() + "\",\n" +
+                        "    \"Path\": \"" + Objects.requireNonNullElse(url.getPath(), "") + "\",\n" +
+                        "    \"Query\": \"" + Objects.requireNonNullElse(url.getQuery(), "") + "\",\n" +
+                        "    \"Fragment\": \"" + Objects.requireNonNullElse(url.getRef(), "") + "\",\n" +
+//                    "    \"Ordinal\": " + ordinal + ",\n" +
+//                    "    \"IsActive\": " + isActive + ",\n" +
+                        "    \"CorrelationUuid\": \"" + correlationUuid + "\"\n" +
+                        "  }";
+
+                createActionResponseBody = WriteBusinessEntityData("UniformResourceIdentifier", asOfDateTimeUtc, headers, apiKey, authenticationJwt, correlationUuid, userId, createActionRequestBody, exchange);
+                entityData = objectMapper.readTree(createActionResponseBody.getBody());
+
+                if (entityData.get("EntityData").size() > 0)
+                {
+                    logger.debug("UniformResourceIdentifier '{}' created for '{}'", entityData.get("EntityData").get(0).get("Id").asLong(), url);
+
+                    uniformResourceIdentifierId = entityData.get("EntityData").get(0).get("Id").asLong();
+                }
+                else
+                {
+                    throw new Exception("Failed to create UniformResourceIdentifier for '" + url + "'");
+                }
+            }
+
+            //NOTE: POST InformationSystem with the Id of the UniformResourceIdentifier and the InformationSystem name
+            createActionResponseBody = ReadBusinessEntityData("InformationSystem", asOfDateTimeUtc, headers, apiKey, authenticationJwt, correlationUuid, userId, URLEncoder.encode("\"LocalizedName\" = '" + localizedName + "' AND \"EntitySubtypeId\" = 85", StandardCharsets.UTF_8.toString()).replace("+", "%20"), exchange);
+            entityData = objectMapper.readTree(createActionResponseBody.getBody());
+
+            if (entityData.get("EntityData").size() > 0)
+            {
+                logger.debug("InformationSystem '{}' found for '{}'", entityData.get("EntityData").get(0).get("Id").asLong(), localizedName);
+
+                informationSystemId = entityData.get("EntityData").get(0).get("Id").asLong();
+            }
+            else
+            {
+                logger.debug("InformationSystem '{}' not found for '{}', creating new InformationSystem", localizedName, localizedName);
+
+                createActionRequestBody = "{\n" +
+                        "    \"EntitySubtypeId\": 85,\n" +
+                        "    \"TextKey\": \"informationsystem-webapplication-" + localizedName.replace(" ", "").toLowerCase() + "\",\n" +
+                        "    \"LocalizedName\": \"" + localizedName + "\",\n" +
+                        "    \"LocalizedDescription\": \"" + localizedDescription.replace("'", "''") + "\",\n" +
+                        "    \"LocalizedAbbreviation\": \"" + localizedName.substring(0, localizedName.length() - 1).format("%1.15s", localizedName) + "\",\n" +
+                        "    \"UniformResourceIdentifierId\": " + uniformResourceIdentifierId + ",\n" +
+                        "    \"PurposeInformationSystemEntitySubtypeId\": -1,\n" +
+                        "    \"TechnologyInformationSystemEntitySubtypeId\": -1,\n" +
+                        "    \"ControllingLegalEntityId\": -1,\n" +
+//                    "    \"Ordinal\": " + ordinal + ",\n" +
+//                    "    \"IsActive\": " + isActive + ",\n" +
+                        "    \"CorrelationUuid\": \"" + correlationUuid + "\"\n" +
+                        "  }";
+
+                createActionResponseBody = WriteBusinessEntityData("InformationSystem", asOfDateTimeUtc, headers, apiKey, authenticationJwt, correlationUuid, userId, createActionRequestBody, exchange);
+                entityData = objectMapper.readTree(createActionResponseBody.getBody());
+
+                if (entityData.get("EntityData").size() > 0)
+                {
+                    logger.debug("InformationSystem '{}' created for '{}'", entityData.get("EntityData").get(0).get("Id").asLong(), localizedName);
+
+                    informationSystemId = entityData.get("EntityData").get(0).get("Id").asLong();
+                }
+                else
+                {
+                    throw new Exception("Failed to create InformationSystem for '" + localizedName + "'");
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            logger.error("BuildBusinessEntityGraph() for '{}' failed due to: ", entityTypeName, e);
+            //TODO: AAF-81 Improve this error output???
+            return new ResponseEntity<String>("{[]}", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        logger.debug("BuildBusinessEntityGraph() succeeded for '{}'", entityTypeName);
+        //result = new JSONObject("{\"EntityData\":" + entityData + "}");
+        //return "{\"EntityData\":" + entityData + "}";
+        //TODO: AAF-82 Echo input parameters in Postgres function return JSON
+        return new ResponseEntity<String>(entityData.toString(), HttpStatus.CREATED);
+    }
+
     @Operation(summary = "Update a system entity instance, i.e. database table record, of the specified type, e.g. EntityTypeDefinition, EntityTypeAttribute, EntityTypeDefinitionEntityTypeAttributeAssociation, or EntityTypeData, once the instance has been successfully published.", description = "Update the PublishedAt and PublishedBy attributes of the specified entity type and Id by providing the valid, required data and any valid, optional data as a JSON Web Token (JWT, please see https://jwt.io/) in the HTTP request body")
     @Parameter(in = ParameterIn.HEADER, description = "Correlation UUID", name = "CorrelationUuid", content = @Content(schema = @Schema(type = "string")), required = false)
     @ApiResponses(value = {
@@ -2219,5 +2685,142 @@ public class BusinessEntityController
 
         logger.info("GenerateRandomAlphanumericString succeeded");
         return randomLowercaseAlphanumericString;
+    }
+
+    //NOTE: Private utility for reading specified business entity data from the EDM in processes with multiple read and/or write operations in order to avoid code duplication
+    //NOTE: Internal use only as the headers, apiKey, cookie, and other required values have already been checked, encoded, etc in the public method and passed in
+    private ResponseEntity<String> ReadBusinessEntityData(String entityTypeName, Instant asOfDateTimeUtc, HttpHeaders headers, String apiKey, HttpCookie authenticationJwt, String correlationUuid, Long userId, String whereClause, ServerWebExchange exchange) throws Exception
+    {
+        HttpComponentsClientHttpRequestFactory requestFactory = null;
+//        RestTemplateBuilder restTemplateBuilder = null;
+        RestTemplate restTemplate = null;
+        HttpComponentsClientHttpRequestFactory clientHttpRequestFactory = null;
+        HttpEntity<String> entity = null;
+        ResponseEntity<String> readActionResponseBody = null;
+
+        try
+        {
+            logger.debug("Attempting to ReadBusinessEntityData() for '{}'", entityTypeName);
+
+            ENVIRONMENT_JWT_SHARED_SECRET = environment.getProperty("environmentJwtSharedSecret");
+
+            if ((apiKey == null) || (apiKey.length() < 1))
+            {
+                throw new Exception("No 'ApiKey' header specified");
+            }
+            else
+            {
+                logger.debug("ApiKey header '{}' specified", apiKey);
+            }
+
+            if ((correlationUuid == null) || (correlationUuid.length() < 1))
+            {
+//                correlationUuid = UUID.randomUUID().toString();
+                throw new Exception("No 'CorrelationUuid' value specified");
+            }
+            else
+            {
+                logger.debug("CorrelationUuid '{}' specified", correlationUuid);
+            }
+
+            //TODO: AAF-87 Implement fixes for RestTemplateBuilder
+//            restTemplateBuilder = new RestTemplateBuilder();
+//            restTemplate = restTemplate;
+
+            restTemplate = new RestTemplate();
+            requestFactory = new HttpComponentsClientHttpRequestFactory();
+//                requestFactory.setConnectTimeout(TIMEOUT);
+//                requestFactory.setReadTimeout(TIMEOUT);
+            restTemplate.setRequestFactory(requestFactory);
+
+            readActionResponseBody = restTemplate.exchange("http://localhost:8080/entityTypes/" + entityTypeName + "?whereClause=" + whereClause, HttpMethod.GET, new HttpEntity<Object>(headers), String.class);
+        }
+        catch (Exception e)
+        {
+            logger.error("ReadBusinessEntityData() for '{}' failed due to: ", entityTypeName, e);
+            //TODO: AAF-81 Improve this error output???
+            return new ResponseEntity<String>("{[]}", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        logger.debug("ReadBusinessEntityData() succeeded for '{}'", entityTypeName);
+        //result = new JSONObject("{\"EntityData\":" + entityData + "}");
+        //return "{\"EntityData\":" + entityData + "}";
+        //TODO: AAF-82 Echo input parameters in Postgres function return JSON
+        return readActionResponseBody;
+    }
+
+    //NOTE: Private utility for reading specified business entity data from the EDM in processes with multiple read and/or write operations in order to avoid code duplication
+    //NOTE: Internal use only as the headers, apiKey, cookie, and other required values have already been checked in the public method and passed in
+    private ResponseEntity<String> WriteBusinessEntityData(String entityTypeName, Instant asOfDateTimeUtc, HttpHeaders headers, String apiKey, HttpCookie authenticationJwt, String correlationUuid, Long userId, String requestBody, ServerWebExchange exchange) throws Exception
+    {
+        String writeActionRequestBody = "";
+        HttpComponentsClientHttpRequestFactory requestFactory = null;
+//        RestTemplateBuilder restTemplateBuilder = null;
+        RestTemplate restTemplate = null;
+        HttpComponentsClientHttpRequestFactory clientHttpRequestFactory = null;
+        HttpEntity<String> entity = null;
+        ResponseEntity<String> writeActionResponseBody = null;
+
+        try
+        {
+            logger.debug("Attempting to WriteBusinessEntityData() for '{}'", entityTypeName);
+
+            ENVIRONMENT_JWT_SHARED_SECRET = environment.getProperty("environmentJwtSharedSecret");
+
+            if ((apiKey == null) || (apiKey.length() < 1))
+            {
+                throw new Exception("No 'apiKey' parameter specified");
+            }
+            else
+            {
+                logger.debug("'apiKey' parameter '{}' specified", apiKey);
+            }
+
+            if ((correlationUuid == null) || (correlationUuid.length() < 1))
+            {
+                throw new Exception("No 'correlationUuid' parameter specified");
+            }
+            else
+            {
+                logger.debug("'correlationUuid' parameter '{}' specified", correlationUuid);
+            }
+
+            if (requestBody.length() < 1)
+            {
+                throw new Exception("No 'requestBody' parameter specified");
+            }
+            else
+            {
+                logger.debug("'requestBody' parameter '{}' specified", requestBody);
+                writeActionRequestBody = requestBody;
+            }
+
+            entity = new HttpEntity<String>(writeActionRequestBody, headers);
+
+            //TODO: AAF-87 Implement fixes for RestTemplateBuilder
+//            restTemplateBuilder = new RestTemplateBuilder();
+//            restTemplate = restTemplate;
+
+            restTemplate = new RestTemplate();
+            requestFactory = new HttpComponentsClientHttpRequestFactory();
+//                requestFactory.setConnectTimeout(TIMEOUT);
+//                requestFactory.setReadTimeout(TIMEOUT);
+            restTemplate.setRequestFactory(requestFactory);
+
+            writeActionResponseBody = restTemplate.postForEntity("http://localhost:8080/entityTypes/" + entityTypeName, entity, String.class);
+        }
+        catch (Exception e)
+        {
+            logger.error("WriteBusinessEntityData() for '{}' failed due to: ", entityTypeName, e);
+            //TODO: AAF-81 Improve this error output???
+            return new ResponseEntity<String>("{[]}", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        logger.debug("WriteBusinessEntityData() succeeded for '{}'", entityTypeName);
+        //result = new JSONObject("{\"EntityData\":" + entityData + "}");
+        //return "{\"EntityData\":" + entityData + "}";
+        //TODO: AAF-82 Echo input parameters in Postgres function return JSON
+//        return new ResponseEntity<String>(entityData.toString(), HttpStatus.CREATED);
+        return writeActionResponseBody;
     }
 }
