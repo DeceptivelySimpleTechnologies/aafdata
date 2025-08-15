@@ -71,6 +71,24 @@ psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresData
 echo "Adding LegalEntity schema to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
 psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/003-schema/019-LegalEntity.sql
 
+echo "Adding InternetDomainLabel schema to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
+psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/003-schema/020-InternetDomainLabel.sql
+
+echo "Adding InternetDomainLabelHierarchy schema to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
+psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/003-schema/021-InternetDomainLabelHierarchy.sql
+
+echo "Adding TelephoneNumber schema to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
+psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/003-schema/022-TelephoneNumber.sql
+
+echo "Adding EmailAddress schema to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
+psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/003-schema/023-EmailAddress.sql
+
+echo "Adding UniformResourceIdentifier schema to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
+psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/003-schema/024-UniformResourceIdentifier.sql
+
+echo "Adding InformationSystem schema to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
+psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/003-schema/025-InformationSystem.sql
+
 unset PGPASSWORD
 
 # Log in using custom AafCoreModeler role

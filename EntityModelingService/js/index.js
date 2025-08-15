@@ -20,11 +20,9 @@ function handlePublishButtonClicked(event) {
     JSON.stringify({})
   ).then((data) => {
     if (!data.hasOwnProperty("Code")) {
-      status.color = "green";
       status.innerText = "Attempt to publish unpublished EntityTypeDefinition, EntityTypeAttribute, and EntityTypeDefinitionEntityTypeAttributeAssociation definitions succeeded";
     }
     else {
-      status.color = "red";
       status.innerText = "Attempt to publish unpublished EntityTypeDefinition, EntityTypeAttribute, and EntityTypeDefinitionEntityTypeAttributeAssociation definitions failed: " + data.Message;
     }
   });

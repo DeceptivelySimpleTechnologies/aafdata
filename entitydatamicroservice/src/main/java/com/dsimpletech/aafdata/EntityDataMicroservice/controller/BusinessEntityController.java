@@ -477,8 +477,8 @@ public class BusinessEntityController
                                         insertValues = insertValues + "'" + entityTypeAttributes.get(i).getLocalizedName().toLowerCase() + "-" + entitySubtypes.get(bodyJwtPayload.get("body").get("EntitySubtypeId").asInt()).getLocalizedName().toLowerCase() + "-" + bodyJwtPayload.get("body").get("LegalName").asText().toLowerCase() + "',";
                                         break;
                                     //NOTE: EntityTypes with LegalName attribute
-                                    case "LegalGivenName", "LegalSurname":
-                                        insertValues = insertValues + "'" + entityTypeAttributes.get(i).getLocalizedName().toLowerCase() + "-" + entitySubtypes.get(bodyJwtPayload.get("body").get("EntitySubtypeId").asInt()).getLocalizedName().toLowerCase() + "-" + bodyJwtPayload.get("body").get("LegalSurname").asText().toLowerCase() + "-" + bodyJwtPayload.get("body").get("LegalGivenName").asText().toLowerCase() + "',";
+                                    case "LegalGivenName1", "LegalSurname1":
+                                        insertValues = insertValues + "'" + entityTypeAttributes.get(i).getLocalizedName().toLowerCase() + "-" + entitySubtypes.get(bodyJwtPayload.get("body").get("EntitySubtypeId").asInt()).getLocalizedName().toLowerCase() + "-" + bodyJwtPayload.get("body").get("LegalSurname1").asText().toLowerCase() + "-" + bodyJwtPayload.get("body").get("LegalGivenName1").asText().toLowerCase() + "',";
                                         break;
                                     default:
                                         insertValues = insertValues + "'" + entityTypeAttributes.get(i).getLocalizedName().toLowerCase() + "-" + entitySubtypes.get(bodyJwtPayload.get("body").get("EntitySubtypeId").asInt()).getLocalizedName().toLowerCase() + "-" + new Random().ints(97, 123);
