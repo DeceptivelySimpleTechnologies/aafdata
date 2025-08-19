@@ -89,6 +89,15 @@ psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresData
 echo "Adding InformationSystem schema to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
 psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/003-schema/025-InformationSystem.sql
 
+echo "Adding ContentItem schema to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
+psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/003-schema/026-ContentItem.sql
+
+echo "Adding ContentItemGroup schema to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
+psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/003-schema/027-ContentItemGroup.sql
+
+echo "Adding ContentItemGroupContentItemAssociation schema to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
+psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/003-schema/028-ContentItemGroupContentItemAssociation.sql
+
 unset PGPASSWORD
 
 # Log in using custom AafCoreModeler role
