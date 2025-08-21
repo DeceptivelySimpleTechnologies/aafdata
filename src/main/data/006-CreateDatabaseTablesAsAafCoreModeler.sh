@@ -98,6 +98,15 @@ psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresData
 echo "Adding ContentItemGroupContentItemAssociation table to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
 psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/004-model/028-ContentItemGroupContentItemAssociation.sql
 
+echo "Adding Keyword table to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
+psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/004-model/029-Keyword.sql
+
+echo "Adding KeywordGroup table to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
+psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/004-model/030-KeywordGroup.sql
+
+echo "Adding KeywordGroupKeywordAssociation table to $postgresDatabase database in $postgresServerGroupName $postgresVersion as $postgresUser role"
+psql -h $postgresHostNameOrIp -p $postgresPort -U $postgresUser -d $postgresDatabase -f generated/version/0.0.0/004-model/031-KeywordGroupKeywordAssociation.sql
+
 unset PGPASSWORD
 
 # Log in using custom AafCoreModeler role
