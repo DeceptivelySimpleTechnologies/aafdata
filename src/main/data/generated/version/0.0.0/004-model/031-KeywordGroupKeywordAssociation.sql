@@ -38,5 +38,5 @@ CREATE TABLE "KeywordGroupKeywordAssociation"."KeywordGroupKeywordAssociation"
 
     TABLESPACE pg_default;
 
-CREATE INDEX "KywdGrpKywdAssoc_IDX_KeywordmGroupId" ON "KeywordGroupKeywordAssociation"."KeywordGroupKeywordAssociation" ("KeywordmGroupId");
+CREATE INDEX "KywdGrpKywdAssoc_IDX_KeywordGroupId" ON "KeywordGroupKeywordAssociation"."KeywordGroupKeywordAssociation" ("KeywordGroupId");
 CREATE INDEX "KywdGrpKywdAssoc_IDX_KeywordId" ON "KeywordGroupKeywordAssociation"."KeywordGroupKeywordAssociation" ("KeywordId")
