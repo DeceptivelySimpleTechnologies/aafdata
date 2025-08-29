@@ -1445,6 +1445,7 @@ public class BusinessEntityController
         String uniformResourceIdentifierName = "";
         Long uniformResourceIdentifierId = -1L;
         Long informationSystemId = -1L;
+        Long softwareToolId = -1L;
 
         String createActionRequestBody = "";
         ResponseEntity<String> createActionResponseBody = null;
@@ -1606,7 +1607,6 @@ public class BusinessEntityController
                 logger.debug("InternetDomainLabels found in the URL: {}", (Object) internetDomainLabels);
             }
 
-//            internetDomainLabels = new String[internetDomainLabels.length];
             internetDomainLabelIds = new Long[internetDomainLabels.length];
             internetDomainLabelHierarchyIds = new Long[internetDomainLabels.length];
 
@@ -1845,6 +1845,49 @@ public class BusinessEntityController
                 else
                 {
                     throw new Exception("Failed to create InformationSystem for '" + localizedName + "'");
+                }
+            }
+
+            //NOTE: POST SoftwareTool with the Id of the InformationSystem
+            createActionResponseBody = ReadBusinessEntityData("SoftwareTool", asOfDateTimeUtc, headers, apiKey, authenticationJwt, correlationUuid, userId, URLEncoder.encode("\"InformationSystemId\" = " + informationSystemId, StandardCharsets.UTF_8.toString()).replace("+", "%20"), exchange);
+            entityData = objectMapper.readTree(createActionResponseBody.getBody());
+
+            if (entityData.get("EntityData").size() > 0)
+            {
+                logger.debug("SoftwareTool '{}' found for '{}'", entityData.get("EntityData").get(0).get("Id").asLong(), localizedName);
+
+                softwareToolId = entityData.get("EntityData").get(0).get("Id").asLong();
+            }
+            else
+            {
+                logger.debug("SoftwareTool not found for InformationSystem '{}', creating new SoftwareTool", informationSystemId);
+
+                createActionRequestBody = "{\n" +
+                        "    \"EntitySubtypeId\": -1,\n" +
+                        "    \"TextKey\": \"softwaretool-unknown-" + localizedName.replace(" ", "").toLowerCase() + "\",\n" +
+                        "    \"InformationSystemId\": " + informationSystemId + ",\n" +
+                        "    \"HostOperatingSystemSoftwareToolEntitySubtypeId\": -1,\n" +
+                        "    \"PrimaryCapabilitySoftwareToolEntitySubtypeId\": -1,\n" +
+                        "    \"IndependentOrInteractiveSoftwareToolEntitySubtypeId\": -1,\n" +
+                        "    \"AffiliateToken\": \"\",\n" +
+                        "    \"AffiliateTokenExpiresAtDateTimeUtc\": \"9999-12-31 23:59:59.999\",\n" +
+//                    "    \"Ordinal\": " + ordinal + ",\n" +
+//                    "    \"IsActive\": " + isActive + ",\n" +
+                        "    \"CorrelationUuid\": \"" + correlationUuid + "\"\n" +
+                        "  }";
+
+                createActionResponseBody = WriteBusinessEntityData("SoftwareTool", asOfDateTimeUtc, headers, apiKey, authenticationJwt, correlationUuid, userId, createActionRequestBody, exchange);
+                entityData = objectMapper.readTree(createActionResponseBody.getBody());
+
+                if (entityData.get("EntityData").size() > 0)
+                {
+                    logger.debug("SoftwareTool '{}' created for InformationSystem '{}'", entityData.get("EntityData").get(0).get("Id").asLong(), informationSystemId);
+
+                    softwareToolId = entityData.get("EntityData").get(0).get("Id").asLong();
+                }
+                else
+                {
+                    throw new Exception("Failed to create SoftwareTool for '" + localizedName + "'");
                 }
             }
         }
