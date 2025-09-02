@@ -2110,7 +2110,7 @@ public class BusinessEntityController
         //NOTE: foreign key property in the EntityTypeAttribute model.
         try
         {
-            logger.debug("Attempting to BuildBusinessEntityGraph() for '{}'", entityTypeName);
+            logger.info("Attempting to BuildBusinessEntityGraph() for '{}'", entityTypeName);
 
             request = exchange.getRequest();
 
@@ -2550,7 +2550,7 @@ public class BusinessEntityController
             return new ResponseEntity<String>("{[]}", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        logger.debug("BuildBusinessEntityGraph() succeeded for '{}'", entityTypeName);
+        logger.info("BuildBusinessEntityGraph() succeeded for '{}'", entityTypeName);
         //result = new JSONObject("{\"EntityData\":" + entityData + "}");
         //return "{\"EntityData\":" + entityData + "}";
         //TODO: AAF-82 Echo input parameters in Postgres function return JSON
