@@ -41,7 +41,12 @@ AS $BODY$
 	EXECUTE countQuery INTO entityCount;
 
 	EXECUTE dataQuery INTO entityData;
-	RETURN '{"EntityType":"' || entitytypename || '","TotalRows":' || entityCount || ',"EntityData":' || entityData || '}';
+
+	IF (entityCount = 0) OR (entityData IS NULL) THEN
+		RETURN '{"EntityType":"' || entitytypename || '","TotalRows":0,"EntityData":[]}';
+	ELSE
+		RETURN '{"EntityType":"' || entitytypename || '","TotalRows":' || entityCount || ',"EntityData":' || entityData || '}';
+	END IF;
 
   END;
 $BODY$;
