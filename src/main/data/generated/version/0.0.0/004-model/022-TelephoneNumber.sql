@@ -16,8 +16,8 @@ CREATE TABLE "TelephoneNumber"."TelephoneNumber"
     "CountryCode" character varying(3) COLLATE pg_catalog."default" NOT NULL,
     "SubscriberNumber" character varying(12) COLLATE pg_catalog."default" NOT NULL,
 
-    "ResourceName" character varying(100) COLLATE pg_catalog."default" NOT NULL DEFAULT '',
-    "Ordinal" bigint NOT NULL DEFAULT '-1',
+    "ResourceData" character varying(75000) COLLATE pg_catalog."default" NOT NULL DEFAULT '',
+    "Ordinal" bigint NOT NULL DEFAULT -1,
     "IsActive" boolean NOT NULL DEFAULT true,
     "CorrelationUuid" uuid NOT NULL,
     "Digest" character varying(500) COLLATE pg_catalog."default" NOT NULL,
