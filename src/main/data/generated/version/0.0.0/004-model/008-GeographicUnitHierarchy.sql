@@ -13,7 +13,7 @@ CREATE TABLE "GeographicUnitHierarchy"."GeographicUnitHierarchy"
     "ParentGeographicUnitId" bigint NOT NULL,
     "ChildGeographicUnitId" bigint NOT NULL,
 
-    "ResourceName" character varying(100) COLLATE pg_catalog."default" NOT NULL DEFAULT '',
+    "ResourceData" character varying(75000) COLLATE pg_catalog."default" NOT NULL DEFAULT '',
     "Ordinal" bigint NOT NULL DEFAULT -1,
     "IsActive" boolean NOT NULL DEFAULT true,
     "CorrelationUuid" uuid NOT NULL,

@@ -17,7 +17,7 @@ CREATE TABLE "OrganizationalUnit"."OrganizationalUnit"
     "DoingBusinessAs" character varying(100) COLLATE pg_catalog."default" NOT NULL,
     "LegalFormationAtDateTimeUtc" timestamp without time zone NOT NULL,
 
-    "ResourceName" character varying(100) COLLATE pg_catalog."default" NOT NULL DEFAULT '',
+    "ResourceData" character varying(75000) COLLATE pg_catalog."default" NOT NULL DEFAULT '',
     "Ordinal" bigint NOT NULL DEFAULT -1,
     "IsActive" boolean NOT NULL DEFAULT true,
     "CorrelationUuid" uuid NOT NULL,

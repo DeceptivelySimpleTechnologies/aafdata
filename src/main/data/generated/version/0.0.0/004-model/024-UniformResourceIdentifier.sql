@@ -23,7 +23,7 @@ CREATE TABLE "UniformResourceIdentifier"."UniformResourceIdentifier"
     "Query" character varying(2000) COLLATE pg_catalog."default" NOT NULL DEFAULT '',
     "Fragment" character varying(500) COLLATE pg_catalog."default" NOT NULL DEFAULT '',
 
-    "ResourceName" character varying(100) COLLATE pg_catalog."default" NOT NULL DEFAULT '',
+    "ResourceData" character varying(75000) COLLATE pg_catalog."default" NOT NULL DEFAULT '',
     "Ordinal" bigint NOT NULL DEFAULT -1,
     "IsActive" boolean NOT NULL DEFAULT true,
     "CorrelationUuid" uuid NOT NULL,
