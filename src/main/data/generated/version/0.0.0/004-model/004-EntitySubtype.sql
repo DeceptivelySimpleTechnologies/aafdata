@@ -40,4 +40,19 @@ CREATE TABLE "EntitySubtype"."EntitySubtype"
 
     TABLESPACE pg_default;
 
-CREATE INDEX "EntitySubtype_IDX_LocalizedName" ON "EntitySubtype"."EntitySubtype" ("LocalizedName")
+CREATE INDEX "EntitySubtype_IDX_LocalizedName" ON "EntitySubtype"."EntitySubtype" ("LocalizedName");
+
+
+-- NOTE: To enable Postgres-based full-text search
+
+-- NOTE: software_tool > "EntitySubtype"."EntitySubtype"
+-- NOTE: search_vector > "SearchVector"
+ALTER TABLE "EntitySubtype"."EntitySubtype"
+  ADD COLUMN "SearchVector" tsvector GENERATED ALWAYS AS (
+    -- NOTE: Weight name higher than description
+    setweight(to_tsvector('english', coalesce("LocalizedName",'')), 'A') ||
+    setweight(to_tsvector('english', coalesce("LocalizedDescription",'')), 'B')
+  ) STORED;
+
+-- NOTE: idx_software_tool_search_vector > "EntitySubtype_IDX_SearchVector"
+CREATE INDEX "EntitySubtype_IDX_SearchVector" ON "EntitySubtype"."EntitySubtype" USING gin("SearchVector");

@@ -1618,6 +1618,343 @@ public class BusinessEntityController
         return new ResponseEntity<String>(entityData, HttpStatus.OK);
     }
 
+    @Operation(summary = "Search specified entity data for supplied terms", description = "Performs a keyword search for the supplied terms when the valid, required data and any valid, optional data is passed as a JSON Web Token (JWT, please see https://jwt.io/) in the HTTP request body and returns the result")
+    @Parameter(in = ParameterIn.HEADER, description = "API key", name = "ApiKey", content = @Content(schema = @Schema(type = "string")))
+    @Parameter(in = ParameterIn.HEADER, description = "Correlation UUID", name = "CorrelationUuid", content = @Content(schema = @Schema(type = "string")), required = false)
+    @Parameter(in = ParameterIn.COOKIE, description = "JWT Authentication token", name = "Authentication", content = @Content(schema = @Schema(type = "string")))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(type = "string"))),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content)
+    })
+    @CrossOrigin(originPatterns = "http://*:[*],https://*:[*]", methods = RequestMethod.GET, allowCredentials = "true")
+    @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity<String> SearchBusinessEntity(@RequestParam(defaultValue = "EntityType,EntitySubtype") String[] entityTypeTargets, @RequestParam(defaultValue = "Id,LocalizedName,LocalizedDescription") String[] entityAttributeTargets, @RequestParam(defaultValue = "") String searchTerms, @RequestParam(defaultValue = "#{T(java.time.Instant).now()}") Instant asOfDateTimeUtc, @RequestParam(defaultValue = "1") long graphDepthLimit, @RequestParam(defaultValue = "1") long pageNumber, @RequestParam(defaultValue = "20") long pageSize, ServerWebExchange exchange) throws Exception
+    {
+        ServerHttpRequest request = null;
+        MultiValueMap<String,String> queryParams = null;
+
+        int entityTypeId = -1;
+
+        ArrayList<Integer> entityTypeAssociations = null;
+
+        String[] sqlBlacklistValues = null;
+        String errorValues = "";
+
+        String apiKey = "";
+        String correlationUuid = "";
+
+        ObjectMapper objectMapper = null;
+
+        HttpCookie authenticationJwt = null;
+        Base64.Decoder decoderBase64 = Base64.getUrlDecoder();
+        String[] authenticationJwtSections = null;
+        JsonNode authenticationJwtHeader = null;
+        JsonNode authenticationJwtPayload = null;
+        String authenticationJwtSignature = "";
+        int userId = -1;
+
+        String[] bodyJwtSections = null;
+        JsonNode bodyJwtHeader = null;
+        JsonNode bodyJwtPayload = null;
+        String bodyJwtSignature = "";
+
+        String[] entityTypeAttributesNeverToReturn = null;
+
+        DatabaseConnection databaseConnection = null;
+
+        Connection connection = null;
+        CallableStatement statement = null;
+        ResultSet resultSet = null;
+
+        String selectClause = "";
+        String selectColumns = "";
+        String whereClause = "";
+//        String sortClause = "";
+
+        String entityData = "";
+
+        //NOTE: Rather than validating the EntityType and EntityAttribute names, we're going to optimistically pass them through to the database
+        //NOTE: We don't request versions our business entity data structure explicitly in the base URL; instead our explicit (v1.2.3) versioning is maintained internally, based on/derived from the AsOfUtcDateTime query parameter
+        //NOTE: Since we're not automatically parsing the resulting JSON into an object, we're returning a JSON String rather than a JSONObject
+        try
+        {
+            //TODO: Change most logger.info to logger.debug after testing and concatenation style
+            logger.info("Attempting to SearchBusinessEntity() for " + entityAttributeTargets.toString() + " in " + entityTypeTargets.toString());
+
+            request = exchange.getRequest();
+            queryParams = request.getQueryParams();
+
+            DB_DRIVER_CLASS = "postgresql";
+            DB_URL = environment.getProperty("spring.datasource.url");
+            DB_USERNAME = environment.getProperty("spring.datasource.username");
+            //TODO: AAF-155 Use a secure repository, e.g. encrypted Postgres, Vault, etc behind an interface, for database credentials
+            DB_PASSWORD = environment.getProperty("spring.datasource.password");
+
+            databaseConnection = new DatabaseConnection();
+            connection = databaseConnection.GetDatabaseConnection(DB_DRIVER_CLASS, DB_URL, DB_USERNAME, DB_PASSWORD);
+
+            if (connection == null)
+            {
+                throw new Exception("Unable to get database connection");
+            }
+
+            ENVIRONMENT_JWT_SHARED_SECRET = environment.getProperty("environmentJwtSharedSecret");
+
+            apiKey = exchange.getRequest().getHeaders().getFirst("ApiKey");
+
+            if ((apiKey == null) || (apiKey.length() < 1))
+            {
+                throw new Exception("No 'ApiKey' header included in the request");
+            }
+            else
+            {
+                //TODO: AAF-66 Validate API key by looking it up in the database, ensuring that it is not disabled, checking its associated permissions extent, and (later) checking that it is associated with the authenticated user's OrganizationalUnit
+                logger.info(("ApiKey header '" + apiKey + "' included in the request"));
+            }
+
+            correlationUuid = exchange.getRequest().getHeaders().getFirst("CorrelationUuid");
+
+            if ((correlationUuid == null) || (correlationUuid.length() < 1))
+            {
+                correlationUuid = UUID.randomUUID().toString();
+                logger.info(("CorrelationUuid '" + correlationUuid + "' generated for the request"));
+            }
+            else
+            {
+                //TODO: AAF-66 Validate API key by looking it up in the database, ensuring that it is not disabled, checking its associated permissions extent, and (later) checking that it is associated with the authenticated user's OrganizationalUnit
+                logger.info(("CorrelationUuid '" + correlationUuid + "' included in the request"));
+            }
+
+            objectMapper = new ObjectMapper();
+
+            //TODO: AAF-67 Validate JWT
+            authenticationJwt = request.getCookies().getFirst("Authentication");
+            //TODO: Look for "AnonymousUser" cookie too, especially if "Authentication" cookie is not present
+            authenticationJwtSections = authenticationJwt.getValue().split("\\.");
+            authenticationJwtHeader = objectMapper.readTree(decoderBase64.decode(authenticationJwtSections[0]));
+            authenticationJwtPayload = objectMapper.readTree(decoderBase64.decode(authenticationJwtSections[1]));
+            //TODO: Validate JWT signature per https://www.baeldung.com/java-jwt-token-decode
+
+            if ((authenticationJwtHeader != null) && (authenticationJwtPayload != null))
+            {
+                logger.info(("Requested by '" + authenticationJwtPayload.get("body").get("EmailAddress").asText() + "' using key '" + authenticationJwtHeader.get("kid").asText() + "'"));
+            }
+            else
+            {
+                throw new Exception("Missing or invalid 'Authentication' cookie included with the request");
+            }
+
+            //TODO: AAF-68 Look up InformationSystemUser.Id using the authenticated user's EmailAddress in the Authentication JWT payload, and assign it below
+            userId = -100;
+
+            //TODO: AAF-69 Check user's role(s) and permissions for this operation
+
+            //NOTE: Example request http://localhost:8080/Person with "Authentication" JWT and JWT request body
+
+            sqlBlacklistValues = environment.getProperty("sqlNotToAllow").toLowerCase().split(",");
+
+            //TODO: AAF-84 Only check request body for SQL injection
+            errorValues = GuardAgainstSqlIssues(queryParams.toString(), sqlBlacklistValues);
+
+
+            //NOTE: Get the set of columns to be included in each SELECT clause
+            StringBuilder selectClauseBuilder = new StringBuilder();
+
+            entityTypeAttributesNeverToReturn = environment.getProperty("entityTypeAttributesNeverToReturn").split(",");
+
+            for (int i = 0; i < entityAttributeTargets.length; i++)
+            {
+                //TODO: Filter out entityTypeAttributesNeverToReturn
+                if (!Arrays.asList(entityTypeAttributesNeverToReturn).contains(entityAttributeTargets[i]))
+                {
+                    selectClauseBuilder.append("\"").append(entityAttributeTargets[i]).append("\"");
+
+                    if (i < entityAttributeTargets.length - 1)
+                    {
+                        selectClauseBuilder.append(", ");
+                    }
+                }
+            }
+
+
+            //NOTE: Building the common whereClause before building the SELECT clauses so that we can filter disabled and deleted records out of each clouse
+            whereClause = whereClause + " AND \"IsActive\" = true AND \"DeletedAtDateTimeUtc\" = '9999-12-31T23:59:59.999'";
+
+            //NOTE: No client-provided sortClause because search results are sorted by relevance (i.e. SearchRank)
+
+            selectColumns = selectClauseBuilder.toString();
+            selectClause = "SELECT " + selectColumns + " FROM (\n";
+
+            for (int i = 0; i < entityTypeTargets.length; i++)
+            {
+                entityTypeId = -1;
+                entityTypeAssociations = new ArrayList<Integer>();
+
+                //NOTE: Validate the specified EntityType name(s)
+                for (int j = 0 ; j < entityTypeDefinitions.size() ; j++)
+                {
+                    if (entityTypeDefinitions.get(j).getLocalizedName().equals(entityTypeTargets[i]))
+                    {
+//                        entityTypeId = entityTypeDefinitions.get(j).getId();
+                        entityTypeId = j;
+
+                        //NOTE: Validate the specified, associated EntityTypeAttribute name(s) and association(s)
+                        for (int k = 0 ; k < entityAttributeTargets.length ; k++)
+                        {
+                            for (int l = 0 ; l < entityTypeAttributes.size() ; l++)
+                            {
+                                if ((entityTypeAttributes.get(l).getLocalizedName().equals(entityAttributeTargets[k])) && (!Arrays.asList(entityTypeAttributesNeverToReturn).contains(entityAttributeTargets[k])))
+                                {
+                                    for (int m = 0 ; m < entityTypeDefinitionEntityTypeAttributeAssociations.size() ; m++)
+                                    {
+                                        if ((entityTypeDefinitionEntityTypeAttributeAssociations.get(m).getEntityTypeDefinitionId() == entityTypeId) && (entityTypeDefinitionEntityTypeAttributeAssociations.get(m).getEntityTypeAttributeId() == entityTypeAttributes.get(l).getId()))
+                                        {
+                                            entityTypeAssociations.add(entityTypeAttributes.get(l).getId());
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if (entityTypeAssociations.size() == 0)
+                        {
+                            throw new Exception("Invalid or unassociated 'entityAttributeTargets' query parameter '" + entityTypeTargets[i] + "'");
+                        }
+                    }
+                }
+
+                if (entityTypeId == -1)
+                {
+                    throw new Exception("Invalid 'entityTypeTargets' query parameter '" + entityTypeTargets[i] + "'");
+                }
+
+                selectClause = selectClause + "  SELECT '" + entityTypeDefinitions.get(entityTypeId).getLocalizedName() + "' AS \"EntityType\", " + selectColumns + ", ts_rank_cd(\"SearchVector\", \"framework\") AS \"SearchRank\"\n  FROM \"" + entityTypeDefinitions.get(entityTypeId).getLocalizedName() + "\".\"" + entityTypeDefinitions.get(entityTypeId).getLocalizedName() + "\", websearch_to_tsquery('english', 'framework') \"framework\"\n  WHERE \"SearchVector\" @@ \"framework\"" + whereClause;
+
+                if (i < entityTypeTargets.length - 1)
+                {
+                    selectClause = selectClause + ("\n  UNION ALL\n");
+                }
+            }
+
+            selectClause = selectClause + "\n) t\n  ORDER BY \"SearchRank\" DESC\n  LIMIT " + pageSize + ";";
+
+            //NOTE: Validate and sanitize asOfDateTimeUtc
+            if (asOfDateTimeUtc.isBefore(Instant.parse("1900-01-01T00:00:00.000Z")))
+            {
+                throw new Exception("'asOfDateTimeUtc' query parameter must be greater than or equal to '1900-01-01'.");
+            }
+
+            if (asOfDateTimeUtc.isAfter(Instant.parse("9999-12-31T23:59:59.999Z")))
+            {
+                throw new Exception("'asOfDateTimeUtc' query parameter must be less than or equal to '9999-12-31'.");
+            }
+
+            //NOTE: Validate and sanitize graphDepthLimit
+            if (graphDepthLimit < 1)
+            {
+                throw new Exception("'graphDepthLimit' query parameter must be greater than or equal to 1.");
+            }
+
+            if (graphDepthLimit > Long.parseLong(Objects.requireNonNull(environment.getProperty("systemDefaultGraphDepthLimitMaximum"))))
+            {
+                throw new Exception("'graphDepthLimit' query parameter must be less than or equal to " + environment.getProperty("systemDefaultGraphDepthLimitMaximum") + ".");
+            }
+
+            //NOTE: Validate and sanitize pageNumber
+            if (pageNumber < 1)
+            {
+                throw new Exception("'pageNumber' query parameter must be greater than or equal to 1.");
+            }
+
+            if (pageNumber > Long.parseLong(Objects.requireNonNull(environment.getProperty("systemDefaultPaginationPageNumberMaximum"))))
+            {
+                throw new Exception("'pageNumber' query parameter must be less than or equal to " + environment.getProperty("systemDefaultPaginationPageNumberMaximum") + ".");
+            }
+
+            //NOTE: Validate and sanitize pageSize
+            if (pageSize < 1)
+            {
+                throw new Exception("'pageSize' query parameter must be greater than or equal to 1.");
+            }
+
+            if (pageSize > Long.parseLong(Objects.requireNonNull(environment.getProperty("systemDefaultPaginationPageSizeMaximum"))))
+            {
+                throw new Exception("'pageSize' query parameter must be less than or equal to " + environment.getProperty("systemDefaultPaginationPageSizeMaximum") + ".");
+            }
+
+            //TODO: *** Check this: Get UTC time in Postgres function (currently ??? getting local) for Create, Update, and Delete operations
+
+            //TODO: AAF-69 Since EntityDataCreate() is in public, ensure that is locked down to correct role(s) only
+            //TODO: AAF-71 Refactor the statements below to be reusable for validation, local caching, etc
+            if (errorValues.length() == 0)
+            {
+                statement = connection.prepareCall("{call \"EntityDataRead\"(?,?,?,?,?,?,?,?,?)}");
+//                statement.setString(1, entityTypeName);
+                statement.setString(1, entityTypeTargets[0]);
+                statement.setString(2, selectClause);
+//                statement.setString(3, URLDecoder.decode(whereClause, StandardCharsets.UTF_8));
+                statement.setString(3, "");
+//                statement.setString(4, URLDecoder.decode(sortClause, StandardCharsets.UTF_8));
+                statement.setString(4, "");
+                statement.setTimestamp(5, Timestamp.from(asOfDateTimeUtc));
+                statement.setLong(6, graphDepthLimit);
+//                statement.setLong(7, pageNumber);
+                statement.setLong(7, 1);
+                statement.setLong(8, pageSize);
+
+                //NOTE: Register the data OUT parameter before calling the stored procedure
+                statement.registerOutParameter(9, Types.LONGVARCHAR);
+                statement.executeUpdate();
+
+                //NOTE: Read the OUT parameter now
+                entityData = statement.getString(9);
+
+                if (entityData == null)
+                {
+                    entityData = "{\"EntityType\" : \"" + entityTypeTargets + "\", \"TotalRows\": -1, \"EntityData\": [], \"Code\": 500, \"Message\": \"No data returned from CallableStatement\"}";
+                }
+
+                //TODO: AAF-70 Filter or mask unauthorized or sensitive attributes for this InformationSystemUserRole (as JSON)???
+            }
+        }
+        catch (Exception e)
+        {
+            logger.error("SearchBusinessEntity() failed due to: " + e);
+            return new ResponseEntity<String>("{\"EntityType\" : \"" + "SearchResults" + "\", \"TotalRows\": -1, \"EntityData\": [], \"Code\": 500, \"Message\": \"" + e.toString() + "\"}", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        finally
+        {
+            try
+            {
+                if (resultSet != null) {
+                    resultSet.close();
+                    resultSet = null;
+                }
+
+                if (statement != null) {
+                    statement.close();
+                    statement = null;
+                }
+
+                if (connection != null) {
+                    connection.close();
+                    connection = null;
+                }
+            }
+            catch (SQLException e)
+            {
+                logger.error("Failed to close statement and/or connection resource in SearchBusinessEntity() due to: " + e);
+            }
+        }
+
+        logger.info("SearchBusinessEntity() succeeded for " +  entityAttributeTargets.toString() + " in " + entityTypeTargets.toString());
+        //result = new JSONObject("{\"EntityData\":" + entityData + "}");
+        //return "{\"EntityData\":" + entityData + "}";
+        //TODO: AAF-82 Echo input parameters in Postgres function return JSON???
+        return new ResponseEntity<String>(entityData, HttpStatus.OK);
+    }
+
     public String GuardAgainstSqlIssues(String sqlFragment, String[] sqlBlacklistValues)
     {
         String issueValues = "";

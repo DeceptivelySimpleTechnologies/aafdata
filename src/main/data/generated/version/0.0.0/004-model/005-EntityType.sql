@@ -37,3 +37,13 @@ CREATE TABLE "EntityType"."EntityType"
     TABLESPACE pg_default;
 
 CREATE INDEX "EntityType_IDX_LocalizedName" ON "EntityType"."EntityType" ("LocalizedName")
+
+
+-- NOTE: To enable Postgres-based full-text search
+ALTER TABLE "EntityType"."EntityType"
+  ADD COLUMN "SearchVector" tsvector GENERATED ALWAYS AS (
+    setweight(to_tsvector('english', coalesce("LocalizedName",'')), 'A') ||
+    setweight(to_tsvector('english', coalesce("LocalizedDescription",'')), 'B')
+  ) STORED;
+
+CREATE INDEX "EntityType_IDX_SearchVector" ON "EntityType"."EntityType" USING gin("SearchVector");
