@@ -1668,7 +1668,9 @@ public class BusinessEntityController
         ResultSet resultSet = null;
 
         String selectClause = "";
+        String subSelectClause = "";
         String selectColumns = "";
+        String subSelectColumns = "";
         String whereClause = "";
 //        String sortClause = "";
 
@@ -1760,6 +1762,9 @@ public class BusinessEntityController
 
             //NOTE: Get the set of columns to be included in each SELECT clause
             StringBuilder selectClauseBuilder = new StringBuilder();
+            StringBuilder subSelectClauseBuilder = new StringBuilder();
+
+            selectClauseBuilder.append("\"EntityType\", ");
 
             entityTypeAttributesNeverToReturn = environment.getProperty("entityTypeAttributesNeverToReturn").split(",");
 
@@ -1769,13 +1774,14 @@ public class BusinessEntityController
                 if (!Arrays.asList(entityTypeAttributesNeverToReturn).contains(entityAttributeTargets[i]))
                 {
                     selectClauseBuilder.append("\"").append(entityAttributeTargets[i]).append("\"");
+                    subSelectClauseBuilder.append("\"").append(entityAttributeTargets[i]).append("\"");
 
-                    if (i < entityAttributeTargets.length - 1)
-                    {
-                        selectClauseBuilder.append(", ");
-                    }
+                    selectClauseBuilder.append(", ");
+                    subSelectClauseBuilder.append(", ");
                 }
             }
+
+            selectClauseBuilder.append("\"SearchRank\"");
 
 
             //NOTE: Building the common whereClause before building the SELECT clauses so that we can filter disabled and deleted records out of each clouse
@@ -1784,6 +1790,8 @@ public class BusinessEntityController
             //NOTE: No client-provided sortClause because search results are sorted by relevance (i.e. SearchRank)
 
             selectColumns = selectClauseBuilder.toString();
+            subSelectColumns = subSelectClauseBuilder.toString();
+
             selectClause = "SELECT " + selectColumns + " FROM (\n";
 
             for (int i = 0; i < entityTypeTargets.length; i++)
@@ -1829,15 +1837,18 @@ public class BusinessEntityController
                     throw new Exception("Invalid 'entityTypeTargets' query parameter '" + entityTypeTargets[i] + "'");
                 }
 
-                selectClause = selectClause + "  SELECT '" + entityTypeDefinitions.get(entityTypeId).getLocalizedName() + "' AS \"EntityType\", " + selectColumns + ", ts_rank_cd(\"SearchVector\", \"framework\") AS \"SearchRank\"\n  FROM \"" + entityTypeDefinitions.get(entityTypeId).getLocalizedName() + "\".\"" + entityTypeDefinitions.get(entityTypeId).getLocalizedName() + "\", websearch_to_tsquery('english', 'framework') \"framework\"\n  WHERE \"SearchVector\" @@ \"framework\"" + whereClause;
+//                selectClause = selectClause + "  SELECT '" + entityTypeDefinitions.get(entityTypeId).getLocalizedName() + "' AS \"EntityType\", " + selectColumns + ", ts_rank_cd(\"SearchVector\", \"framework\") AS \"SearchRank\"\n  FROM \"" + entityTypeDefinitions.get(entityTypeId).getLocalizedName() + "\".\"" + entityTypeDefinitions.get(entityTypeId).getLocalizedName() + "\", websearch_to_tsquery('english', 'framework') \"framework\"\n  WHERE \"SearchVector\" @@ \"framework\"" + whereClause;
+                subSelectClause = subSelectClause + "  SELECT '" + entityTypeDefinitions.get(entityTypeId).getLocalizedName() + "' AS \"EntityType\", " + subSelectColumns + "ts_rank_cd(\"SearchVector\", \"framework\") AS \"SearchRank\"\n  FROM \"" + entityTypeDefinitions.get(entityTypeId).getLocalizedName() + "\".\"" + entityTypeDefinitions.get(entityTypeId).getLocalizedName() + "\", websearch_to_tsquery('english', 'framework') \"framework\"\n  WHERE \"SearchVector\" @@ \"framework\"" + whereClause;
 
                 if (i < entityTypeTargets.length - 1)
                 {
-                    selectClause = selectClause + ("\n  UNION ALL\n");
+//                    selectClause = selectClause + ("\n  UNION ALL\n");
+                    subSelectClause = subSelectClause + ("\n  UNION ALL\n");
                 }
             }
 
-            selectClause = selectClause + "\n) t\n  ORDER BY \"SearchRank\" DESC\n  LIMIT " + pageSize + ";";
+//            selectClause = selectClause + "\n) t\n  ORDER BY \"SearchRank\" DESC\n  LIMIT " + pageSize + ";";
+            selectClause = selectClause + subSelectClause + "\n) t\n  ORDER BY \"SearchRank\" DESC\n  LIMIT " + pageSize + ";";
 
             //NOTE: Validate and sanitize asOfDateTimeUtc
             if (asOfDateTimeUtc.isBefore(Instant.parse("1900-01-01T00:00:00.000Z")))
@@ -1889,22 +1900,20 @@ public class BusinessEntityController
             //TODO: AAF-71 Refactor the statements below to be reusable for validation, local caching, etc
             if (errorValues.length() == 0)
             {
-                statement = connection.prepareCall("{call \"EntityDataRead\"(?,?,?,?,?,?,?,?,?)}");
+                statement = connection.prepareCall("{call \"EntityDataSearch\"(?,?,?,?,?,?,?)}");
 //                statement.setString(1, entityTypeName);
                 statement.setString(1, entityTypeTargets[0]);
                 statement.setString(2, selectClause);
 //                statement.setString(3, URLDecoder.decode(whereClause, StandardCharsets.UTF_8));
-                statement.setString(3, "");
 //                statement.setString(4, URLDecoder.decode(sortClause, StandardCharsets.UTF_8));
-                statement.setString(4, "");
-                statement.setTimestamp(5, Timestamp.from(asOfDateTimeUtc));
-                statement.setLong(6, graphDepthLimit);
+                statement.setTimestamp(3, Timestamp.from(asOfDateTimeUtc));
+                statement.setLong(4, graphDepthLimit);
 //                statement.setLong(7, pageNumber);
-                statement.setLong(7, 1);
-                statement.setLong(8, pageSize);
+                statement.setLong(5, 1);
+                statement.setLong(6, pageSize);
 
                 //NOTE: Register the data OUT parameter before calling the stored procedure
-                statement.registerOutParameter(9, Types.LONGVARCHAR);
+                statement.registerOutParameter(7, Types.LONGVARCHAR);
                 statement.executeUpdate();
 
                 //NOTE: Read the OUT parameter now
