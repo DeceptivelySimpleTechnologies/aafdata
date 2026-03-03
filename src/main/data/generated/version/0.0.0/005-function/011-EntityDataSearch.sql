@@ -30,25 +30,16 @@ AS $BODY$
 
   BEGIN
 
---	countQuery := 'SELECT COUNT("Id") FROM "' || entitytypename || '"."' || entitytypename || '" '|| whereClause ||';';
-
---	IF pageNumber = 1 THEN
---		dataQuery := 'WITH JsonData AS (SELECT '|| selectClause ||' FROM "'|| entitytypename ||'"."'|| entitytypename ||'" '|| whereClause ||' '|| sortClause ||' LIMIT '|| pageSize ||' OFFSET 0) SELECT JSON_AGG(JsonData.*) FROM JsonData;';
-		dataQuery := 'WITH JsonData AS (' || selectClause ||' LIMIT '|| pageSize ||' OFFSET 0) SELECT JSON_AGG(JsonData.*) FROM JsonData;';
---	ELSE  
---		dataQuery := 'WITH JsonData AS (SELECT '|| selectClause ||' FROM "'|| entitytypename ||'"."'|| entitytypename ||'" '|| whereClause ||' '|| sortClause ||' LIMIT '|| pageSize ||' OFFSET '|| (pageNumber - 1) * pageSize ||') SELECT JSON_AGG(JsonData.*) FROM JsonData;';
---	END IF;
-
---	EXECUTE countQuery INTO entityCount;
+	dataQuery := 'WITH JsonData AS (' || selectClause ||' LIMIT '|| pageSize ||' OFFSET 0) SELECT JSON_AGG(JsonData.*) FROM JsonData;';
 
 	EXECUTE dataQuery INTO entityData;
 
---	IF (entityCount = 0) OR (entityData IS NULL) THEN
 	IF (entityData IS NULL) THEN
 		RETURN '{"EntityType":"' || entitytypename || '","TotalRows":0,"EntityData":[]}';
 	ELSE
---		RETURN '{"EntityType":"' || entitytypename || '","TotalRows":' || entityCount || ',"EntityData":' || entityData || '}';
-		RETURN '{"EntityType":"' || entitytypename || '","TotalRows":' || CARDINALITY(entityData) || ',"EntityData":' || entityData || '}';
+--		EXECUTE 'SELECT CARDINALITY(entityData)' INTO entityCount;
+--		RETURN '{"EntityType":"' || entitytypename || '","TotalRows":' || 100 || ',"EntityData":"' || entityData || '"}';
+		RETURN entityData;
 	END IF;
 
   END;

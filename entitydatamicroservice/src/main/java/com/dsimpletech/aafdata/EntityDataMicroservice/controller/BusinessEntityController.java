@@ -1848,7 +1848,8 @@ public class BusinessEntityController
             }
 
 //            selectClause = selectClause + "\n) t\n  ORDER BY \"SearchRank\" DESC\n  LIMIT " + pageSize + ";";
-            selectClause = selectClause + subSelectClause + "\n) t\n  ORDER BY \"SearchRank\" DESC\n  LIMIT " + pageSize + ";";
+//            selectClause = selectClause + subSelectClause + "\n) t\n  ORDER BY \"SearchRank\" DESC\n  LIMIT " + pageSize + ";";
+            selectClause = selectClause + subSelectClause + "\n) t\n  ORDER BY \"SearchRank\" DESC\n";
 
             //NOTE: Validate and sanitize asOfDateTimeUtc
             if (asOfDateTimeUtc.isBefore(Instant.parse("1900-01-01T00:00:00.000Z")))
@@ -1914,10 +1915,11 @@ public class BusinessEntityController
 
                 //NOTE: Register the data OUT parameter before calling the stored procedure
                 statement.registerOutParameter(7, Types.LONGVARCHAR);
-                statement.executeUpdate();
+                statement.execute();
 
                 //NOTE: Read the OUT parameter now
-                entityData = statement.getString(9);
+//                entityData = statement.getString(9);
+                entityData = statement.getString(7);
 
                 if (entityData == null)
                 {
