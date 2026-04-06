@@ -6,8 +6,6 @@
 CREATE OR REPLACE FUNCTION public."EntityDataSearch"(
 	entitytypename character varying,
 	selectClause character varying,
---	whereClause character varying,
---	sortClause character varying,
 	asOfDateTimeUtc timestamp,
 	graphDepthLimit bigint,
 	pageNumber bigint,
@@ -23,9 +21,8 @@ CREATE OR REPLACE FUNCTION public."EntityDataSearch"(
     
 AS $BODY$
   DECLARE
---	entityCount bigint;
+	entityCount bigint;
 	entityData varchar;
---	countQuery varchar;
 	dataQuery varchar;
 
   BEGIN
@@ -37,9 +34,8 @@ AS $BODY$
 	IF (entityData IS NULL) THEN
 		RETURN '{"EntityType":"' || entitytypename || '","TotalRows":0,"EntityData":[]}';
 	ELSE
---		EXECUTE 'SELECT CARDINALITY(entityData)' INTO entityCount;
---		RETURN '{"EntityType":"' || entitytypename || '","TotalRows":' || 100 || ',"EntityData":"' || entityData || '"}';
-		RETURN entityData;
+		entityCount := JSON_ARRAY_LENGTH(entityData::json);
+		RETURN '{"EntityType":"' || entitytypename || '","TotalRows":' || entityCount || ',"EntityData":' || entityData || '}';
 	END IF;
 
   END;

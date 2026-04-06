@@ -1672,7 +1672,6 @@ public class BusinessEntityController
         String selectColumns = "";
         String subSelectColumns = "";
         String whereClause = "";
-//        String sortClause = "";
 
         String entityData = "";
 
@@ -1804,7 +1803,6 @@ public class BusinessEntityController
                 {
                     if (entityTypeDefinitions.get(j).getLocalizedName().equals(entityTypeTargets[i]))
                     {
-//                        entityTypeId = entityTypeDefinitions.get(j).getId();
                         entityTypeId = j;
 
                         //NOTE: Validate the specified, associated EntityTypeAttribute name(s) and association(s)
@@ -1837,18 +1835,24 @@ public class BusinessEntityController
                     throw new Exception("Invalid 'entityTypeTargets' query parameter '" + entityTypeTargets[i] + "'");
                 }
 
-//                selectClause = selectClause + "  SELECT '" + entityTypeDefinitions.get(entityTypeId).getLocalizedName() + "' AS \"EntityType\", " + selectColumns + ", ts_rank_cd(\"SearchVector\", \"framework\") AS \"SearchRank\"\n  FROM \"" + entityTypeDefinitions.get(entityTypeId).getLocalizedName() + "\".\"" + entityTypeDefinitions.get(entityTypeId).getLocalizedName() + "\", websearch_to_tsquery('english', 'framework') \"framework\"\n  WHERE \"SearchVector\" @@ \"framework\"" + whereClause;
-                subSelectClause = subSelectClause + "  SELECT '" + entityTypeDefinitions.get(entityTypeId).getLocalizedName() + "' AS \"EntityType\", " + subSelectColumns + "ts_rank_cd(\"SearchVector\", \"framework\") AS \"SearchRank\"\n  FROM \"" + entityTypeDefinitions.get(entityTypeId).getLocalizedName() + "\".\"" + entityTypeDefinitions.get(entityTypeId).getLocalizedName() + "\", websearch_to_tsquery('english', 'framework') \"framework\"\n  WHERE \"SearchVector\" @@ \"framework\"" + whereClause;
+                searchTerms = searchTerms.replace("\"", "");
+                searchTerms = searchTerms.replace("'", "");
+                searchTerms = searchTerms.replace(";", " ");
+                //TODO: Make this a property and loop through to replace any other special characters that could cause SQL issues
+
+                //TODO: Apply Postgres full-text search to all remaining entity tables
+                //TODO: Return total number of matching rows (AAF-157)
+                //TODO: Paginate results (AAF-156)
+
+                //NOTE: Spaces seem OK, e.g. "application framework" vs "framework" correctly returns fewer results
+                subSelectClause = subSelectClause + "  SELECT '" + entityTypeDefinitions.get(entityTypeId).getLocalizedName() + "' AS \"EntityType\", " + subSelectColumns + "ts_rank_cd(\"SearchVector\", \"" + searchTerms + "\") AS \"SearchRank\"\n  FROM \"" + entityTypeDefinitions.get(entityTypeId).getLocalizedName() + "\".\"" + entityTypeDefinitions.get(entityTypeId).getLocalizedName() + "\", websearch_to_tsquery('english', '" + searchTerms + "') \"" + searchTerms + "\"\n  WHERE \"SearchVector\" @@ \"" + searchTerms + "\"" + whereClause;
 
                 if (i < entityTypeTargets.length - 1)
                 {
-//                    selectClause = selectClause + ("\n  UNION ALL\n");
                     subSelectClause = subSelectClause + ("\n  UNION ALL\n");
                 }
             }
 
-//            selectClause = selectClause + "\n) t\n  ORDER BY \"SearchRank\" DESC\n  LIMIT " + pageSize + ";";
-//            selectClause = selectClause + subSelectClause + "\n) t\n  ORDER BY \"SearchRank\" DESC\n  LIMIT " + pageSize + ";";
             selectClause = selectClause + subSelectClause + "\n) t\n  ORDER BY \"SearchRank\" DESC\n";
 
             //NOTE: Validate and sanitize asOfDateTimeUtc
@@ -1902,14 +1906,10 @@ public class BusinessEntityController
             if (errorValues.length() == 0)
             {
                 statement = connection.prepareCall("{call \"EntityDataSearch\"(?,?,?,?,?,?,?)}");
-//                statement.setString(1, entityTypeName);
                 statement.setString(1, entityTypeTargets[0]);
                 statement.setString(2, selectClause);
-//                statement.setString(3, URLDecoder.decode(whereClause, StandardCharsets.UTF_8));
-//                statement.setString(4, URLDecoder.decode(sortClause, StandardCharsets.UTF_8));
                 statement.setTimestamp(3, Timestamp.from(asOfDateTimeUtc));
                 statement.setLong(4, graphDepthLimit);
-//                statement.setLong(7, pageNumber);
                 statement.setLong(5, 1);
                 statement.setLong(6, pageSize);
 
@@ -1918,7 +1918,6 @@ public class BusinessEntityController
                 statement.execute();
 
                 //NOTE: Read the OUT parameter now
-//                entityData = statement.getString(9);
                 entityData = statement.getString(7);
 
                 if (entityData == null)
@@ -1960,8 +1959,6 @@ public class BusinessEntityController
         }
 
         logger.info("SearchBusinessEntity() succeeded for " +  entityAttributeTargets.toString() + " in " + entityTypeTargets.toString());
-        //result = new JSONObject("{\"EntityData\":" + entityData + "}");
-        //return "{\"EntityData\":" + entityData + "}";
         //TODO: AAF-82 Echo input parameters in Postgres function return JSON???
         return new ResponseEntity<String>(entityData, HttpStatus.OK);
     }
