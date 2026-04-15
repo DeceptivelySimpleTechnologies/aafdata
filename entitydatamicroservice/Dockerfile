@@ -1,7 +1,7 @@
 #NOTE: Copyright © 2003-2024 Deceptively Simple Technologies Inc. Some rights reserved. Please see the aafdata/LICENSE.txt file for details.
 
-FROM dhi.io/eclipse-temurin:8.482.08-alpine3.23-fips
 #FROM openjdk:17-jdk-alpine
+FROM eclipse-temurin:17-alpine-3.23
 MAINTAINER deceptivelysimpletechnologies.com
 LABEL description="AAF Data: Entity Data Microservice (EDM)"
 LABEL copyright="Copyright © 2003-2024 Deceptively Simple Technologies Inc. Some rights reserved. Please see the aafdata/LICENSE.txt file for details."
