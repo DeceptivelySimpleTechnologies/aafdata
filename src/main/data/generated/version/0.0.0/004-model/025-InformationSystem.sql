@@ -49,3 +49,13 @@ CREATE TABLE "InformationSystem"."InformationSystem"
     TABLESPACE pg_default;
 
 CREATE INDEX "InformationSystem_IDX_LocalizedName" ON "InformationSystem"."InformationSystem" ("LocalizedName")
+
+
+-- NOTE: To enable Postgres-based full-text search
+ALTER TABLE "InformationSystem"."InformationSystem"
+  ADD COLUMN "SearchVector" tsvector GENERATED ALWAYS AS (
+    setweight(to_tsvector('english', coalesce("LocalizedName",'')), 'A') ||
+    setweight(to_tsvector('english', coalesce("LocalizedDescription",'')), 'B')
+  ) STORED;
+
+CREATE INDEX "InformationSystem_IDX_SearchVector" ON "InformationSystem"."InformationSystem" USING gin("SearchVector");

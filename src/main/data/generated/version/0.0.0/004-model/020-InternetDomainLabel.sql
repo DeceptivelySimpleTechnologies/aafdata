@@ -39,3 +39,13 @@ CREATE TABLE "InternetDomainLabel"."InternetDomainLabel"
     TABLESPACE pg_default;
 
 CREATE INDEX "InternetDomainLabel_IDX_LocalizedName" ON "InternetDomainLabel"."InternetDomainLabel" ("LocalizedName")
+
+
+-- NOTE: To enable Postgres-based full-text search
+ALTER TABLE "InternetDomainLabel"."InternetDomainLabel"
+  ADD COLUMN "SearchVector" tsvector GENERATED ALWAYS AS (
+    setweight(to_tsvector('english', coalesce("LocalizedName",'')), 'A') ||
+    setweight(to_tsvector('english', coalesce("LocalizedDescription",'')), 'B')
+  ) STORED;
+
+CREATE INDEX "InternetDomainLabel_IDX_SearchVector" ON "InternetDomainLabel"."InternetDomainLabel" USING gin("SearchVector");

@@ -41,3 +41,13 @@ CREATE TABLE "Currency"."Currency"
     TABLESPACE pg_default;
 
 CREATE INDEX "Currency_IDX_LocalizedName" ON "Currency"."Currency" ("LocalizedName")
+
+
+-- NOTE: To enable Postgres-based full-text search
+ALTER TABLE "Currency"."Currency"
+  ADD COLUMN "SearchVector" tsvector GENERATED ALWAYS AS (
+    setweight(to_tsvector('english', coalesce("LocalizedName",'')), 'A') ||
+    setweight(to_tsvector('english', coalesce("LocalizedDescription",'')), 'B')
+  ) STORED;
+
+CREATE INDEX "Currency_IDX_SearchVector" ON "Currency"."Currency" USING gin("SearchVector");
