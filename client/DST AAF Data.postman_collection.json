@@ -120,7 +120,7 @@
 					"response": []
 				},
 				{
-					"name": "POST EntityData (Person) with JSON Body",
+					"name": "POST EntityData (Person)",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -201,7 +201,7 @@
 					"response": []
 				},
 				{
-					"name": "PATCH EntityData (Person) with JSON Body",
+					"name": "PATCH EntityData (Person)",
 					"request": {
 						"method": "PATCH",
 						"header": [
@@ -242,7 +242,7 @@
 					"response": []
 				},
 				{
-					"name": "DELETE EntityData (Person) with JSON Body",
+					"name": "DELETE EntityData (Person)",
 					"request": {
 						"method": "DELETE",
 						"header": [
@@ -277,6 +277,65 @@
 								"entityTypes",
 								"Person",
 								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET EntityData (Search)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "ApiKey",
+								"type": "text",
+								"value": "6fdcf7a4-6442-4c1e-a375-9f8064ea34d0"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text",
+								"disabled": true
+							},
+							{
+								"key": "Content-Length",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8080/search?entityTypeTargets=EntityType,EntitySubtype&entityAttributeTargets=Id,LocalizedName,LocalizedDescription&searchTerms=\"framework&pageNumber=1&pageSize=20",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"search"
+							],
+							"query": [
+								{
+									"key": "entityTypeTargets",
+									"value": "EntityType,EntitySubtype"
+								},
+								{
+									"key": "entityAttributeTargets",
+									"value": "Id,LocalizedName,LocalizedDescription"
+								},
+								{
+									"key": "searchTerms",
+									"value": "\"framework"
+								},
+								{
+									"key": "pageNumber",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "20"
+								}
 							]
 						}
 					},
@@ -570,6 +629,46 @@
 							"path": [
 								"databases",
 								"AAFCore"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST Build Entity Graph with JSON Body",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "ApiKey",
+								"type": "text",
+								"value": "6fdcf7a4-6442-4c1e-a375-9f8064ea34d0"
+							},
+							{
+								"key": "CorrelationUuid",
+								"type": "text",
+								"value": "a0c648aa-8448-41ba-99bd-7ec9971a3071"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"LocalizedName\": \"WebSpanner\",\n    \"LocalizedDescription\": \"Software tool directory\",\n    \"Url\": \"https://www.webspanner.com/services\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8081/entityGraphs/SoftwareTool",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"entityGraphs",
+								"SoftwareTool"
 							]
 						}
 					},

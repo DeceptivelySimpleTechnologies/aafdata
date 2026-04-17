@@ -1,6 +1,7 @@
 #NOTE: Copyright © 2003-2025 Deceptively Simple Technologies Inc. Some rights reserved. Please see the aafdata/LICENSE.txt file for details.
 
-FROM nginx:1.27.3
+FROM dhi.io/nginx:1.28.2-alpine3.23
+#FROM nginx:1.27.3
 MAINTAINER deceptivelysimpletechnologies.com
 LABEL description="AAF Data: Entity Modeling Service (EMS)"
 LABEL copyright="Copyright © 2003-2025 Deceptively Simple Technologies Inc. Some rights reserved. Please see the aafdata/LICENSE.txt file for details."

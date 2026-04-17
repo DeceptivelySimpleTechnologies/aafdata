@@ -47,3 +47,17 @@ CREATE TABLE "Person"."Person"
     TABLESPACE pg_default;
 
 CREATE INDEX "Person_IDX_LegalSurname1_LegalGivenName1" ON "Person"."Person" ("LegalSurname1", "LegalGivenName1")
+
+
+-- NOTE: To enable Postgres-based full-text search
+ALTER TABLE "Person"."Person"
+  ADD COLUMN "SearchVector" tsvector GENERATED ALWAYS AS (
+    setweight(to_tsvector('english', coalesce("LegalGivenName1",'')), 'A') ||
+    setweight(to_tsvector('english', coalesce("LegalGivenName2",'')), 'A') ||
+    setweight(to_tsvector('english', coalesce("LegalGivenName3",'')), 'A') ||
+    setweight(to_tsvector('english', coalesce("LegalSurname1",'')), 'A') ||
+    setweight(to_tsvector('english', coalesce("LegalSurname2",'')), 'A') ||
+    setweight(to_tsvector('english', coalesce("LegalSurname3",'')), 'A')
+  ) STORED;
+
+CREATE INDEX "Person_IDX_SearchVector" ON "Person"."Person" USING gin("SearchVector");

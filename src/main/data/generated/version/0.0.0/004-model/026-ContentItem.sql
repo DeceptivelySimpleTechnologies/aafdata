@@ -43,3 +43,14 @@ CREATE TABLE "ContentItem"."ContentItem"
     TABLESPACE pg_default;
 
 CREATE INDEX "ContentItem_IDX_LocalizedName" ON "ContentItem"."ContentItem" ("LocalizedName")
+
+
+-- NOTE: To enable Postgres-based full-text search
+ALTER TABLE "ContentItem"."ContentItem"
+  ADD COLUMN "SearchVector" tsvector GENERATED ALWAYS AS (
+    setweight(to_tsvector('english', coalesce("LocalizedName",'')), 'A') ||
+    setweight(to_tsvector('english', coalesce("LocalizedContent",'')), 'A') ||
+    setweight(to_tsvector('english', coalesce("LocalizedDescription",'')), 'B')
+  ) STORED;
+
+CREATE INDEX "ContentItem_IDX_SearchVector" ON "ContentItem"."ContentItem" USING gin("SearchVector");

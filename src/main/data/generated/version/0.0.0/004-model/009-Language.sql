@@ -40,3 +40,13 @@ CREATE TABLE "Language"."Language"
     TABLESPACE pg_default;
 
 CREATE INDEX "Language_IDX_LocalizedName" ON "Language"."Language" ("LocalizedName")
+
+
+-- NOTE: To enable Postgres-based full-text search
+ALTER TABLE "Language"."Language"
+  ADD COLUMN "SearchVector" tsvector GENERATED ALWAYS AS (
+    setweight(to_tsvector('english', coalesce("LocalizedName",'')), 'A') ||
+    setweight(to_tsvector('english', coalesce("LocalizedDescription",'')), 'B')
+  ) STORED;
+
+CREATE INDEX "Language_IDX_SearchVector" ON "Language"."Language" USING gin("SearchVector");

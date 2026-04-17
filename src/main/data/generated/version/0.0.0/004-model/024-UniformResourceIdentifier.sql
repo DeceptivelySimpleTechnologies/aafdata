@@ -49,3 +49,19 @@ CREATE TABLE "UniformResourceIdentifier"."UniformResourceIdentifier"
 
 CREATE INDEX "UniformResourceIdentifier_IDX_LocalizedName" ON "UniformResourceIdentifier"."UniformResourceIdentifier" ("LocalizedName");
 CREATE INDEX "UniformResourceIdentifier_IDX_DomainName" ON "UniformResourceIdentifier"."UniformResourceIdentifier" ("DomainName");
+
+
+-- NOTE: To enable Postgres-based full-text search
+ALTER TABLE "UniformResourceIdentifier"."UniformResourceIdentifier"
+  ADD COLUMN "SearchVector" tsvector GENERATED ALWAYS AS (
+    setweight(to_tsvector('english', coalesce("LocalizedName",'')), 'A') ||
+    setweight(to_tsvector('english', coalesce("Scheme",'')), 'B') ||
+    setweight(to_tsvector('english', coalesce("UserInfo",'')), 'B') ||
+    setweight(to_tsvector('english', coalesce("DomainName",'')), 'B') ||
+    setweight(to_tsvector('english', coalesce("Port",'')), 'B') ||
+    setweight(to_tsvector('english', coalesce("Path",'')), 'B') ||
+    setweight(to_tsvector('english', coalesce("Fragment",'')), 'B') ||
+    setweight(to_tsvector('english', coalesce("LocalizedDescription",'')), 'B')
+  ) STORED;
+
+CREATE INDEX "UniformResourceIdentifier_IDX_SearchVector" ON "UniformResourceIdentifier"."UniformResourceIdentifier" USING gin("SearchVector");

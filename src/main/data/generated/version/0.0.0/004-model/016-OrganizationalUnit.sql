@@ -44,3 +44,14 @@ CREATE TABLE "OrganizationalUnit"."OrganizationalUnit"
     TABLESPACE pg_default;
 
 CREATE INDEX "OrganizationalUnit_IDX_LegalName" ON "OrganizationalUnit"."OrganizationalUnit" ("LegalName")
+
+
+-- NOTE: To enable Postgres-based full-text search
+ALTER TABLE "OrganizationalUnit"."OrganizationalUnit"
+  ADD COLUMN "SearchVector" tsvector GENERATED ALWAYS AS (
+    setweight(to_tsvector('english', coalesce("LegalName",'')), 'A') ||
+    setweight(to_tsvector('english', coalesce("DoingBusinessAs",'')), 'B') ||
+    setweight(to_tsvector('english', coalesce("LocalizedDescription",'')), 'B')
+  ) STORED;
+
+CREATE INDEX "OrganizationalUnit_IDX_SearchVector" ON "OrganizationalUnit"."OrganizationalUnit" USING gin("SearchVector");

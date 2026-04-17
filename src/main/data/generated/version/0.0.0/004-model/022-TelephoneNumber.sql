@@ -44,3 +44,15 @@ CREATE TABLE "TelephoneNumber"."TelephoneNumber"
 CREATE INDEX "TelephoneNumber_IDX_LocalizedName" ON "TelephoneNumber"."TelephoneNumber" ("LocalizedName");
 CREATE INDEX "TelephoneNumber_IDX_CountryCode" ON "TelephoneNumber"."TelephoneNumber" ("CountryCode");
 CREATE INDEX "TelephoneNumber_IDX_SubscriberNumber" ON "TelephoneNumber"."TelephoneNumber" ("SubscriberNumber");
+
+
+-- NOTE: To enable Postgres-based full-text search
+ALTER TABLE "TelephoneNumber"."TelephoneNumber"
+  ADD COLUMN "SearchVector" tsvector GENERATED ALWAYS AS (
+    setweight(to_tsvector('english', coalesce("LocalizedName",'')), 'A') ||
+    setweight(to_tsvector('english', coalesce("CountryCode",'')), 'A') ||
+    setweight(to_tsvector('english', coalesce("SubscriberNumber",'')), 'A') ||
+    setweight(to_tsvector('english', coalesce("LocalizedDescription",'')), 'B')
+  ) STORED;
+
+CREATE INDEX "TelephoneNumber_IDX_SearchVector" ON "TelephoneNumber"."TelephoneNumber" USING gin("SearchVector");

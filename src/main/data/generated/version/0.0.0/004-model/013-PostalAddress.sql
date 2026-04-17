@@ -58,3 +58,16 @@ CREATE INDEX "PostalAddress_IDX_CityName" ON "PostalAddress"."PostalAddress" ("C
 CREATE INDEX "PostalAddress_IDX_Subdivision1GeographicUnitId" ON "PostalAddress"."PostalAddress" ("Subdivision1GeographicUnitId");
 CREATE INDEX "PostalAddress_IDX_CountryGeographicUnitId" ON "PostalAddress"."PostalAddress" ("CountryGeographicUnitId");
 CREATE INDEX "PostalAddress_IDX_PostalCode" ON "PostalAddress"."PostalAddress" ("PostalCode")
+
+
+-- NOTE: To enable Postgres-based full-text search
+ALTER TABLE "PostalAddress"."PostalAddress"
+  ADD COLUMN "SearchVector" tsvector GENERATED ALWAYS AS (
+    setweight(to_tsvector('english', coalesce("StreetAddress1",'')), 'A') ||
+    setweight(to_tsvector('english', coalesce("StreetAddress2",'')), 'A') ||
+    setweight(to_tsvector('english', coalesce("StreetAddress3",'')), 'A') ||
+    setweight(to_tsvector('english', coalesce("CityName",'')), 'A') ||
+    setweight(to_tsvector('english', coalesce("PostalCode",'')), 'A')
+  ) STORED;
+
+CREATE INDEX "PostalAddress_IDX_SearchVector" ON "PostalAddress"."PostalAddress" USING gin("SearchVector");

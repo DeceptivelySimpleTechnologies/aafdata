@@ -47,3 +47,16 @@ CREATE INDEX "EmailAddress_IDX_LocalizedName" ON "EmailAddress"."EmailAddress" (
 CREATE INDEX "EmailAddress_IDX_DisplayName" ON "EmailAddress"."EmailAddress" ("DisplayName");
 CREATE INDEX "EmailAddress_IDX_LocalPart" ON "EmailAddress"."EmailAddress" ("LocalPart");
 CREATE INDEX "EmailAddress_IDX_DomainName" ON "EmailAddress"."EmailAddress" ("DomainName");
+
+
+-- NOTE: To enable Postgres-based full-text search
+ALTER TABLE "EmailAddress"."EmailAddress"
+  ADD COLUMN "SearchVector" tsvector GENERATED ALWAYS AS (
+    setweight(to_tsvector('english', coalesce("LocalizedName",'')), 'A') ||
+    setweight(to_tsvector('english', coalesce("DisplayName",'')), 'A') ||
+    setweight(to_tsvector('english', coalesce("LocalPart",'')), 'B') ||
+    setweight(to_tsvector('english', coalesce("DomainName",'')), 'B') ||
+    setweight(to_tsvector('english', coalesce("LocalizedDescription",'')), 'B')
+  ) STORED;
+
+CREATE INDEX "EmailAddress_IDX_SearchVector" ON "EmailAddress"."EmailAddress" USING gin("SearchVector");
