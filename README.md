@@ -2,7 +2,7 @@
 ## <div align="center">Locally-Sourced, Artisanal Data™</div>
 ### <div align="center">Delivering Foundational Business Agility</div>
 <br>
-<div align="center">Copyright © 2003-2024 Deceptively Simple Technologies Inc. Some rights reserved. Please see the aafdata/LICENSE.txt file for details.</div>
+<div align="center">Copyright © 2003-2026 Deceptively Simple Technologies Inc. Some rights reserved. Please see the aafdata/LICENSE.txt file for details.</div>
 
 <div id="top"></div>
 <!--
@@ -37,18 +37,19 @@
 - A Dockerized, **REST**ful **entity data microservice** (EDM) providing
   - **C**reate,
   - **R**ead,
-  - **U**pdate, and
-  - **D**elete (**CRUD**) operations for each of these business entity models,
+  - **U**pdate,
+  - **D**elete (**CRUD**), and
+  - Keyword **S**earch operations for each of these business entity models,
 - A Dockerized, **REST**ful **system data service** (SDS) providing the capability to
-    - Create **N**ew business entity definitions,
+    - Create **N**ew business entity **definitions**,
     - **C**lone Existing business entity definitions,
-    - Create **N**ew business entity attributes,
+    - Create **N**ew business entity **attributes**,
     - **Clone** Existing business entity attributes,
     - **A**ssociate business entity attributes with business entity definition(s),
     - **P**ublish entities, attributes, and associations, thereby creating corresponding new database schemas, tables, constraints, indexes, etc, and
     - **U**pdate the published status of entities, attributes, and associations,
 - A lightweight, modern Progressive Web Application (PWA) business **entity modeling service** (EMS) for extending or modifying these models using the EDM and SDS services,
-- Our first custom HTML5 Web Component (`HtmlElement`) EntityTable demonstrating how to quickly and easily display business entity data on a web page,
+- Our first custom HTML5 Web Component (`HtmlElement`-based) EntityTable demonstrating how to quickly and easily display business entity data on a web page,
 - And **SwaggerDoc** **OpenAPI** application programming interface (API) **documentation**.
 
 
@@ -65,7 +66,7 @@
 <!-- -->
   - The entity data microservice (**EDM**):
     - **Will validate each HTTP request** (near future) using a JSON Web Token (**JWT**) mechanism with optional cryptographic signing and encryption capabilities,
-    - **Persists and retrieves business entity data** via its **API**, which calls low-level `POST`, `GET`, `PATCH`, and “soft” DELETE database functions to ensure data integrity and performance -- **NO direct table access**,
+    - **Persists and retrieves business entity data** via its **API**, which calls low-level `POST`, `GET` (via SQL-compatible parameters or keyword search), `PATCH`, and “soft” DELETE database functions to ensure data integrity and performance -- **NO direct table access**,
     - **Consistently follows RESTful style and best practices**,
     - **Returns standard and appropriate HTTP response codes**, e.g. `200 OK`, `201 Created`, `400 Bad Request`, `401 Unauthorized`, `404 Not Found`, `422 Unprocessable Entity`, `500 Internal Server Error`, etc
     - **Accepts and returns structured JSON resource/entity data** in HTTP request/response bodies as specified for each business entity, and 
@@ -107,6 +108,18 @@
   - `Person`
   - `Employee`
   - `LegalEntity`
+  - `InternetDomainLabel`
+  - `InternetDomainLabelHierarchy`
+  - `TelephoneNumber`
+  - `EmailAddress`
+  - `UniformResourceIdentifier`
+  - `InformationSystem`
+  - `ContentItem`
+  - `ContentItemGroup`
+  - `ContentItemGroupContentItemAssociation`
+  - `Keyword`
+  - `KeywordGroup`
+  - `KeywordGroupKeywordAssociation`
 - **The set of "origin" (*) business entities can produce other business entities and their corresponding database structures**
 - **The current set of business entity attributes and their descriptions can be retrieved** using the `GetEntityTypeAttributes` database function and includes:
   - *`Id` `bigint`
@@ -147,7 +160,7 @@ Soon **AAF Data will also include**:
 <!-- GETTING STARTED -->
 ## Getting Started
 
-This is the third AAF Data release, and it supports very simple local (LOC) and minimal (MIN) environments, primarily to demonstrate its purpose and basic capabilities.
+This is the fourth AAF Data release, and it supports very simple local (LOC) and minimal (MIN) environments, primarily to demonstrate its purpose and basic capabilities.
 
 Please bear in mind that this is a work in progress.  There are many more features and capabilities to come, and features are often "layered", 
 meaning that they have dependencies on other features that must be implemented first.  A good example of this is data validation, which is implemented 
@@ -175,7 +188,7 @@ Before running the EntityDataMicroservice, you **must**:
    1. `./007-CreateDatabaseFunctionsAsAafCoreModeler.sh PostgreSQL 14 localhost 5432 AafCoreModeler AafCore M0d3l3rCl13nt!`
    1. `./008-CreateDatabaseDataAsAafCoreModeler.sh PostgreSQL 14 localhost 5432 AafCoreModeler AafCore M0d3l3rCl13nt!`
 
-Please **note** that **this third AAF Data release is primarily for demonstration and evaluation purposes**.  It supports very simple local (LOC) and minimal (MIN) remote/cloud environments and **is not intended to be used in a production environment**.  **Later releases** will support shared, remote/cloud development (DEV), staging (STG), and production (PRD) environments and **will utilize secrets management and other security best practices**.  Crawl, walk, run.
+Please **note** that **this fourth AAF Data release is primarily for demonstration and evaluation purposes**.  It supports very simple local (LOC) and minimal (MIN) remote/cloud environments and **is not intended to be used in a production environment**.  **Later releases** will support shared, remote/cloud development (DEV), staging (STG), and production (PRD) environments and **will utilize secrets management and other security best practices**.  Crawl, walk, run.
 
 1. **Run the Java/Springboot-based EntityDataMicroservice**:
    1. **Locally** in IDE:
@@ -367,29 +380,7 @@ The AAF will be an integrated, standards-based collection of business entity def
 
 The foundation recognizes and implements common business entity, process, and decision patterns, leading to efficiency, re-use, and happy stakeholders and end-users.  Business entities and their relationships represent the persons, places, and things that our information systems are intended to manage (i.e. the "nouns").  Business processes (i.e. the "verbs") orchestrate the interactions and operations involving these entities.  And business decisions (i.e. the "rules") inform and constrain these processes.
 ## What Is AAF Today?
-In an effort to deliver significant value in the shortest possible timeframe, the AAF data layer (AAF Data) will be released first.
-
-Today, AAF Data is:
-- A standalone set of
-    - Generalized **business entity models**, e.g. Person, Organization, OrganizationalUnit, Employee, etc,
-    - **Database creation scripts** for roles, schemas, tables, constraints, indexes, functions, and
-    - **Scripted lookup/reference data**, e.g. EntityType (Person, Organization, OrganizationalUnit, Employee, etc), EntitySubtype (Organization - C Corp, S Corp, LLC, etc, OrganizationalUnit - Region, Division, Department, etc), etc,
-- A Dockerized, **REST**ful **entity data microservice** (EDM) providing
-    - **C**reate,
-    - **R**ead,
-    - **U**pdate, and
-    - **D**elete (**CRUD**) operations for each of these business entity models,
-- A Dockerized, **REST**ful **system data service** (SDS) providing the capability to
-    - Create **N**ew business entity definitions,
-    - **C**lone Existing business entity definitions,
-    - Create **N**ew business entity attributes,
-    - **Clone** Existing business entity attributes,
-    - **A**ssociate business entity attributes with business entity definition(s),
-    - **P**ublish entities, attributes, and associations, thereby creating corresponding new database schemas, tables, constraints, indexes, etc, and
-    - **U**pdate the published status of entities, attributes, and associations,
-- A lightweight, modern Progressive Web Application (PWA) business **entity modeling service** (EMS) for extending or modifying these models using the EDM and SDS services,
-- Our first custom HTML5 Web Component (`HtmlElement`) EntityTable demonstrating how to quickly and easily display business entity data on a web page,
-- And **SwaggerDoc** **OpenAPI** application programming interface (API) **documentation**.
+In an effort to deliver significant value in the shortest possible timeframe, the AAF data layer (AAF Data) will be released first, along with key presentation layer capabilities, e.g. the custom HTML5 Web Component (`HtmlElement`-based) EntityTable demonstrating how to quickly and easily display business entity data on a web page.  The AAF service layer, consisting of BPMN business process models and DMN decision models (business rules), will be released in the near future.
 
 
 ### How Are the AAF Models Represented in the Data Layer?
@@ -472,7 +463,12 @@ Coming soon: Other model-based web user interface (UI) components
 * 2.0
     * Initial Release of EMS and related SDS changes
     * Various bug fixes and optimizations
-    * See [commit change](
+    * See [commit change]() or See [release history]()
+* 3.0
+    * Postgres-based entity keyword search capability in EDM
+    * New business entities, listed above
+    * Various bug fixes and optimizations
+    * See [commit change]() or See [release history]()
 
 
 ## Built With
